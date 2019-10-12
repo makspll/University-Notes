@@ -34,6 +34,7 @@ MAX_DIM_SIZE:		 .word 32       # maximum size of each dimension
 MAX_DICTIONARY_WORDS:    .word 1000     # maximum number of words in dictionary file
 MAX_WORD_SIZE:           .word 10	# maximum size of each word in the dictionary
 
+.align 2
 dictionary_idx:		 .space 4000    # starting index of each word in the dictionary, 1000 words x 4 bytes per int
 dict_num_words:          .word 0        # number of words in the dictionary
 #=========================================================================
@@ -257,7 +258,7 @@ STRFIND_LOOP2:
 	sw $t1,13($sp)
 	sw $t0,9($sp)
 	sw $a1,5($sp)
-	sw $a0,1($sp)
+	sw $a2,1($sp)
 	sb $t2,0($sp)
 	
 	#test if the word is in the string at current position
@@ -267,7 +268,7 @@ STRFIND_LOOP2:
 	lw $t1,13($sp)
 	lw $t0,9($sp)
 	lw $a1,5($sp)
-	lw $a0,1($sp)
+	lw $a2,1($sp)
 	lb $t2,0($sp)
 	addiu $sp, $sp, 21
 	
