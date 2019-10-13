@@ -30,7 +30,8 @@
 #define MAX_WORD_SIZE 10
 
 int read_char() { return getchar(); }
-int read_int(){
+int read_int()
+{
   int i;
   scanf("%i", &i);
   return i;
@@ -55,7 +56,6 @@ char dictionary[MAX_DICTIONARY_WORDS * (MAX_WORD_SIZE + 1 /* for \n */ ) + 1 /* 
 
 // starting index of each word in the dictionary
 int dictionary_idx[MAX_DICTIONARY_WORDS];
-
 // number of words in the dictionary
 int dict_num_words = 0;
 
@@ -90,11 +90,11 @@ void strfind()
   int idx = 0;
   int grid_idx = 0;
   char *word;
-  while (grid[grid_idx] != '\0') { //0 to MAX GRID DIM
-    for(idx = 0; idx < dict_num_words; idx ++) {  //for each word
-      word = dictionary + dictionary_idx[idx]; // *word 
-      if (contain(grid + grid_idx, word)) { //check for first word contained in grid at the current grid point
-        print_int(grid_idx); //if it is display it correctly (grid_idx + ' ' + word_hit + '\n')
+  while (grid[grid_idx] != '\0') {
+    for(idx = 0; idx < dict_num_words; idx ++) {
+      word = dictionary + dictionary_idx[idx]; 
+      if (contain(grid + grid_idx, word)) {
+        print_int(grid_idx);
         print_char(' ');
         print_word(word);
         print_char('\n');
@@ -105,7 +105,6 @@ void strfind()
     grid_idx++;
   }
 
-  //if we reached the edge and no matches then display -1\n result
   print_string("-1\n");
 }
 
