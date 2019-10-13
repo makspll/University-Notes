@@ -27,7 +27,7 @@ do
     do
 
         #random number between 2-10 inclusive
-        LETTERS=$(shuf -i 1-10 -n 1)
+        LETTERS=$(shuf -i 2-10 -n 1)
         
         WORD="$(cat /dev/urandom | tr -dc 'a-z' | fold -w $LETTERS | head -n 1)"
         printf "$WORD\n" >> dictionary.txt

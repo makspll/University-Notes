@@ -84,12 +84,14 @@ int contain(char *string, char *word)
   return 0;
 }
 
-// this functions finds the first match in the grid
+// this functions finds all matches in the grid
 void strfind()
 {
   int idx = 0;
   int grid_idx = 0;
   char *word;
+  char success = '\0';
+
   while (grid[grid_idx] != '\0') {
     for(idx = 0; idx < dict_num_words; idx ++) {
       word = dictionary + dictionary_idx[idx]; 
@@ -98,14 +100,17 @@ void strfind()
         print_char(' ');
         print_word(word);
         print_char('\n');
-        return;
+        success = '1';
+        // 1 REMOVED RETURN added success
       }
     }
 
     grid_idx++;
   }
-
-  print_string("-1\n");
+  if(!success)
+  {
+    print_string("-1\n");
+  }
 }
 
 //---------------------------------------------------------------------------

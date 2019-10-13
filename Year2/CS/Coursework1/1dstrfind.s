@@ -229,6 +229,7 @@ contain_exit:
 #used: 
 strfind:
 	addiu $t1, $zero, 0		#int grid_idx = 0 -> t1
+	addiu $s0, $zero, 0		#char success = '\0' -> s0
 STRFIND_LOOP:	
 
 	la $t2, grid			# t2 = &grid[0]
@@ -253,24 +254,28 @@ STRFIND_LOOP2:
 	la $a2, grid			# a2 <- &grid[0]
 	addu $a2, $a2, $t1		# a2 <- grid + grid_idx
 	#save variables before call
-	addiu $sp, $sp, -21
-	sw $ra, 17($sp)
-	sw $t1,13($sp)
-	sw $t0,9($sp)
-	sw $a1,5($sp)
-	sw $a2,1($sp)
-	sb $t2,0($sp)
+	addiu $sp, $sp, -28
+	sb $t2,24($sp)
+	sb $s0, 20($sp)
+	sw $ra, 16($sp)
+	sw $t1,12($sp)
+	sw $t0,8($sp)
+	sw $a1,4($sp)
+	sw $a2,0($sp)
+
 	
 	#test if the word is in the string at current position
 	jal contain			# contain(grid + grid_idx, word) | v0 = bool
 	
-	lw $ra, 17($sp)
-	lw $t1,13($sp)
-	lw $t0,9($sp)
-	lw $a1,5($sp)
-	lw $a2,1($sp)
-	lb $t2,0($sp)
-	addiu $sp, $sp, 21
+	lb $t2,24($sp)
+	lbu $s0, 20($sp)
+	lw $ra, 16($sp)
+	lw $t1,12($sp)
+	lw $t0,8($sp)
+	lw $a1,4($sp)
+	lw $a2,0($sp)
+	addiu $sp, $sp, 28
+	
 	
 	addiu $t0, $t0, 1		#idx++
 	
@@ -293,13 +298,15 @@ STRFIND_LOOP2:
 	lw $ra, 0($sp)
 	addiu $sp, $sp, 4
 	
-	addiu $a0, $t1, 0		# print_char('\n')
-	addu $v0, $zero, 10 		# syscall call code
+	addiu $a0, $zero, 10		# print_char('\n')
+	addu $v0, $zero, 11 		# syscall call code
 	syscall
 	
-	jr $ra
+	addiu $s0, $zero, 1		# success = '1'
+
+	addiu $t0, $t0, 1		#idx++
 	
-	
+	j STRFIND_LOOP2
 
 	
 STRFIND_LOOP2_EXIT:
@@ -310,14 +317,17 @@ STRFIND_LOOP2_EXIT:
 	
 STRFIND_LOOP_EXIT:
 	
+	beq $s0, 1, STRFIND_LOOP_RETURN # if (!success) {
+
 	addiu $a0, $zero, -1		# print_int(-1)
 	addu $v0, $zero, 1 		# syscall call code
 	syscall
 	
-	addiu $a0, $t1, 0		# print_char('\n')
-	addu $v0, $zero, 10 		# syscall call code
+	addiu $a0, $zero, 10		# print_char('\n')
+	addu $v0, $zero, 11 		# syscall call code
 	syscall
-	
+
+STRFIND_LOOP_RETURN:
 	jr $ra
 
 #------------------------------------------------------------------
