@@ -59,7 +59,8 @@ int dictionary_idx[MAX_DICTIONARY_WORDS];
 int dict_num_words = 0;
 // length of each row in the current grid with \n included
 int grid_row_length = 0;
-
+// the total number of characters including the \n in the grid
+int grid_total_length = 0;
 // function to print found word
 void print_word(char *word)
 {
@@ -84,6 +85,27 @@ int contain(char *string, char *word)
   return 0;
 }
 
+// see if the vertical string contains the \n terminated word
+int containV(char *string, char *word)
+{
+  while(1) {
+    if (string >= grid + grid_total_length || *string!= *word || *string == '\n' )
+    {
+        return (*word == '\n');
+    }
+
+    string += grid_row_length; // skip a row
+    word++;
+  }
+
+  return 0;
+}
+
+int containD(char *string, char *word)
+{
+  //to-do
+}
+
 // this functions finds all matches in the grid
 void strfind()
 {
@@ -102,6 +124,18 @@ void strfind()
         print_int(grid_idx % grid_row_length); // x
         print_char(' ');
         print_char('H');
+        print_char(' ');
+        print_word(word);
+        print_char('\n');
+        success = '1';
+      }
+      if(containV(grid + grid_idx, word))
+      {
+        print_int(grid_idx / grid_row_length); // y
+        print_char(',');
+        print_int(grid_idx % grid_row_length); // x
+        print_char(' ');
+        print_char('V');
         print_char(' ');
         print_word(word);
         print_char('\n');
@@ -183,9 +217,16 @@ int main (void)
   fclose(dictionary_file);
   //////////////////////////End of reading////////////////////////
   ///////////////You can add your code here!//////////////////////
+  //counting how long the whole grid is
+  char* current_char = grid;
+  while (*current_char != '\0')
+  {
+    grid_total_length += 1;
+    current_char += 1;
+  }
   //counting how long each row is in the grid
   
-  char* current_char = grid;
+  current_char = grid;
   while (*current_char != '\n')
   {
     grid_row_length += 1;
