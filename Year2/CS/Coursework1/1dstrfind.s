@@ -128,7 +128,7 @@ END_LOOP2:
 # End of reading file block.
 #------------------------------------------------------------------
 #------------------------------------------------------------------
-# main functionality of the program
+# Count words and write start indices to dictionary_idx
 #------------------------------------------------------------------
 	#storing the starting index of each word in the dictionary
 	addiu $t0,$zero,0 		# idx = 0
@@ -160,17 +160,13 @@ NOT_WORD_BOUNDARY:
 END_STORE_LOOP:
 	sw $t4, dict_num_words		# dict_num_words = dict_idx;
 	
-	#test print_word
-	#la $a1,dictionary #dictionary -> a1
-	#addiu $a1,$a1,4
-	#jal print_word
+#------------------------------------------------------------------
+# end
+#------------------------------------------------------------------
 
-	#test contain
-	#la $a1, dictionary
-	#addiu $a1, $a1, 27 #choose "not" from dict
-	#la $a2, grid
-	#addiu $a2,$a2,28  #choose n position in grid
-	#jal contain
+#------------------------------------------------------------------
+# main functionality
+#------------------------------------------------------------------
 
 	jal strfind
 		
@@ -180,15 +176,42 @@ END_STORE_LOOP:
 # helper functions
 #-----------------------------------------------------------------
 
+#desc: print integer
+#in  : $a0 = integer 
+#out : I/O
+print_int:
+	addiu $sp, $sp,-4		#save return address
+	sw $ra, 0($sp)	
+	addiu $v0, $zero, 1	#syscall for printing integers
+	syscall
+	lw $ra, 0($sp)
+	addiu $sp, $sp,4		#load return address
+	jr $ra
+	
+#desc: print char
+#in  : $a0 = char 
+#out : none
+print_char:
+	addiu $sp, $sp,-4		#save return address
+	sw $ra, 0($sp)	
+	addiu $v0, $zero, 11	#syscall for printing chars
+	syscall
+	lw $ra, 0($sp)
+	addiu $sp, $sp,4		#load return address
+	jr $ra
+
 #desc: print the given \n terminated word
 #in  : $a1 = &word (non-aligned)
 #out : none
 #used: $a0 = *word, $v0 = syscall code
 print_word:
+	addiu $sp, $sp,-4		#save return address
+	sw $ra, 0($sp)	
+PRINT_WORD_LOOP:
 					 # while( 
 	lb $a0,0($a1)                    # dereference a1: *word -> a0 
-	beq $a0,10,print_word_exit       # (*word != '\n' &&
-	beq $a0,$zero, print_word_exit   # *word != '\0')
+	beq $a0,10,PRINT_WORD_EXIT       # (*word != '\n' &&
+	beq $a0,$zero, PRINT_WORD_EXIT   # *word != '\0')
 					 
 					 # print_char(*word)
 	addiu $v0,$zero,11               # v0 <- 11 syscall print code for char
@@ -196,31 +219,43 @@ print_word:
 	
 	addiu $a1,$a1,1                  # word++
 	
-	j print_word			 # complete the while loop
+	j PRINT_WORD_LOOP		 # complete the while loop
 	
-print_word_exit:
+PRINT_WORD_EXIT:
+
+	lw $ra, 0($sp)
+	addiu $sp, $sp,4		#load return address
 	
 	jr $ra                           #return 0
 
 
 
 #desc: given a string and a word (\n terminated) returns 1 if word is contained in string
-#in  : #a1 = $word (dictionary word start idx) 
-       #a2 = $string (grid start idx)
+#in  : #a1 = &word
+       #a2 = &string 
 #out : #v0 = (bool)
 #used: #t1 = *string, $t0 = *word
-contain:				# while(1) {
-	lb $t1,($a2)			# *string
-	lb $t0,($a1)			# *word
-	bne $t1,$t0,contain_exit	# if(*string != *word)
+		
+contain:	
+	addiu $sp, $sp,-4		#save return address
+	sw $ra, 0($sp)	
+CONTAIN_LOOP:
+					# while(1) {
+	lbu $t1,($a2)			# *string
+	lbu $t0,($a1)			# *word
+	bne $t1,$t0,CONTAIN_LOOP_EXIT	# if(*string != *word)
 	
 	addiu $a2,$a2,1			#string++
 	addiu $a1,$a1,1			#word++
 	
-	j contain
+	j CONTAIN_LOOP
 	
-contain_exit:                           
+CONTAIN_LOOP_EXIT:                           
 	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
+	
+	lw $ra, 0($sp)
+	addiu $sp, $sp,4		#load return address
+	
 	jr $ra				#return (*word == '\n')
 
 #desc: strfind for 1d grid
@@ -228,108 +263,92 @@ contain_exit:
 #out : I/O
 #used: 
 strfind:
-	addiu $t1, $zero, 0		#int grid_idx = 0 -> t1
-	addiu $s0, $zero, 0		#char success = '\0' -> s0
-STRFIND_LOOP:	
-
-	la $t2, grid			# t2 = &grid[0]
-	addu $t2, $t2, $t1		# t2 = &grid[grid_idx]
-	lb $t2, 0($t2)			# t2 = grid[grid_idx]
-	beqz $t2, STRFIND_LOOP_EXIT	# while (grid[grid_idx] != '\0')
-	
-	addiu $t0, $zero, 0 		#int idx = 0 -> t0
-STRFIND_LOOP2:
-	lw $t3, dict_num_words          #t3 = dict_num_words
-	slt $t3, $t0, $t3		#for(idx = 0; idx < dict_num_words; idx ++) t3 -> 1 if idx < dict_num_words
-	beqz $t3, STRFIND_LOOP2_EXIT	#skip word if idx >= dict_num_words , otherwise
-	
-	la $a1, dictionary_idx
-	sll $t3, $t0, 2			#get offset in words -> t3
-	addu $a1, $a1, $t3		
-	lw $a1, 0($a1)			# a1 = dictionary_idx[idx] == starting index for current word
-	
-	la $a2, dictionary		# a2 = &dictionary[0]
-	addu $a1, $a1, $a2		# a1 <-  dictionary + dictionary_idx[idx] e.g. position in memory of first letter of current word
-	
-	la $a2, grid			# a2 <- &grid[0]
-	addu $a2, $a2, $t1		# a2 <- grid + grid_idx
-	#save variables before call
-	addiu $sp, $sp, -28
-	sb $t2,24($sp)
-	sb $s0, 20($sp)
-	sw $ra, 16($sp)
-	sw $t1,12($sp)
-	sw $t0,8($sp)
-	sw $a1,4($sp)
-	sw $a2,0($sp)
-
-	
-	#test if the word is in the string at current position
-	jal contain			# contain(grid + grid_idx, word) | v0 = bool
-	
-	lb $t2,24($sp)
-	lbu $s0, 20($sp)
-	lw $ra, 16($sp)
-	lw $t1,12($sp)
-	lw $t0,8($sp)
-	lw $a1,4($sp)
-	lw $a2,0($sp)
-	addiu $sp, $sp, 28
-	
-	
-	addiu $t0, $t0, 1		#idx++
-	
-	beqz $v0, STRFIND_LOOP2		# if (contain(grid + grid_idx, word)) {
-	
-	addiu $a0, $t1, 0		# print_int(grid_idx)
-	addu $v0, $zero, 1 		# syscall call code
-	syscall
-	
-	addiu $a0, $zero, 32		# print_char(' ')
-	addu $v0, $zero, 11 		# syscall call code
-	syscall
-	
-	#a1 = &word
-	addiu $sp, $sp, -4
+	addiu $sp, $sp,-20		#store local variables and return address
 	sw $ra, 0($sp)
+       #sw $zero, 4($sp)		# int idx = 0
+	sw $zero, 8($sp)		# grid_idx = 0
+       #sb    	 12($sp)		# char *word  | at 12($sp)
+	sb $zero, 16($sp)		# char success = '\0';
 	
-	jal print_word 
+STRFIND_WHILE_LOOP:
+	lw $s6, 8($sp)			# s6 <- grid_idx
+	la $s1, grid			# s1 <- &grid base 
+	addu $s3, $s6, $s1		# s2 <- &grid[grid_idx]
+	lbu $s4, ($s3)			# s4 <- grid[grid_idx]
 	
+	beq $s4, $zero, STRFIND_WHILE_EXIT #while (grid[grid_idx] != '\0') {
+	
+	
+	sw $zero, 4($sp)		# idx = 0 reset for loop counter
+	addiu $s0, $zero, 0		# s0 <- idx
+STRFIND_FOR_LOOP:
+	lw $s0, 4($sp)
+	lw $t1, dict_num_words		# t1 <- dict_num_words
+	slt $t0, $s0, $t1 		# it $so < $t1, $t0 = 1 else 0
+	
+	beq $t0, $zero, STRFIND_FOR_EXIT# for(idx = 0; idx < dict_num_words;... {
+	
+	la $t0, dictionary		# t0 <- &dictionary     (CHAR ARRAY)
+	la $t1, dictionary_idx		# t1 <- &dictionary_idx (INT ARRAY)
+	sll $t2, $s0, 2			# t2 <- idx * 4
+	addu $t3, $t2, $t1		# t3 <- &dictionary_idx + (idx * 4)
+	lw $t2, ($t3)			# t2 <- dictionary_idx[idx]
+	addu $s5,$t0,$t2		# s5 <- &dictionary + dictionary_idx[idx] e.g. the index in dictionary of first letter of the word
+	
+	sb $s5, 12($sp)			# word = dictionary + dictionary_idx[idx]; 
+	
+	addu $a1, $s5, $zero		# a1 <- &word
+	addu $a2, $s1,$s6 		# a2 <- &grid + grid_idx
+	
+	jal contain 			# contain(grid + grid_idx, word)
+					# v0 -> 1 if contains
+	beq $v0, $zero,STRFIND_FOR_INCREMENT # if (contain(grid + grid_idx, word)) {
+	
+	#PRINT MATCH
+	addiu $a0, $s6, 0		# a0 <- grid_idx
+	jal print_int
+	
+	addiu $a0, $zero, 32		# a0 <- ' '
+	jal print_char
+	
+	addiu $a1, $s5, 0		# a1 <- &word
+	jal print_word
+	
+	addiu $a0, $zero, 10		# a0 <- '\n'
+	jal print_char
+	
+	addiu $t0, $zero, 1		# t0 <- TRUE
+	sb $t0, 16($sp)			# success ='1' or TRUE e.g. we have a hit gentlemen
+	
+STRFIND_FOR_INCREMENT:
+	
+	addiu $s0, $s0, 1 		# ..; idx++){
+	sw $s0, 4($sp)
+	j STRFIND_FOR_LOOP
+	
+STRFIND_FOR_EXIT:
+	
+	addiu $s6, $s6, 1		# grid_idx++..
+	sw $s6, 8($sp)			# /\ /\ /\ /\
+	j STRFIND_WHILE_LOOP
+	
+STRFIND_WHILE_EXIT:
+	
+	lbu $t0, 16($sp)		# t0 <- success (char)
+	seq $t1, $t0, 0			# if t0 = 0, e.g. !success , t1 = 1
+	
+	beq $t1, $zero, STRFIND_RETURN # if(!success)
+	
+	addiu $a0, $zero, -1		# a0 <- -1
+	jal print_int
+	
+	addiu $a0, $zero, 10		# a0 <- '\n'
+	
+STRFIND_RETURN:
 	lw $ra, 0($sp)
-	addiu $sp, $sp, 4
-	
-	addiu $a0, $zero, 10		# print_char('\n')
-	addu $v0, $zero, 11 		# syscall call code
-	syscall
-	
-	addiu $s0, $zero, 1		# success = '1'
-
-	addiu $t0, $t0, 1		#idx++
-	
-	j STRFIND_LOOP2
-
-	
-STRFIND_LOOP2_EXIT:
-
-	addiu $t1, $t1, 1		# grid_idx++
-	
-	j STRFIND_LOOP
-	
-STRFIND_LOOP_EXIT:
-	
-	beq $s0, 1, STRFIND_LOOP_RETURN # if (!success) {
-
-	addiu $a0, $zero, -1		# print_int(-1)
-	addu $v0, $zero, 1 		# syscall call code
-	syscall
-	
-	addiu $a0, $zero, 10		# print_char('\n')
-	addu $v0, $zero, 11 		# syscall call code
-	syscall
-
-STRFIND_LOOP_RETURN:
+	addiu $sp, $sp,20		#load return address and pop variables
 	jr $ra
-
+	
 #------------------------------------------------------------------
 # Exit, DO NOT MODIFY THIS BLOCK
 #------------------------------------------------------------------
