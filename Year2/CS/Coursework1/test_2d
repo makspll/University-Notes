@@ -1,0 +1,63 @@
+#!/bin/bash
+echo "tests script is live"
+if [ $# -eq 0 ]
+then
+    echo "no argument supplied. testing 1dstrfind.s against 1dstrfind.c 1 time"
+else
+    echo "testing 1dstrfind.s against 1dstrfind.c $1 times"
+fi
+
+#compile the c program
+gcc -o 1dstrfind 1dstrfind.c
+
+for i in $(seq 1 $1)
+do
+    #generate random 1d grid
+    #clear the grid files
+    rm 2dgrid.txt 
+    touch 2dgrid.txt
+
+    #pick random values
+    ROWS=$(shuf -i 1-32 -n 1)
+    COLUMNS=$(shuf -i 1-32 -n 1)
+
+    for i in $(seq 1 $ROWS)
+    do
+        LINE="$(cat /dev/urandom | tr -dc 'a-z' | fold -w $COLUMNS | head -n 1)"
+        printf "$LINE\n" >> 2dgrid.txt
+    done
+
+    #generate random dictionary
+    #clear the dictionary
+    rm dictionary.txt 
+    touch dictionary.txt
+
+    #random number between 1-1000 inclusive 
+    WORDS=$(shuf -i 1-1000 -n 1)
+    
+    for i in $(seq 1 $WORDS)
+    do
+
+        #random number between 2-10 inclusive
+        LETTERS=$(shuf -i 2-10 -n 1)
+        
+        WORD="$(cat /dev/urandom | tr -dc 'a-z' | fold -w $LETTERS | head -n 1)"
+        printf "$WORD\n" >> dictionary.txt
+    done
+
+    #command to run 1dstrfind.s
+    PROGRAM1=$(java -jar Mars4_5.jar nc 1dstrfind.s)
+    #command to run 1dstrfind.c
+    PROGRAM2=$(./1dstrfind)
+
+    if [ "$PROGRAM1" != "$PROGRAM2" ]
+    then
+        echo -e "DISAGREEMENT ON: $GRID\n"
+        echo -E "MIPS:$PROGRAM1"
+        echo -E "C:$PROGRAM2"
+        break
+    fi
+
+done
+
+
