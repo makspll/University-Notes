@@ -103,7 +103,17 @@ int containV(char *string, char *word)
 
 int containD(char *string, char *word)
 {
-  //to-do
+    while(1) {
+    if (string >= grid + grid_total_length || *string!= *word || *string == '\n' )
+    {
+        return (*word == '\n');
+    }
+
+    string += grid_row_length + 1; // skip a row and go right
+    word++;
+  }
+
+  return 0;
 }
 
 // this functions finds all matches in the grid
@@ -136,6 +146,18 @@ void strfind()
         print_int(grid_idx % grid_row_length); // x
         print_char(' ');
         print_char('V');
+        print_char(' ');
+        print_word(word);
+        print_char('\n');
+        success = '1';
+      }
+      if(containD(grid + grid_idx, word))
+      {
+        print_int(grid_idx / grid_row_length); // y
+        print_char(',');
+        print_int(grid_idx % grid_row_length); // x
+        print_char(' ');
+        print_char('D');
         print_char(' ');
         print_word(word);
         print_char('\n');

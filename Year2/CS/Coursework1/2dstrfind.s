@@ -302,8 +302,6 @@ CONTAIN_LOOP_EXIT:
 #in  : #a1 = &word
        #a2 = &string 
 #out : #v0 = (bool)
-
-
 CONTAIN_V:
 	addiu $sp, $sp, -4
 	sw $ra, 0($sp)		#save return address
@@ -342,7 +340,51 @@ CONTAIN_V_LOOP_EXIT:
 	addiu $sp, $sp, 4
 		
 	jr $ra
+
+#desc: see if the diagonal string contains the \n terminated word (uses global variables for grid dimesnsions)
+#in  : #a1 = &word
+       #a2 = &string 
+#out : #v0 = (bool)
+CONTAIN_D:
+	addiu $sp, $sp, -4
+	sw $ra, 0($sp)		#save return address
 	
+CONTAIN_D_LOOP:			#while(1) {
+
+	
+	lw $t4, grid_total_length	# t4 <- grid_total_length
+	la $t5, grid			# t5 <- &grid		
+	lw $t6, grid_row_length		# t6 <- grid_row_length
+	
+	addu $t4,$t4,$t5		# t4 <- grid + grid_total_length
+		#this condition must be checked first, or we could access illegal memory
+	sge $t3,$a2,$t4			# t3 = 1 if &string >= grid+grid_total_length
+	
+
+	lbu $t0,($a1)			# *word
+	
+	beq $t3,1, CONTAIN_D_LOOP_EXIT	# if (string >= grid + grid_total_length || 
+		# only load this one now
+	lbu $t1,($a2)			# *string
+	
+	bne $t1,$t0,CONTAIN_D_LOOP_EXIT	# *string!= *word || 
+	beq $t1,10,CONTAIN_D_LOOP_EXIT    # *string == '\n' )
+	
+	addu $a2, $a2, $t6		# string += grid_row_length + 1; // skip a row
+	addiu $a2, $a2, 1		# 	/\  /\ /\ /\ / \/ \
+	addiu $a1, $a1, 1		# word++;
+
+	j CONTAIN_D_LOOP
+
+CONTAIN_D_LOOP_EXIT:
+	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
+					#return (*word == '\n');
+
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 4
+		
+	jr $ra
+
 #desc: strfind for 1d grid
 #in  :  
 #out : I/O
@@ -473,6 +515,49 @@ STRFIND_CONTAIN_H_EXIT:
 STRFIND_CONTAIN_V_EXIT:
 	
 	#--------------------CONTAIN D ------------------------#
+	
+	addu $a1, $s5, $zero		# a1 <- &word
+	addu $a2, $s1,$s6 		# a2 <- &grid + grid_idx
+
+	jal CONTAIN_D 			# CONTAIN_D(grid + grid_idx, word)
+					# v0 -> 1 if CONTAIN_Ds
+	beq $v0, $zero,STRFIND_CONTAIN_D_EXIT # if (CONTAIN_D(grid + grid_idx, word)) {
+	
+	#PRINT MATCH
+	
+	lw $t1, grid_row_length		# t1 <- grid_row_length
+	div $s6,$t1
+	mflo $t1			# t1 <- s6 / t1
+	mfhi $t2			# t2 <- s6 % t1
+	
+	addiu $a0, $t1, 0		# print_int(grid_idx / grid_row_length); // y
+	jal print_int
+	
+	addiu $a0, $zero, 44		# a0 <- ','
+	jal print_char
+	
+	addiu $a0, $t2, 0		# print_int(grid_idx % grid_row_length); // x
+	jal print_int
+	
+	addiu $a0, $zero, 32		# a0 <- ' '
+	jal print_char
+	
+	addiu $a0, $zero, 68		# a0 <- 'D'
+	jal print_char
+	
+	addiu $a0, $zero, 32		# a0 <- ' '
+	jal print_char
+	
+	addiu $a1, $s5, 0		# a1 <- &word
+	jal print_word
+	
+	addiu $a0, $zero, 10		# a0 <- '\n'
+	jal print_char
+	
+	addiu $t0, $zero, 1		# t0 <- TRUE
+	sb $t0, 16($sp)			# success ='1' or TRUE e.g. we have a hit gentlemen
+
+STRFIND_CONTAIN_D_EXIT:
 	
 STRFIND_FOR_INCREMENT:
 	
