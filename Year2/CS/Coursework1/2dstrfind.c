@@ -74,10 +74,15 @@ void print_word(char *word)
 int contain(char *string, char *word)
 {
   while (1) {
-    if (*string != *word || *string == '\n'){
+    //check we're out of bounds to the right, wrap around
+    if (*string == '\n')
+    {
+      string -= (grid_row_length - 1); // up and one right
+    }
+    if (*string != *word){
       return (*word == '\n');
     }
-
+    
     string++;
     word++;
   }
@@ -89,7 +94,12 @@ int contain(char *string, char *word)
 int containV(char *string, char *word)
 {
   while(1) {
-    if (string >= grid + grid_total_length || *string!= *word || *string == '\n' )
+    //check we're out of bounds down the bottom, wrap around if so
+    if (string >= grid + grid_total_length)
+    {
+        string -= grid_total_length;
+    }
+    if (*string!= *word || *string == '\n' )
     {
         return (*word == '\n');
     }
@@ -103,8 +113,21 @@ int containV(char *string, char *word)
 
 int containD(char *string, char *word)
 {
+    //check for out of bounds both ways, wrap around PROBLEM HERE
+    if(string >= grid + grid_total_length)
+    {
+        int idx = string - grid;
+        string = grid + ((grid_row_length -(idx / grid_row_length))* grid_row_length);
+    }
+    if(*string == '\n')
+    {
+        int idx = string - grid;
+        int rows = (grid_total_length / grid_row_length);
+        string = grid + (rows - (idx % grid_row_length));
+    }
+
     while(1) {
-    if (string >= grid + grid_total_length || *string!= *word || *string == '\n' )
+    if ( *string!= *word)
     {
         return (*word == '\n');
     }
