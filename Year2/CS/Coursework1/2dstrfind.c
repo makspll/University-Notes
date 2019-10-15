@@ -111,28 +111,37 @@ int containV(char *string, char *word)
   return 0;
 }
 
-int containD(char *string, char *word)
+int containD(char *string, char *word, int string_idx)
 {
-    //check for out of bounds both ways, wrap around PROBLEM HERE
+    while(1) {
+        //check for out of bounds both ways, wrap around PROBLEM HERE
     if(string >= grid + grid_total_length)
     {
-        int idx = string - grid;
-        string = grid + ((grid_row_length -(idx / grid_row_length))* grid_row_length);
+        //get the index back on the grid
+        string -= grid_row_length + 1;
+        string_idx -= grid_row_length + 1;
+        //calculate new position
+        int x = (string_idx % grid_row_length) + 1;
+        string = grid + ((grid_row_length - 1 - x) * grid_row_length);
     }
     if(*string == '\n')
     {
-        int idx = string - grid;
+        //get the index back on the grid
+        string -= grid_row_length + 1;
+        string_idx -= grid_row_length + 1;
+        //calculate new position
         int rows = (grid_total_length / grid_row_length);
-        string = grid + (rows - (idx % grid_row_length));
+        int y = (string_idx / grid_row_length) + 1;
+        string = grid + (rows - y);
     }
 
-    while(1) {
     if ( *string!= *word)
     {
         return (*word == '\n');
     }
 
     string += grid_row_length + 1; // skip a row and go right
+    string_idx += grid_row_length + 1; //
     word++;
   }
 
@@ -174,7 +183,7 @@ void strfind()
         print_char('\n');
         success = '1';
       }
-      if(containD(grid + grid_idx, word))
+      if(containD(grid + grid_idx, word, grid_idx))
       {
         print_int(grid_idx / grid_row_length); // y
         print_char(',');
