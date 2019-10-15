@@ -8,7 +8,7 @@ else
 fi
 
 #compile the c program
-gcc -o 1dstrfind 1dstrfind.c
+gcc -o 2dstrfind 2dstrfind.c
 
 for i in $(seq 1 $1)
 do
@@ -46,9 +46,9 @@ do
     done
 
     #command to run 1dstrfind.s
-    PROGRAM1=$(java -jar Mars4_5.jar nc 1dstrfind.s)
+    PROGRAM1=$(java -jar Mars4_5.jar nc 2dstrfind.s)
     #command to run 1dstrfind.c
-    PROGRAM2=$(./1dstrfind)
+    PROGRAM2=$(./2dstrfind)
 
     if [ "$PROGRAM1" != "$PROGRAM2" ]
     then

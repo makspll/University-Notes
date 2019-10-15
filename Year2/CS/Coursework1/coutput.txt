@@ -1,128 +1,216 @@
-0 t
-0 t
-0 t
-1 u
-2 n
-2 n
-2 n
-2 n
-2 n
-3 z
-3 z
-3 z
-3 z
-3 zx
-4 x
-4 x
-4 x
-4 x
-4 x
-4 x
-4 x
-4 x
-5 r
-5 r
-6 d
-6 d
-6 d
-6 d
-7 g
-7 g
-8 k
-8 k
-8 k
-8 kf
-8 k
-8 k
-8 k
-9 f
-9 f
-9 f
-9 f
-9 f
-10 g
-10 g
-11 q
-11 q
-11 q
-11 q
-11 q
-11 q
-11 qk
-12 k
-12 k
-12 k
-12 k
-12 k
-12 k
-13 w
-13 wg
-13 wg
-14 g
-14 g
-15 l
-15 l
-15 lg
-16 g
-16 g
-17 z
-17 z
-17 z
-17 z
-18 u
-19 l
-19 l
-20 e
-20 e
-20 e
-20 e
-20 e
-20 e
-20 e
-21 e
-21 e
-21 e
-21 e
-21 e
-21 e
-21 e
-22 z
-22 z
-22 z
-22 z
-23 z
-23 z
-23 z
-23 z
-24 t
-24 t
-24 t
-25 t
-25 tj
-25 t
-25 t
-26 j
-26 j
-26 j
-27 v
-27 v
-27 v
-27 v
-27 v
-28 d
-28 d
-28 d
-28 d
-29 w
-30 m
-30 m
-30 m
-30 m
-30 m
-30 m
-31 m
-31 m
-31 m
-31 m
-31 m
-31 m
+0,7 V ft
+0,7 H fe
+0,22 H ct
+0,22 H ct
+0,23 H ty
+1,1 V co
+1,6 V ad
+1,10 V xq
+1,21 V uaf
+1,22 H am
+1,25 V ny
+1,26 H my
+1,27 V ym
+2,5 V ma
+2,7 H mx
+2,10 H qv
+2,15 H sw
+3,1 H nj
+3,1 V nj
+3,2 V jv
+3,3 H hb
+3,5 V al
+3,7 H sw
+3,11 H xr
+3,12 V rjf
+3,17 H ym
+3,29 V ma
+3,31 V qv
+4,1 H jv
+4,4 V sw
+4,5 V lx
+4,6 V rs
+4,21 V om
+4,29 V al
+5,1 V ue
+5,1 V ue
+5,2 V oj
+5,2 H ov
+5,15 V ib
+5,16 H jz
+6,12 H ii
+6,16 H gr
+6,29 H oj
+7,8 H lx
+7,17 V ty
+7,19 V ln
+7,27 V ep
+7,30 V ln
+8,0 V ol
+8,2 H wm
+8,5 V wvr
+8,6 V hb
+8,10 H hb
+8,12 H rs
+8,14 H co
+8,27 V pw
+9,1 V pl
+9,4 V xq
+9,19 H bn
+9,26 H pw
+9,27 V wm
+9,28 H iz
+9,29 V zh
+9,29 V zh
+10,1 H ly
+10,6 V ty
+10,7 H nj
+10,17 H ct
+10,17 H ct
+11,13 V as
+11,13 V as
+11,16 V xr
+11,18 V wm
+11,20 H gr
+11,23 H ny
+11,27 V nj
+11,27 H ny
+12,3 H ad
+12,15 V tt
+12,16 V rs
+12,17 H wm
+12,30 V om
+13,5 H my
+13,8 V iz
+13,9 V qv
+13,14 V jx
+13,17 V bv
+13,23 H om
+13,24 V ma
+13,25 H ct
+13,25 H ct
+14,11 V oj
+14,18 V ma
+14,24 V ad
+14,28 H yh
+15,1 V bq
+15,7 H co
+15,8 V ol
+15,14 V sm
+15,19 H rs
+15,25 V vd
+15,26 V wm
+15,28 V iz
+16,10 V xq
+16,15 H ii
+16,23 H ct
+16,23 H ct
+16,26 V ma
+16,27 H iz
+17,1 H ov
+17,11 H ue
+17,11 H ue
+17,12 V ep
+17,25 H ra
+17,29 H bh
+17,29 V bo
+17,29 V bo
+18,0 V bn
+18,3 V mx
+18,13 H mr
+19,9 V qv
+19,11 H ft
+19,22 V mr
+19,23 H um
+19,29 H ad
+19,31 V ad
+20,2 V ue
+20,2 V ue
+20,11 V fe
+20,13 V um
+20,19 H co
+21,3 V vz
+21,4 H qv
+21,11 V ep
+21,25 V zh
+21,25 V zh
+21,29 V qv
+22,1 H as
+22,1 H as
+22,2 V sw
+22,4 H ma
+22,10 H ep
+22,10 V ep
+22,15 V ep
+22,16 H jz
+22,23 H ci
+22,27 H gr
+22,30 H mx
+23,8 V qv
+23,9 H ep
+23,10 V pl
+23,13 V lx
+23,16 V fe
+23,19 V ijv
+23,22 V bh
+23,28 V wm
+24,7 V am
+24,8 H vz
+24,12 H jx
+24,12 V jx
+24,13 H xq
+24,17 H ft
+24,19 V jv
+24,24 H pl
+24,27 H ym
+25,0 V pw
+25,7 H my
+25,17 H pw
+25,17 V pw
+25,18 H wvr
+25,24 V hb
+25,27 H ue
+25,27 H ue
+26,5 V ma
+26,10 V nw
+26,14 H al
+26,15 V ln
+26,16 V ci
+26,22 V bn
+26,23 V kn
+26,27 V oj
+26,27 H ov
+27,2 V gr
+27,3 V om
+27,5 H al
+27,19 H ft
+27,22 V nj
+27,31 V ijv
+28,13 V hd
+28,19 H hfo
+28,19 V hd
+28,21 H oj
+28,25 V pw
+28,28 H ci
+28,29 H ii
+28,31 V jv
+29,1 V qv
+29,4 V xq
+29,4 H xr
+29,11 H hb
+29,23 H lx
+29,23 V ly
+30,0 H bv
+30,0 V bq
+30,4 V qc
+30,7 H bq
+30,8 V qc
+30,11 H ym
+30,13 V pl
+30,22 H ny
+30,27 H ol
+30,30 H ov
+31,18 H as
+31,18 H as
+31,21 H ct
+31,21 H ct

@@ -35,6 +35,7 @@ dictionary:             .space 11001    # Maximum number of words in dictionary 
 dictionary_idx:		 .space 4000    # starting index of each word in the dictionary, 1000 words x 4 bytes per int
 dict_num_words:          .word 0        # number of words in the dictionary
 grid_row_length:	 .word 0	# length of each row in the current grid including \n
+grid_total_length:	 .word 0	# total length of the grid including \n's
 #=========================================================================
 # TEXT SEGMENT  
 #=========================================================================
@@ -125,6 +126,25 @@ END_LOOP2:
 #------------------------------------------------------------------
 # Count words and write start indices to dictionary_idx
 #------------------------------------------------------------------
+#counting how long the whole grid is
+
+	la $t0, grid			# char* current_char = grid;
+	
+COUNT_TOTAL_LOOP:
+	lbu $t1, ($t0)
+	beq $t1, 0, COUNT_TOTAL_LENGTH_LOOP_EXIT #  while (*current_char != '\0')
+	
+	lw $t2, grid_total_length
+	addiu $t2, $t2, 1			# grid_low_length +=1;
+	sw $t2, grid_total_length 
+	
+	addiu $t0, $t0, 1			# current_char +=1;
+	
+	j COUNT_TOTAL_LOOP
+	
+	COUNT_TOTAL_LENGTH_LOOP_EXIT:
+	
+	
 #counting how long each row is in the grid
 	
 	la $t0, grid			# t0<-current_char = grid;
@@ -233,7 +253,7 @@ PRINT_WORD_LOOP:
 					 
 					 # print_char(*word)
 	addiu $v0,$zero,11               # v0 <- 11 syscall print code for char
-	syscall				 # a0 already contains char to print: *word
+	syscall				 # a0 already CONTAIN_Hs char to print: *word
 	
 	addiu $a1,$a1,1                  # word++
 	
@@ -248,13 +268,13 @@ PRINT_WORD_EXIT:
 
 
 
-#desc: given a string and a word (\n terminated) returns 1 if word is contained in string
+#desc: given a string and a word (\n terminated) returns 1 if word is CONTAIN_Hed in string
 #in  : #a1 = &word
        #a2 = &string 
 #out : #v0 = (bool)
 #used: #t1 = *string, $t0 = *word
 		
-contain:	
+CONTAIN_H:	
 	addiu $sp, $sp,-4		#save return address
 	sw $ra, 0($sp)	
 CONTAIN_LOOP:
@@ -271,12 +291,58 @@ CONTAIN_LOOP:
 	
 CONTAIN_LOOP_EXIT:                           
 	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
-	
+
 	lw $ra, 0($sp)
 	addiu $sp, $sp,4		#load return address
 	
 	jr $ra				#return (*word == '\n')
 
+
+#desc: see if the vertical string contains the \n terminated word (uses global variables for grid dimesnsions)
+#in  : #a1 = &word
+       #a2 = &string 
+#out : #v0 = (bool)
+
+
+CONTAIN_V:
+	addiu $sp, $sp, -4
+	sw $ra, 0($sp)		#save return address
+	
+CONTAIN_V_LOOP:			#while(1) {
+
+	
+	lw $t4, grid_total_length	# t4 <- grid_total_length
+	la $t5, grid			# t5 <- &grid		
+	lw $t6, grid_row_length		# t6 <- grid_row_length
+	
+	addu $t4,$t4,$t5		# t4 <- grid + grid_total_length
+		#this condition must be checked first, or we could access illegal memory
+	sge $t3,$a2,$t4			# t3 = 1 if &string >= grid+grid_total_length
+	
+
+	lbu $t0,($a1)			# *word
+	
+	beq $t3,1, CONTAIN_V_LOOP_EXIT	# if (string >= grid + grid_total_length || 
+		# only load this one now
+	lbu $t1,($a2)			# *string
+	
+	bne $t1,$t0,CONTAIN_V_LOOP_EXIT	# *string!= *word || 
+	beq $t1,10,CONTAIN_V_LOOP_EXIT    # *string == '\n' )
+	
+	addu $a2, $a2, $t6		# string += grid_row_length; // skip a row
+	addiu $a1, $a1, 1		# word++;
+
+	j CONTAIN_V_LOOP
+
+CONTAIN_V_LOOP_EXIT:
+	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
+					#return (*word == '\n');
+
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 4
+		
+	jr $ra
+	
 #desc: strfind for 1d grid
 #in  :  
 #out : I/O
@@ -316,12 +382,14 @@ STRFIND_FOR_LOOP:
 	
 	sb $s5, 12($sp)			# word = dictionary + dictionary_idx[idx]; 
 	
+	
+	#--------------------CONTAIN H ------------------------#
 	addu $a1, $s5, $zero		# a1 <- &word
 	addu $a2, $s1,$s6 		# a2 <- &grid + grid_idx
 	
-	jal contain 			# contain(grid + grid_idx, word)
-					# v0 -> 1 if contains
-	beq $v0, $zero,STRFIND_FOR_INCREMENT # if (contain(grid + grid_idx, word)) {
+	jal CONTAIN_H 			# CONTAIN_H(grid + grid_idx, word)
+					# v0 -> 1 if CONTAIN_Hs
+	beq $v0, $zero,STRFIND_CONTAIN_H_EXIT # if (CONTAIN_H(grid + grid_idx, word)) {
 	
 	#PRINT MATCH
 	
@@ -356,6 +424,55 @@ STRFIND_FOR_LOOP:
 	
 	addiu $t0, $zero, 1		# t0 <- TRUE
 	sb $t0, 16($sp)			# success ='1' or TRUE e.g. we have a hit gentlemen
+	
+STRFIND_CONTAIN_H_EXIT:
+
+	#--------------------CONTAIN V ------------------------#
+	
+	addu $a1, $s5, $zero		# a1 <- &word
+	addu $a2, $s1,$s6 		# a2 <- &grid + grid_idx
+
+	jal CONTAIN_V 			# CONTAIN_V(grid + grid_idx, word)
+					# v0 -> 1 if CONTAIN_Vs
+	beq $v0, $zero,STRFIND_CONTAIN_V_EXIT # if (CONTAIN_V(grid + grid_idx, word)) {
+	
+	#PRINT MATCH
+	
+	lw $t1, grid_row_length		# t1 <- grid_row_length
+	div $s6,$t1
+	mflo $t1			# t1 <- s6 / t1
+	mfhi $t2			# t2 <- s6 % t1
+	
+	addiu $a0, $t1, 0		# print_int(grid_idx / grid_row_length); // y
+	jal print_int
+	
+	addiu $a0, $zero, 44		# a0 <- ','
+	jal print_char
+	
+	addiu $a0, $t2, 0		# print_int(grid_idx % grid_row_length); // x
+	jal print_int
+	
+	addiu $a0, $zero, 32		# a0 <- ' '
+	jal print_char
+	
+	addiu $a0, $zero, 86		# a0 <- 'V'
+	jal print_char
+	
+	addiu $a0, $zero, 32		# a0 <- ' '
+	jal print_char
+	
+	addiu $a1, $s5, 0		# a1 <- &word
+	jal print_word
+	
+	addiu $a0, $zero, 10		# a0 <- '\n'
+	jal print_char
+	
+	addiu $t0, $zero, 1		# t0 <- TRUE
+	sb $t0, 16($sp)			# success ='1' or TRUE e.g. we have a hit gentlemen
+
+STRFIND_CONTAIN_V_EXIT:
+	
+	#--------------------CONTAIN D ------------------------#
 	
 STRFIND_FOR_INCREMENT:
 	
