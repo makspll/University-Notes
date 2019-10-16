@@ -75,9 +75,10 @@ int contain(char *string, char *word)
 {
   while (1) {
     //check we're out of bounds to the right, wrap around
-    if (*string == '\n')
+    if (*string == '\n') // make sure we only wrap around if the previous letter was a hit
     {
-      string -= (grid_row_length - 1); // up and one right
+      string -= (grid_row_length); // up 
+      string += 1; // one right
     }
     if (*string != *word){
       return (*word == '\n');
@@ -99,7 +100,7 @@ int containV(char *string, char *word)
     {
         string -= grid_total_length;
     }
-    if (*string!= *word || *string == '\n' )
+    if (*string!= *word)
     {
         return (*word == '\n');
     }
@@ -122,7 +123,7 @@ int containD(char *string, char *word, int string_idx)
         string_idx -= grid_row_length + 1;
         //calculate new position
         int x = (string_idx % grid_row_length) + 1;
-        string = grid + ((grid_row_length - 1 - x) * grid_row_length);
+        string = grid + ((grid_row_length - 1 - x) * (grid_row_length - 1));
     }
     if(*string == '\n')
     {
@@ -130,7 +131,7 @@ int containD(char *string, char *word, int string_idx)
         string -= grid_row_length + 1;
         string_idx -= grid_row_length + 1;
         //calculate new position
-        int rows = (grid_total_length / grid_row_length);
+        int rows = (grid_total_length / grid_row_length)-1;
         int y = (string_idx / grid_row_length) + 1;
         string = grid + (rows - y);
     }
@@ -157,6 +158,7 @@ void strfind()
   char success = '\0';
 
   while (grid[grid_idx] != '\0') {
+    if (grid[grid_idx] == '\n'){grid_idx++;continue;} // when we're at a new line, skip to the next character
     for(idx = 0; idx < dict_num_words; idx ++) {
       word = dictionary + dictionary_idx[idx]; 
       if (contain(grid + grid_idx, word)) {

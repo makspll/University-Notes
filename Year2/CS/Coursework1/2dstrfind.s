@@ -274,72 +274,74 @@ PRINT_WORD_EXIT:
 #out : #v0 = (bool)
 #used: #t1 = *string, $t0 = *word
 		
-CONTAIN_H:	
-	addiu $sp, $sp,-4		#save return address
-	sw $ra, 0($sp)	
-CONTAIN_LOOP:
-					# while(1) {
-	lbu $t1,($a2)			# *string
-	lbu $t0,($a1)			# *word
-	bne $t1,$t0,CONTAIN_LOOP_EXIT	# if (*string != *word || *string == '\n'){
-	beq $t1,10,CONTAIN_LOOP_EXIT   # 
-	
-	addiu $a2,$a2,1			#string++
-	addiu $a1,$a1,1			#word++
-	
-	j CONTAIN_LOOP
-	
-CONTAIN_LOOP_EXIT:                           
-	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
+CONTAIN_H:				#while (1){
 
-	lw $ra, 0($sp)
-	addiu $sp, $sp,4		#load return address
+CONTAIN_H_LOOP:	
+	lbu $t0, ($a2)			#t0 <- *string
 	
-	jr $ra				#return (*word == '\n')
+	
+	bne $t0, 10, CONTAIN_H_IF1_EXIT #if (*string == '\n' && ..		
+    						
+	lw $t3, grid_row_length		# t3 <- grid_row_length
+	subu $a2, $a2, $t3		# string -= (grid_row_length - 1); // up and one right
+	addiu $a2, $a2, +1		# the -1
+	
+CONTAIN_H_IF1_EXIT:
 
+	lbu $t0, ($a2)			#t0 <- *string
+	lbu $t1, ($a1)			#t1 <- *word	
+	
+	beq $t1, $t0, CONTAIN_H_IF2_EXIT
+
+	seq $v0, $t1, 10		#v0 = 1 if t0 == '\n'
+	jr $ra				# return (*word == '\n');
+
+CONTAIN_H_IF2_EXIT:
+
+	addiu $a2, $a2, 1		# string++;
+	addiu $a1, $a1, 1		# word++;
+	
+	j CONTAIN_H_LOOP
+	
+	jr $ra				# return 0
 
 #desc: see if the vertical string contains the \n terminated word (uses global variables for grid dimesnsions)
 #in  : #a1 = &word
        #a2 = &string 
 #out : #v0 = (bool)
 CONTAIN_V:
-	addiu $sp, $sp, -4
-	sw $ra, 0($sp)		#save return address
-	
-CONTAIN_V_LOOP:			#while(1) {
 
+CONTAIN_V_LOOP:		#while (1) {
+	lbu $t0, ($a2)			# t0 <- *string
 	
-	lw $t4, grid_total_length	# t4 <- grid_total_length
-	la $t5, grid			# t5 <- &grid		
-	lw $t6, grid_row_length		# t6 <- grid_row_length
+	lw $t2, grid_total_length
+	la $t3, grid
+	addu $t1, $t2, $t3		# t0 <- grid_total_length + grid
 	
-	addu $t4,$t4,$t5		# t4 <- grid + grid_total_length
-		#this condition must be checked first, or we could access illegal memory
-	sge $t3,$a2,$t4			# t3 = 1 if &string >= grid+grid_total_length
+	sge $t1, $a2, $t1		#  t0 <- 1 if a2 >= to
+	beq $t1, 0, CONTAIN_V_IF1_EXIT  #  if (string >= grid + grid_total_length)
 	
+	subu $a2, $a2, $t2		# string -= grid_total_length;
 
-	lbu $t0,($a1)			# *word
-	
-	beq $t3,1, CONTAIN_V_LOOP_EXIT	# if (string >= grid + grid_total_length || 
-		# only load this one now
-	lbu $t1,($a2)			# *string
-	
-	bne $t1,$t0,CONTAIN_V_LOOP_EXIT	# *string!= *word || 
-	beq $t1,10,CONTAIN_V_LOOP_EXIT    # *string == '\n' )
-	
-	addu $a2, $a2, $t6		# string += grid_row_length; // skip a row
-	addiu $a1, $a1, 1		# word++;
+CONTAIN_V_IF1_EXIT:
 
+	lbu $t0, ($a2)			# t0 <- *string
+	lbu $t1, ($a1)			# t1 <- *word
+	
+	beq $t0,$t1 CONTAIN_V_IF2_EXIT	# if (*string!= *word )
+	
+	seq $v0, $t1, 10		#vo = *word == '\n'
+	jr $ra				#return /\
+	
+CONTAIN_V_IF2_EXIT:
+
+	lw $t5, grid_row_length
+	addu $a2, $a2, $t5		# string += grid_row_length; // skip a row
+	addiu $a1, $a1, 1		# word++
+	
 	j CONTAIN_V_LOOP
-
-CONTAIN_V_LOOP_EXIT:
-	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
-					#return (*word == '\n');
-
-	lw $ra, 0($sp)
-	addiu $sp, $sp, 4
-		
-	jr $ra
+	
+	jr $ra				# return 0
 
 #desc: see if the diagonal string contains the \n terminated word (uses global variables for grid dimesnsions)
 #in  : #a1 = &word
@@ -405,6 +407,7 @@ STRFIND_WHILE_LOOP:
 	
 	beq $s4, $zero, STRFIND_WHILE_EXIT #while (grid[grid_idx] != '\0') {
 	
+	beq $s4, 10 STRFIND_FOR_EXIT # if(grid[grid_idx] == '\n'){continue;} // when we're at a new line, skip to the next character
 	
 	sw $zero, 4($sp)		# idx = 0 reset for loop counter
 	addiu $s0, $zero, 0		# s0 <- idx

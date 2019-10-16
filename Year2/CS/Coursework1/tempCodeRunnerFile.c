@@ -1,0 +1,1 @@
+    if(grid[grid_idx] == '\n'){continue;} // when we're at a new line, skip to the next character
