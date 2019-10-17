@@ -279,20 +279,13 @@ CONTAIN_H:				#while (1){
 CONTAIN_H_LOOP:	
 	lbu $t0, ($a2)			#t0 <- *string
 	
-	
-	bne $t0, 10, CONTAIN_H_IF1_EXIT #if (*string == '\n' && ..		
-    						
-	lw $t3, grid_row_length		# t3 <- grid_row_length
-	subu $a2, $a2, $t3		# string -= (grid_row_length - 1); // up and one right
-	addiu $a2, $a2, +1		# the -1
-	
-CONTAIN_H_IF1_EXIT:
-
 	lbu $t0, ($a2)			#t0 <- *string
 	lbu $t1, ($a1)			#t1 <- *word	
 	
-	beq $t1, $t0, CONTAIN_H_IF2_EXIT
-
+	
+	bne $t0, $t1, CONTAIN_H_IF1_ENTRY  #if (*string != *word || *string == '\n'){
+	bne $t0, 10, CONTAIN_H_IF2_EXIT
+CONTAIN_H_IF1_ENTRY:
 	seq $v0, $t1, 10		#v0 = 1 if t0 == '\n'
 	jr $ra				# return (*word == '\n');
 
@@ -313,27 +306,20 @@ CONTAIN_V:
 
 CONTAIN_V_LOOP:		#while (1) {
 	lbu $t0, ($a2)			# t0 <- *string
-	
+	lbu $t1, ($a1)			# t1 <- *word
 	lw $t2, grid_total_length
 	la $t3, grid
-	addu $t1, $t2, $t3		# t0 <- grid_total_length + grid
+	addu $t2, $t2, $t3		# t2 <- grid_total_length + grid
+	sge $t2, $a2, $t2		#  t2 <- 1 if a2 >= t2
 	
-	sge $t1, $a2, $t1		#  t0 <- 1 if a2 >= to
-	beq $t1, 0, CONTAIN_V_IF1_EXIT  #  if (string >= grid + grid_total_length)
-	
-	subu $a2, $a2, $t2		# string -= grid_total_length;
+	beq $t2, 1, CONTAIN_V_IF1_ENTRY # if (*string!= *word || string >= grid + grid_total_length)
+	beq $t0,$t1 CONTAIN_V_IF1_EXIT	# 
 
-CONTAIN_V_IF1_EXIT:
-
-	lbu $t0, ($a2)			# t0 <- *string
-	lbu $t1, ($a1)			# t1 <- *word
-	
-	beq $t0,$t1 CONTAIN_V_IF2_EXIT	# if (*string!= *word )
-	
+CONTAIN_V_IF1_ENTRY:
 	seq $v0, $t1, 10		#vo = *word == '\n'
 	jr $ra				#return /\
 	
-CONTAIN_V_IF2_EXIT:
+CONTAIN_V_IF1_EXIT:
 
 	lw $t5, grid_row_length
 	addu $a2, $a2, $t5		# string += grid_row_length; // skip a row
@@ -346,45 +332,35 @@ CONTAIN_V_IF2_EXIT:
 #desc: see if the diagonal string contains the \n terminated word (uses global variables for grid dimesnsions)
 #in  : #a1 = &word
        #a2 = &string 
+       #a3 = string_idx
 #out : #v0 = (bool)
 CONTAIN_D:
-	addiu $sp, $sp, -4
-	sw $ra, 0($sp)		#save return address
 	
 CONTAIN_D_LOOP:			#while(1) {
-
 	
-	lw $t4, grid_total_length	# t4 <- grid_total_length
-	la $t5, grid			# t5 <- &grid		
-	lw $t6, grid_row_length		# t6 <- grid_row_length
+	lw $t4, grid_total_length
+	la $t5, grid
+	addu $t4,$t4,$t5 # t4 <- grid_total_length + grid
 	
-	addu $t4,$t4,$t5		# t4 <- grid + grid_total_length
-		#this condition must be checked first, or we could access illegal memory
-	sge $t3,$a2,$t4			# t3 = 1 if &string >= grid+grid_total_length
+	lbu $t0, ($a2) #*string
+	lbu $t1, ($a1) #*word
 	
-
-	lbu $t0,($a1)			# *word
+	bne $t0, $t1, CONTAIN_D_IF1_ENTRY
+	bge $a2, $t4, CONTAIN_D_IF1_ENTRY
+	bne $t0, 10, CONTAIN_D_IF1_EXIT
+CONTAIN_D_IF1_ENTRY:
+	seq $v0, $t1, 10		#return (*word == '\n')
+	jr $ra
+CONTAIN_D_IF1_EXIT:
 	
-	beq $t3,1, CONTAIN_D_LOOP_EXIT	# if (string >= grid + grid_total_length || 
-		# only load this one now
-	lbu $t1,($a2)			# *string
+	lw $t5, grid_row_length
+	addiu $t5, $t5, 1
 	
-	bne $t1,$t0,CONTAIN_D_LOOP_EXIT	# *string!= *word || 
-	beq $t1,10,CONTAIN_D_LOOP_EXIT    # *string == '\n' )
-	
-	addu $a2, $a2, $t6		# string += grid_row_length + 1; // skip a row
-	addiu $a2, $a2, 1		# 	/\  /\ /\ /\ / \/ \
-	addiu $a1, $a1, 1		# word++;
-
+	addu $a2,$a2, $t5	# string += grid_row_length + 1; // skip a row and go right
+	addu $a3,$a3, $t5	# string_idx += grid_row_length + 1; //
+	addiu $a1, $a1, 1 #word++;
 	j CONTAIN_D_LOOP
-
-CONTAIN_D_LOOP_EXIT:
-	seq $v0,$t0,10			#*word == '\n' | if end of word v0 is 1
-					#return (*word == '\n');
-
-	lw $ra, 0($sp)
-	addiu $sp, $sp, 4
-		
+	
 	jr $ra
 
 #desc: strfind for 1d grid
@@ -521,7 +497,7 @@ STRFIND_CONTAIN_V_EXIT:
 	
 	addu $a1, $s5, $zero		# a1 <- &word
 	addu $a2, $s1,$s6 		# a2 <- &grid + grid_idx
-
+	addu $a3, $s6, $zero		# a3 <- grid_idx
 	jal CONTAIN_D 			# CONTAIN_D(grid + grid_idx, word)
 					# v0 -> 1 if CONTAIN_Ds
 	beq $v0, $zero,STRFIND_CONTAIN_D_EXIT # if (CONTAIN_D(grid + grid_idx, word)) {

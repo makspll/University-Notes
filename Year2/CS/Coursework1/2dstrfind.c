@@ -74,13 +74,8 @@ void print_word(char *word)
 int contain(char *string, char *word)
 {
   while (1) {
-    //check we're out of bounds to the right, wrap around
-    if (*string == '\n') // make sure we only wrap around if the previous letter was a hit
-    {
-      string -= (grid_row_length); // up 
-      string += 1; // one right
-    }
-    if (*string != *word){
+    //check we're out of bounds to the right
+    if (*string != *word || *string == '\n'){
       return (*word == '\n');
     }
     
@@ -95,12 +90,8 @@ int contain(char *string, char *word)
 int containV(char *string, char *word)
 {
   while(1) {
-    //check we're out of bounds down the bottom, wrap around if so
-    if (string >= grid + grid_total_length)
-    {
-        string -= grid_total_length;
-    }
-    if (*string!= *word)
+    //check we're out of bounds down the bottom
+    if (*string!= *word || string >= grid + grid_total_length)
     {
         return (*word == '\n');
     }
@@ -112,33 +103,14 @@ int containV(char *string, char *word)
   return 0;
 }
 
+
 int containD(char *string, char *word, int string_idx)
 {
     while(1) {
-        //check for out of bounds both ways, wrap around PROBLEM HERE
-    if(string >= grid + grid_total_length)
+    //check for out of bounds either way
+    if ( *string!= *word || string >= grid + grid_total_length || *string == '\n')
     {
-        //get the index back on the grid
-        string -= grid_row_length + 1;
-        string_idx -= grid_row_length + 1;
-        //calculate new position
-        int x = (string_idx % grid_row_length) + 1;
-        string = grid + ((grid_row_length - 1 - x) * (grid_row_length - 1));
-    }
-    if(*string == '\n')
-    {
-        //get the index back on the grid
-        string -= grid_row_length + 1;
-        string_idx -= grid_row_length + 1;
-        //calculate new position
-        int rows = (grid_total_length / grid_row_length)-1;
-        int y = (string_idx / grid_row_length) + 1;
-        string = grid + (rows - y);
-    }
-
-    if ( *string!= *word)
-    {
-        return (*word == '\n');
+      return (*word == '\n');
     }
 
     string += grid_row_length + 1; // skip a row and go right
@@ -148,6 +120,7 @@ int containD(char *string, char *word, int string_idx)
 
   return 0;
 }
+
 
 // this functions finds all matches in the grid
 void strfind()
