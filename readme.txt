@@ -10,8 +10,12 @@ use
 ./setup.sh
 ./test.sh -h (for help panel)
 
-(to check all tests do ./test.sh -e 600 -t -f <1,2 or 3 here>)
-
+for single file tests just run:
+C files:
+./test.sh -e 600 -t -f <1,2 or 3 here>
+MIPS files:
+./test.sh -e 600 -t -ta -f <1,2 or 3 here>
+where -f 1,2,3 specifies the file to test (1-1dstrfind 2-2dstrfind 3-wraparound)
 that's it
 
 IT WILL CREATE MASSIVE FILES IF YOU FAIL ALL TESTS
