@@ -1,0 +1,7 @@
+0,21 H wpk
+2,4 D ahn
+2,20 H evq
+3,3 D qdc
+5,15 V fdm
+6,2 D qgm
+12,6 D eci

@@ -1,0 +1,5 @@
+7,7 H zab
+10,16 D vne
+14,23 V zhs
+16,11 H cni
+19,2 V ddp

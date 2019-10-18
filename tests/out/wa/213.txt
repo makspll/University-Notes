@@ -1,0 +1,12 @@
+0,29 H umr
+1,12 D pfq
+6,21 H imor
+9,24 V ioc
+10,0 D oww
+10,30 H ioc
+11,30 H oww
+12,4 V jad
+13,24 V hge
+16,5 V bfb
+16,19 V kfr
+17,29 V qum

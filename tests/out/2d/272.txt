@@ -1,0 +1,11 @@
+0,10 D qzt
+4,17 V stu
+7,24 D xht
+8,8 D yue
+8,11 H norh
+14,9 H ejm
+15,5 H cyo
+20,17 V ckp
+21,21 H phx
+27,9 V oog
+29,6 H cxh

@@ -1,0 +1,7 @@
+0,6 V iba
+7,4 V ipg
+8,0 H lks
+11,8 H olk
+12,15 H xkj
+18,6 H rwy
+20,14 H bdc

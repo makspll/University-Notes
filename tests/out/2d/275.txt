@@ -1,0 +1,8 @@
+6,21 V ksk
+9,11 H dym
+9,12 V yupm
+11,5 D xmd
+12,26 V tfg
+19,14 V brj
+20,17 D eli
+21,13 H pjs

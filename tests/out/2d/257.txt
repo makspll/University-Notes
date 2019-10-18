@@ -1,0 +1,17 @@
+2,14 V qre
+6,4 D ojm
+8,21 D vty
+9,13 H bja
+9,17 H eby
+10,7 D vyq
+16,8 D onu
+17,2 H qre
+20,8 D ojm
+20,10 D shu
+21,0 D iyv
+21,18 D euo
+22,6 D qvb
+23,16 V csv
+23,21 V ggg
+24,15 H fsb
+28,10 D tnb

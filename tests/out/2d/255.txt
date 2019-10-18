@@ -1,0 +1,12 @@
+1,7 D xlh
+1,16 V yde
+6,8 V zop
+8,2 H mri
+8,19 H bzo
+9,19 V fry
+14,6 H bzp
+15,1 D zav
+20,2 H xhc
+24,15 D gin
+26,2 H sqf
+26,12 H mped

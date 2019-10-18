@@ -1,0 +1,12 @@
+0,8 H hbc
+4,11 V pcv
+5,10 H xci
+8,25 H bjl
+9,2 H spo
+9,23 H nbl
+10,20 D bxw
+11,11 H jih
+15,7 V ozb
+16,13 D elg
+17,17 D pru
+18,8 V och

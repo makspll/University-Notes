@@ -1,0 +1,11 @@
+0,14 V ule
+9,1 H exo
+9,4 H sre
+11,14 H tdg
+12,17 V msm
+14,8 V skn
+14,15 V jlh
+23,4 V abq
+23,9 H lup
+23,13 H mgp
+23,15 D pyz

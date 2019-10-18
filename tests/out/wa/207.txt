@@ -1,0 +1,8 @@
+1,13 D uve
+7,16 D pmx
+8,5 V cfy
+9,15 V bmi
+10,4 H hyl
+15,15 H syu
+17,17 H lzl
+18,11 D wfx

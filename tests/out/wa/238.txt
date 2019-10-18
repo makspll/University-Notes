@@ -1,0 +1,12 @@
+0,17 D xci
+1,0 H kbc
+2,4 V mum
+4,18 H moc
+5,9 V rmt
+14,7 H rae
+15,21 D rmt
+16,20 V hnw
+16,22 V mtx
+18,0 H rpa
+19,12 H ouo
+25,21 H utp

@@ -1,0 +1,16 @@
+3,0 H mrb
+3,20 D jju
+7,8 H bag
+8,26 D vmr
+9,13 H tlv
+10,0 V esi
+10,13 D rua
+13,15 H eis
+15,25 V lla
+17,9 V fta
+18,15 D ede
+19,15 D oaw
+20,13 D kul
+22,27 V gcz
+23,9 D neg
+24,25 H jaz

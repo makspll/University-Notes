@@ -1,0 +1,15 @@
+1,7 H cpk
+2,19 V cbb
+3,0 H iny
+5,9 D qfx
+9,20 D aqn
+10,0 V pym
+10,19 D cwy
+11,3 V vtc
+11,23 D zve
+14,3 V rsp
+14,6 H ibe
+14,10 H vqi
+14,12 H iig
+18,18 V zas
+19,25 V uhm

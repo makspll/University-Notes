@@ -1,0 +1,12 @@
+2,6 V hxx
+2,10 V sta
+2,18 H kwg
+3,11 V dzy
+6,9 V vpt
+7,6 D urc
+7,19 D nfb
+9,3 D hki
+9,4 V ykx
+11,14 D nfb
+14,18 H hki
+19,18 D xod

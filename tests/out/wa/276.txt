@@ -1,0 +1,10 @@
+0,7 D bsk
+0,7 V bmi
+2,7 H ifk
+4,11 D cgy
+9,6 H zri
+11,4 H eqe
+12,0 V uhf
+12,10 D uqi
+15,16 V yqv
+16,3 V adt

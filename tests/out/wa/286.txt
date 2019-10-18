@@ -1,0 +1,5 @@
+5,23 V dlr
+10,4 H vmf
+12,3 D cys
+17,12 D lje
+18,18 D ypc

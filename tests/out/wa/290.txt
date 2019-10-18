@@ -1,0 +1,14 @@
+1,28 V mwt
+3,10 V fuj
+4,0 H yff
+4,3 H xoh
+6,6 D paa
+11,13 V xkf
+12,18 D vyd
+12,20 D tzm
+15,23 H wvl
+17,7 D vpg
+17,12 V mxf
+19,19 H coo
+20,29 V aaz
+24,21 V xoh

@@ -1,0 +1,6 @@
+2,2 D lvx
+6,6 D hdd
+10,3 V cvo
+10,11 V hdd
+14,11 V duj
+19,15 H hgb

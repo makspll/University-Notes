@@ -1,0 +1,9 @@
+0,2 H xzp
+1,0 V yub
+4,10 V vjmi
+11,11 H qwg
+15,11 D ark
+17,3 D iix
+21,2 D fry
+24,7 V bnv
+24,12 D czm

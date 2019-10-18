@@ -1,0 +1,16 @@
+0,17 D wrq
+0,19 H kax
+0,28 V rod
+2,29 D zbb
+7,7 H gdj
+8,10 H hvb
+10,29 H vty
+11,24 H mbi
+13,21 D rfp
+14,8 V bek
+16,4 D swb
+17,4 H swb
+17,22 D ecetq
+20,30 V qhy
+23,12 V zpc
+29,11 V uva

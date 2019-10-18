@@ -1,0 +1,7 @@
+1,22 H ncl
+4,4 D vfd
+11,12 V afj
+11,14 H uztc
+12,5 D eid
+12,22 V htx
+14,20 H nyx

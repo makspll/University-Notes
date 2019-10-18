@@ -1,0 +1,10 @@
+1,13 H yyd
+1,14 H ydr
+3,17 V avl
+4,3 D rbs
+10,15 D qar
+11,3 D dym
+12,1 H dwc
+13,10 V wpe
+14,10 H pli
+15,0 H wko

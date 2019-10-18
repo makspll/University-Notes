@@ -1,0 +1,6 @@
+1,16 H tyk
+5,7 V kjl
+11,9 H kjl
+11,14 V gwt
+11,18 V bgm
+17,1 D ive

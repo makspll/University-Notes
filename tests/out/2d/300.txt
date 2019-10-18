@@ -1,0 +1,6 @@
+5,0 V adm
+6,8 D jld
+7,9 D ldd
+9,18 D flz
+10,7 V ldd
+15,25 D for

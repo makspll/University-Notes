@@ -1,0 +1,9 @@
+1,0 V exyb
+2,22 V lae
+3,8 V ppn
+7,24 V wny
+8,1 D okq
+9,14 H rwd
+14,21 V ahj
+18,5 D bmq
+18,10 D atl

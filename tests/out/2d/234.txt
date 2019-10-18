@@ -1,0 +1,8 @@
+1,21 V kmr
+2,28 V skm
+3,9 V cdq
+3,13 D cpd
+4,3 V ugm
+6,16 V fze
+8,29 V fze
+16,1 D cfu

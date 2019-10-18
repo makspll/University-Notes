@@ -1,0 +1,4 @@
+3,6 H juy
+6,20 V gih
+9,19 H lfu
+11,19 V jgb
