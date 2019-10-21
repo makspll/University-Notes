@@ -343,6 +343,7 @@ STRFIND_WHILE_EXIT:
 	jal print_int
 	
 	addiu $a0, $zero, 10		# a0 <- '\n'
+	jal print_char
 	
 STRFIND_RETURN:
 	lw $ra, 0($sp)
