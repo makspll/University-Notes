@@ -1,7 +1,0 @@
-3,16 V hfr
-3,18 H hil
-4,12 D eud
-5,5 D jgg
-17,19 V tdj
-21,7 V zipg
-29,15 D dxa

@@ -1,6 +1,0 @@
-3,15 D shd
-7,19 D plx
-8,16 V hwk
-9,17 D eje
-10,10 H oqi
-15,3 D lqr

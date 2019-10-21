@@ -1,7 +1,0 @@
-0,3 V enu
-2,4 H vew
-2,13 D rwz
-4,7 V cgm
-5,13 H qbk
-7,4 D ocg
-15,9 V izl

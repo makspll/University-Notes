@@ -1,5 +1,0 @@
-7,15 V wkn
-8,11 H jax
-13,6 D twq
-22,21 D rcy
-22,25 D mwm

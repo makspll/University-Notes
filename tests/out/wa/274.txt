@@ -1,7 +1,0 @@
-0,21 H upd
-3,30 H lma
-9,12 V olr
-9,19 V scr
-12,8 H biw
-13,12 H zuu
-14,2 H ytq

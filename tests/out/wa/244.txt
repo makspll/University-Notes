@@ -1,6 +1,0 @@
-1,18 D tss
-2,15 H ahp
-4,19 V ahd
-6,11 D qkx
-10,22 H tcz
-12,20 V ffd

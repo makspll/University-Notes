@@ -1,5 +1,0 @@
-2,25 V ewh
-4,3 V eyg
-6,3 H ggu
-13,14 V lcf
-15,0 H png

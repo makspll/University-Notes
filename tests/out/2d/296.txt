@@ -1,8 +1,0 @@
-5,4 D fth
-6,21 H ihc
-8,22 V qvb
-10,14 V zol
-11,30 V eio
-12,19 H rfx
-12,23 H ewj
-15,27 D rfx

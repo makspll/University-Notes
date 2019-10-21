@@ -1,4 +1,0 @@
-13,11 V qny
-15,18 D ast
-28,7 D oxr
-28,9 V dkn

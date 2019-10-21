@@ -1,4 +1,0 @@
-2 dbddb
-6 bcccc
-8 cccbb
-20 cabcb

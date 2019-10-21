@@ -1,9 +1,0 @@
-0,12 V vwu
-1,3 H lks
-2,11 D roh
-4,5 V ila
-5,3 V zni
-8,17 H loy
-9,17 D xnr
-13,3 D tts
-15,1 H ehl

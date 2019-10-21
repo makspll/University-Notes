@@ -1,8 +1,0 @@
-1,15 V pln
-4,22 V pln
-9,20 V czj
-10,6 D agf
-12,6 H agf
-13,14 D apz
-16,10 D ygx
-17,0 V gua

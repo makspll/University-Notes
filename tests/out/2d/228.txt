@@ -1,6 +1,0 @@
-4,5 D coc
-7,4 D czt
-13,11 V sxh
-15,10 V nsz
-19,4 V vst
-27,5 H cxi

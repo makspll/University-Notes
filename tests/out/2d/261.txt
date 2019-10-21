@@ -1,7 +1,0 @@
-0,3 D tcv
-4,15 V hfs
-5,17 D gze
-7,14 H euo
-10,6 H wlt
-12,12 D osa
-17,19 H fdj

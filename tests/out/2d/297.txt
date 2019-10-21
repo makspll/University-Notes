@@ -1,8 +1,0 @@
-1,5 H wqc
-4,1 V amkr
-4,10 V ulr
-7,12 D clu
-7,13 D nmu
-11,15 V tgh
-12,13 H awg
-16,1 D xgc

@@ -1,9 +1,0 @@
-0,5 V ssh
-4,1 H man
-5,1 H wrx
-5,20 V bou
-7,3 D bro
-13,23 V vad
-16,6 D hgq
-19,9 V wrc
-26,0 H wpr

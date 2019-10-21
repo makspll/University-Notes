@@ -1,9 +1,0 @@
-3,22 H qxb
-4,0 H owz
-5,22 V glm
-9,19 D fqmy
-11,13 V qol
-15,15 V ght
-18,2 D mlf
-22,7 H mlf
-23,11 V feb

@@ -1,7 +1,0 @@
-0,11 D chu
-2,19 V chu
-6,2 D bfg
-9,12 V yby
-11,3 V tpf
-11,23 D bfg
-14,8 H ykj

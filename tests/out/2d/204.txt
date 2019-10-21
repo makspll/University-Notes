@@ -1,8 +1,0 @@
-2,10 D jfs
-4,2 V sby
-5,9 D kvs
-11,8 D sep
-11,8 V syx
-15,3 D zmd
-18,5 D xgt
-18,6 V ugk

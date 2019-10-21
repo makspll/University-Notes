@@ -1,4 +1,0 @@
-0,20 V got
-14,16 V pjf
-15,2 H mmf
-15,3 D mmf
