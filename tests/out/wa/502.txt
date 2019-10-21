@@ -1,0 +1,9 @@
+2,0 H eggce
+2,21 V cfaia
+6,14 V ibida
+11,20 V hcdhi
+14,0 D ahfed
+16,0 H iifig
+19,3 D fbaib
+20,7 D adead
+24,19 D cfgde

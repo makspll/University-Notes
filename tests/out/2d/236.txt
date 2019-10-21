@@ -1,0 +1,9 @@
+0,20 H qei
+1,14 D uxz
+3,8 D abn
+4,0 D xil
+7,0 H qei
+12,4 V weyp
+14,6 D gfa
+17,9 H xhg
+18,10 H svj

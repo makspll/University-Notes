@@ -1,0 +1,16 @@
+2,20 D hqi
+4,19 D zpe
+5,24 H lhi
+5,30 H mmp
+6,1 H kju
+8,5 H lhi
+10,11 H kvc
+12,14 D uhn
+16,2 H xmq
+16,30 H kyy
+20,4 D fzi
+24,3 D ptk
+27,30 H erv
+28,3 H efh
+29,0 H sof
+30,26 D mym

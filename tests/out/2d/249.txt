@@ -1,0 +1,4 @@
+5,1 D bth
+7,10 V trn
+17,0 D ory
+18,5 D fzi

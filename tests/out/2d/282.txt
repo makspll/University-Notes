@@ -1,0 +1,9 @@
+0,15 H hvj
+3,4 D tke
+4,2 H fet
+9,2 V wie
+9,14 V ibg
+12,23 V saa
+14,3 V oxy
+15,4 D dbs
+26,18 H mbx

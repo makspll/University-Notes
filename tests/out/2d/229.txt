@@ -1,0 +1,4 @@
+4,2 D hor
+14,19 D seb
+17,21 V ysx
+18,19 D ryg

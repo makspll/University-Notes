@@ -1,0 +1,7 @@
+1,2 V igd
+1,11 V ofe
+3,13 V tsh
+6,2 D qug
+8,15 D jpy
+14,14 D fnt
+18,16 H uyc

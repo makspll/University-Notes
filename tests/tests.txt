@@ -1,0 +1,7 @@
+1-99 small tests
+100-200 small tests with varying sizes of multiple things
+201-300 random tests
+301-350 32x32 grid and 1000 words in dict of size 3-10
+351-400 32x32 grid + 1000*10 words (those are kinda useless)
+401-500 32x32 grid + 1000*10 words of letters abc (those have shitload of hits)
+501-600 random tests with random alphabet ( some fucked up shit is here like 573 (alphabets of only one letter are allowed))

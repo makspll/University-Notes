@@ -1,0 +1,8 @@
+6,9 V cct
+8,15 H sgl
+9,4 D gbw
+13,10 H qzp
+15,5 V hks
+16,8 D qcb
+16,9 V jcv
+19,1 V ymu

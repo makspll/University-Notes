@@ -1,0 +1,5 @@
+4,4 V bce
+6,16 V myg
+9,9 D ogv
+9,16 V ukv
+12,4 D rzb

@@ -1,0 +1,6 @@
+0,12 V lbr
+1,2 D ztk
+4,11 H kjs
+11,4 D kya
+13,3 H cza
+13,12 H dil

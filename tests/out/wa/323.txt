@@ -1,0 +1,15 @@
+9,5 D ofm
+9,27 H bdd
+9,29 V dmf
+10,3 V xmnc
+10,30 H tec
+11,11 V aqf
+12,10 D rfl
+13,12 D qwqj
+15,3 V sgn
+15,5 D tec
+15,21 H fnm
+20,13 D owi
+28,31 V ijh
+29,11 H iljf
+31,25 V bdd

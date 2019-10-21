@@ -1,0 +1,11 @@
+1,12 H lbv
+6,10 D ipl
+7,16 H jdy
+8,17 H lqd
+12,11 V bhu
+15,16 V lan
+18,11 V jqh
+20,15 H cxa
+21,0 V iuk
+21,17 H diz
+25,6 D rdd

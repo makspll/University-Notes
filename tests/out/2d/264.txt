@@ -1,0 +1,8 @@
+1,3 V uebh
+6,0 D xen
+6,13 H xsn
+7,3 H ntv
+15,12 D auo
+18,11 V zge
+21,9 V tdg
+25,8 V zge

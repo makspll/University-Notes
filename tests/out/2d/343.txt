@@ -1,0 +1,8 @@
+0,14 V syb
+5,22 H csc
+5,30 V ghi
+6,12 D jgp
+6,29 V rly
+11,9 H syb
+18,7 V phvc
+27,29 V oyj

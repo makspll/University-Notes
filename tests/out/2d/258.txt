@@ -1,0 +1,9 @@
+3,1 H cyd
+3,10 H bil
+5,7 H rja
+7,16 V syx
+8,8 H nom
+8,13 V vtz
+10,1 H vtz
+11,0 H wtg
+13,4 V cyd

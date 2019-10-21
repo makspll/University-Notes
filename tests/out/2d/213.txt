@@ -1,0 +1,6 @@
+1,12 D pfq
+6,21 H imor
+9,24 V ioc
+10,0 D oww
+12,4 V jad
+13,24 V hge

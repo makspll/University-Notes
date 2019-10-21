@@ -1,0 +1,8 @@
+6,13 V lyf
+7,17 D nrp
+9,20 V lld
+12,26 H ztg
+15,1 V uzy
+16,3 D wqy
+17,23 V vsh
+23,7 H ywi

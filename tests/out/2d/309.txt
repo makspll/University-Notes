@@ -1,0 +1,12 @@
+5,9 D xdc
+9,27 V lvs
+10,1 D vrx
+10,26 D msy
+17,12 D qoe
+18,1 V kaf
+20,29 V ulc
+23,13 D grk
+23,14 H djm
+24,28 H oah
+28,3 D nch
+29,3 V lqa

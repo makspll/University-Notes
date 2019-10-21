@@ -1,0 +1,11 @@
+0,2 H wys
+1,19 H cut
+3,28 V rep
+6,25 H rox
+8,9 V xge
+10,10 D wkr
+10,23 D qho
+15,24 D iob
+18,9 H lim
+19,13 V eut
+20,16 H nmt

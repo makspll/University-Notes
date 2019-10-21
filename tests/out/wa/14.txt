@@ -1,0 +1,3 @@
+0,14 H wxq
+5,7 H hap
+11,2 V knp
