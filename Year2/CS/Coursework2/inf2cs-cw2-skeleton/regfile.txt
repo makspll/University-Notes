@@ -1,0 +1,18 @@
+#
+##########################################################
+# Format: Whatever follows a '#' is a comment.
+#
+# This register file defines the initial state of
+# registers starting from $1 up to $31.
+#
+# Up to 31 uncommented lines with a single decimal number.
+# If fewer than 31 decimal numbers are specified the
+# registers are initialized with zeros
+# Although there are 32 available registers starting from $0,
+# $0 has always value 0 and is not altered by this file
+##########################################################
+#
+#  # $0 = 0 <-- Do not alter $0 value!
+1  # $1 = 1
+2  # $2 = 2
+-4 # $3 = -4
