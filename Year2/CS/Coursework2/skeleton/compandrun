@@ -1,0 +1,3 @@
+#!/bin/bash
+gcc -o mipssim mipssim.c memory_hierarchy.c -std=gnu99 -lm
+./mipssim 0 memfile-simple.txt regfile.txt
