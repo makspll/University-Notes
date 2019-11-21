@@ -35,6 +35,31 @@
 char mem_init_path[1000];
 char reg_init_path[1000];
 
+// debug functions
+void debugDumpCurrentPipeRegs()
+{
+    printf("/////curr_pipe_regs/////\nstate: %d\nPC: %d\nMDR: %d\nIR: %x\nA: %d\nB: %d\nALUOut: %d\n////////////////\n",
+        arch_state.state,
+        arch_state.curr_pipe_regs.pc,
+        arch_state.curr_pipe_regs.MDR,
+        arch_state.curr_pipe_regs.IR,
+        arch_state.curr_pipe_regs.A,
+        arch_state.curr_pipe_regs.B,
+        arch_state.curr_pipe_regs.ALUOut);
+}
+
+void debugDumpNextPipeRegs()
+{
+    printf("/////next_pipe_regs/////\nstate: %d\nPC: %d\nMDR: %d\nIR: %x\nA: %d\nB: %d\nALUOut: %d\n////////////////\n",
+        arch_state.state,
+        arch_state.next_pipe_regs.pc,
+        arch_state.next_pipe_regs.MDR,
+        arch_state.next_pipe_regs.IR,
+        arch_state.next_pipe_regs.A,
+        arch_state.next_pipe_regs.B,
+        arch_state.next_pipe_regs.ALUOut);
+}
+//
 uint32_t cache_size = 0;
 struct architectural_state arch_state;
 
@@ -131,7 +156,7 @@ s
             if (IR_meta->type == R_TYPE)            state = EXEC;
             else if (IR_meta->opcode == ADDI)       state = I_TYPE_EXEC;
             else if (opcode == EOP)                 state = EXIT_STATE;
-            else if (IR_meta->opcode == LW || SW)   state = MEM_ADDR_COMP;
+            else if (IR_meta->opcode == LW || IR_meta->opcode == SW)   state = MEM_ADDR_COMP;
             else if (IR_meta->opcode == BEQ)        state = BRANCH_COMPL;
             else if (IR_meta->opcode == J)          state = JUMP_COMPL;
             else assert(false);
@@ -155,7 +180,7 @@ s
             // A 'ALUop' sign extended immediate
             control->ALUSrcA = 1;
             control->ALUSrcB = 2;
-            control->ALUOp = 2;
+            control->ALUOp = 0;
             state = I_TYPE_COMPL;
             break;
         case BRANCH_COMPL:  //8
@@ -189,9 +214,10 @@ s
             state = INSTR_FETCH;
             break;
         case I_TYPE_COMPL: //12
-            control->RegDst = 1;
+            control->RegDst = 0;
             control->RegWrite = 1;
             control->MemtoReg = 0;
+            state = INSTR_FETCH;
             break;
         //level 3- only lw instruction
         case WB_STEP:   //4
@@ -213,7 +239,7 @@ void instruction_fetch()
         int address = arch_state.curr_pipe_regs.pc;
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
-}
+} 
 
 void decode_and_read_RF()
 {
@@ -229,18 +255,6 @@ void decode_and_read_RF()
 
 void execute()
 {
-    /*
-        //alu opcodes
-        #define ALU_ADD 0
-        #define ALU_SUB 1
-        #define ALU_FUNCT 2
-        //alu source
-        #define ALU_SRC_2_B 0
-        #define ALU_SRC_2_4 WORD_SIZE
-        #define ALU_SRC_2_SIGNEXT_IMM 2
-        #define ALU_SRC_2_SIGNEXT_IMM_SHIFTED 3
-    */
-
     struct ctrl_signals *control = &arch_state.control;
     struct instr_meta *IR_meta = &arch_state.IR_meta;
     struct pipe_regs *curr_pipe_regs = &arch_state.curr_pipe_regs;
@@ -265,11 +279,10 @@ void execute()
         case ALU_SRC_2_SIGNEXT_IMM_SHIFTED:
             alu_opB = shifted_immediate;
             break;
-        default:
+        default: 
             assert(false);
+            break;
     }
-
-    printf("ALUA = %i \nALUB = %i \n",alu_opA,alu_opB);
 
     switch (control->ALUOp) {
         case ALU_ADD:
@@ -294,6 +307,7 @@ void execute()
             break;
         default:
             assert(false);
+            break;
     }
 
     // PC calculation, only write to pc on write
@@ -308,33 +322,39 @@ void execute()
         case 1:
             //the value in curr pipe reg, i the result from the previous cycle
             next_pipe_regs->pc = curr_pipe_regs->ALUOut;
-        //lower 26 bits pc << 2
+            break;
+        //lower 26 bits pc << 2 concatenated with IR[]
         case 2:
-            next_pipe_regs->pc = get_piece_of_a_word(curr_pipe_regs->pc,0,26) << 2; 
+            //ERROR HERE, JUMP jumps to ITSELF
+            next_pipe_regs->pc = (get_piece_of_a_word(curr_pipe_regs->ALUOut,0,26) << 2) | (get_piece_of_a_word(next_pipe_regs->ALUOut,28,4)); 
+            break;
         default:
             assert(false);
+            break;
     }
 }
 
 
 void memory_access() {
   ///@students: appropriate calls to functions defined in memory_hierarchy.c must be added
-  int address = (arch_state.control.IorD)? arch_state.curr_pipe_regs.pc: arch_state.curr_pipe_regs.ALUOut;
-  if(arch_state.control.MemRead)
+  int address = arch_state.curr_pipe_regs.ALUOut;
+  if(arch_state.control.IorD == 1)
   {
-      arch_state.next_pipe_regs.IR = memory_read(address);
-      arch_state.next_pipe_regs.MDR = memory_read(address);
-  }
-  if(arch_state.control.MemWrite)
-  {
-      memory_write(address,arch_state.curr_pipe_regs.B);
+    if(arch_state.control.MemRead)
+    {
+       arch_state.next_pipe_regs.MDR = memory_read(address);
+    }
+    else if(arch_state.control.MemWrite)
+    {
+       memory_write(address,arch_state.curr_pipe_regs.B);
+    }
   }
 }
 
 void write_back()
 {
     if (arch_state.control.RegWrite) {
-        int write_reg_id;
+        uint8_t write_reg_id;
         switch(arch_state.control.RegDst)
         {
             case 0:
@@ -345,6 +365,7 @@ void write_back()
                 break;
             default:
                 assert(false);
+                break;
         }
         check_is_valid_reg_id(write_reg_id);
 
@@ -353,10 +374,14 @@ void write_back()
         {
             case 0:
                 write_data = arch_state.curr_pipe_regs.ALUOut;
+                break;
             case 1:
                 write_data = arch_state.curr_pipe_regs.MDR;
+                break;
+            default:
+                assert(false);
+                break;
         }
-
         if (write_reg_id > 0) {
             arch_state.registers[write_reg_id] = write_data;
             printf("Reg $%u = %d \n", write_reg_id, write_data);
@@ -367,6 +392,7 @@ void write_back()
 
 void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
 {
+
     IR_meta->opcode = get_piece_of_a_word(IR, OPCODE_OFFSET, OPCODE_SIZE);
     IR_meta->immediate = get_sign_extended_imm_id(IR, IMMEDIATE_OFFSET);
     IR_meta->function = get_piece_of_a_word(IR, 0, 6);
@@ -383,8 +409,33 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
                        IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
             else assert(false);
             break;
+        case ADDI:
+            printf("Executing ADDI(%d), $%u = $%u + $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            break;
+        case LW:
+            printf("Executing LW(%d), $%u = $%u + $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            break;
+        case SW:
+            printf("Executing SW(%d), $%u = $%u + $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            break;
+        case BEQ:
+            printf("Executing BEQ(%d), $%u = $%u + $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            break;
+        case J:
+            printf("Executing J(%d), $%u = $%u + $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            break;
+        case SLT:
+            printf("Executing SLTJ(%d), $%u = $%u + $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            break;
         case EOP:
-            printf("Executing EOP(%d) \n", IR_meta->opcode);
+            printf("Executing EOP(%d)\n", 
+                IR_meta->opcode);
             break;
         default: assert(false);
     }
@@ -396,6 +447,7 @@ void assign_pipeline_registers_for_the_next_cycle()
     struct instr_meta *IR_meta = &arch_state.IR_meta;
     struct pipe_regs *curr_pipe_regs = &arch_state.curr_pipe_regs;
     struct pipe_regs *next_pipe_regs = &arch_state.next_pipe_regs;
+
 
     if (control->IRWrite) {
         curr_pipe_regs->IR = next_pipe_regs->IR;
@@ -426,8 +478,9 @@ int main(int argc, const char* argv[])
         /// Do NOT modify the main() itself, you only need to
         /// write code inside the definitions of the functions called below.
 
-        FSM();
 
+        FSM();
+        debugDumpCurrentPipeRegs();
         instruction_fetch();
 
         decode_and_read_RF();
@@ -437,6 +490,8 @@ int main(int argc, const char* argv[])
         memory_access();
 
         write_back();
+
+        debugDumpNextPipeRegs();
 
         assign_pipeline_registers_for_the_next_cycle();
 
