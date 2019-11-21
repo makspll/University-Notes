@@ -7,7 +7,7 @@
 
 #include "mipssim.h"
 
-#define BREAK_POINT 200000 // exit after so many cycles -- useful for debugging
+#define BREAK_POINT 120 // exit after so many cycles -- useful for debugging
 
 //added, these were missing, the hell boris :C
 //register types
@@ -326,7 +326,7 @@ void execute()
         //lower 26 bits pc << 2 concatenated with IR[]
         case 2:
             //ERROR HERE, JUMP jumps to ITSELF
-            next_pipe_regs->pc = (get_piece_of_a_word(curr_pipe_regs->ALUOut,0,26) << 2) | (get_piece_of_a_word(next_pipe_regs->ALUOut,28,4)); 
+            next_pipe_regs->pc = (get_piece_of_a_word(arch_state.curr_pipe_regs.IR,0,26) << 2) | (get_piece_of_a_word(next_pipe_regs->pc,28,4)); 
             break;
         default:
             assert(false);
@@ -480,7 +480,7 @@ int main(int argc, const char* argv[])
 
 
         FSM();
-        debugDumpCurrentPipeRegs();
+       //debugDumpCurrentPipeRegs();
         instruction_fetch();
 
         decode_and_read_RF();
@@ -491,7 +491,7 @@ int main(int argc, const char* argv[])
 
         write_back();
 
-        debugDumpNextPipeRegs();
+       //debugDumpNextPipeRegs();
 
         assign_pipeline_registers_for_the_next_cycle();
 
