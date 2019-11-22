@@ -1,0 +1,47 @@
+#!/bin/bash
+#test all required instructions: ADD,LW, SW, ADDI, J, BQE and SLT
+
+#generate reg file
+"1\n2\n3" > regfiletests.txt
+#$0 = 0
+#$1 = 1
+#$2 = 2
+#$3 = 3
+#test 1 ADD
+        case SPECIAL:
+            if (IR_meta->function == ADD) //$d = $s + $t;
+                printf("Executing ADD(%d), $%u = $%u + $%u (function: %u) \n",
+                       IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            else assert(false);
+            break;
+        case ADDI: //$t = $s + imm
+            printf("Executing ADDI(%d), $%u = $%u + %u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_16_20, IR_meta->reg_21_25,  IR_meta->immediate, IR_meta->function);
+            break;
+        case LW:   //$t = MEM[$s + offset]
+            printf("Executing LW(%d), $%u = MEM[$%u + $%u] (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_16_20, IR_meta->reg_21_25,  IR_meta->immediate, IR_meta->function);
+            break;
+        case SW:  //MEM[$s + offset] = $t;
+            printf("Executing SW(%d), MEM[$%u + %u] = $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->immediate,  IR_meta->reg_16_20, IR_meta->function);
+            break;
+        case BEQ: //if $s == $t advance_pc (offset << 2))
+            printf("Executing BEQ(%d), if $%u == $%u; advance_pc by (%d) (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  (IR_meta->immediate << 2) / 4, IR_meta->function);
+            break;
+        case J: //PC = PC[31-28] | (imm << 2 = (%d))
+            printf("Executing J(%d), jump to %d (function: %u) \n",
+                IR_meta->opcode, (get_piece_of_a_word(arch_state.curr_pipe_regs.pc,28,4) | IR_meta->immediate << 2) / 4, IR_meta->function);
+            break;
+        case SLT: //if $s < $t $d = 1
+            printf("Executing SLTJ(%d), if $%u < $%u; $%u = 1 (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  IR_meta->reg_11_15, IR_meta->function);
+            break;
+        case EOP:
+
+
+
+
+
+./mipssim 0 memfile-complex.txt regfile.txt

@@ -7,7 +7,7 @@
 
 #include "mipssim.h"
 
-#define BREAK_POINT 120 // exit after so many cycles -- useful for debugging
+#define BREAK_POINT 10 // exit after so many cycles -- useful for debugging
 
 //added, these were missing, the hell boris :C
 //register types
@@ -47,7 +47,13 @@ void debugDumpCurrentPipeRegs()
         arch_state.curr_pipe_regs.B,
         arch_state.curr_pipe_regs.ALUOut);
 }
-
+void debugDumpRegisters(int start, int end)
+{
+    for(int i = start; i < end;i++)
+    {
+        printf("$%d = %d\n",i,arch_state.registers[i]);
+    }
+}
 void debugDumpNextPipeRegs()
 {
     printf("/////next_pipe_regs/////\nstate: %d\nPC: %d\nMDR: %d\nIR: %x\nA: %d\nB: %d\nALUOut: %d\n////////////////\n",
@@ -318,9 +324,10 @@ void execute()
             //the values in next_pipe are not yet stored, they're the 'currently being worked out solution'
             next_pipe_regs->pc = next_pipe_regs->ALUOut;
             break;
-        //previous alu output
+        //previouscurrut
         case 1:
-            //the value in curr pipe reg, i the result from the previous cycle
+            //the currcurr pipe reg, i the result from the previous cycle
+            printf("REACHED, new PC = $%d\n",curr_pipe_regs->ALUOut / 4);
             next_pipe_regs->pc = curr_pipe_regs->ALUOut;
             break;
         //lower 26 bits pc << 2 concatenated with IR[]
@@ -346,6 +353,7 @@ void memory_access() {
     }
     else if(arch_state.control.MemWrite)
     {
+       printf("MEM[%d] = %d\n",address / 4, arch_state.curr_pipe_regs.B);
        memory_write(address,arch_state.curr_pipe_regs.B);
     }
   }
@@ -397,41 +405,41 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
     IR_meta->immediate = get_sign_extended_imm_id(IR, IMMEDIATE_OFFSET);
     IR_meta->function = get_piece_of_a_word(IR, 0, 6);
     IR_meta->jmp_offset = get_piece_of_a_word(IR, 0, 26);
-    IR_meta->reg_11_15 = (uint8_t) get_piece_of_a_word(IR, 11, REGISTER_ID_SIZE);
-    IR_meta->reg_16_20 = (uint8_t) get_piece_of_a_word(IR, 16, REGISTER_ID_SIZE);
-    IR_meta->reg_21_25 = (uint8_t) get_piece_of_a_word(IR, 21, REGISTER_ID_SIZE);
+    IR_meta->reg_11_15 = (uint8_t) get_piece_of_a_word(IR, 11, REGISTER_ID_SIZE); //d 
+    IR_meta->reg_16_20 = (uint8_t) get_piece_of_a_word(IR, 16, REGISTER_ID_SIZE); //t
+    IR_meta->reg_21_25 = (uint8_t) get_piece_of_a_word(IR, 21, REGISTER_ID_SIZE); //s
     IR_meta->type = get_instruction_type(IR_meta->opcode);
 
     switch (IR_meta->opcode) {
         case SPECIAL:
-            if (IR_meta->function == ADD)
+            if (IR_meta->function == ADD) //$d = $s + $t;
                 printf("Executing ADD(%d), $%u = $%u + $%u (function: %u) \n",
                        IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
             else assert(false);
             break;
-        case ADDI:
-            printf("Executing ADDI(%d), $%u = $%u + $%u (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+        case ADDI: //$t = $s + imm
+            printf("Executing ADDI(%d), $%u = $%u + %u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_16_20, IR_meta->reg_21_25,  IR_meta->immediate, IR_meta->function);
             break;
-        case LW:
-            printf("Executing LW(%d), $%u = $%u + $%u (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+        case LW:   //$t = MEM[$s + offset]
+            printf("Executing LW(%d), $%u = MEM[$%u + $%u] (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_16_20, IR_meta->reg_21_25,  IR_meta->immediate, IR_meta->function);
             break;
-        case SW:
-            printf("Executing SW(%d), $%u = $%u + $%u (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+        case SW:  //MEM[$s + offset] = $t;
+            printf("Executing SW(%d), MEM[$%u + %u] = $%u (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->immediate,  IR_meta->reg_16_20, IR_meta->function);
             break;
-        case BEQ:
-            printf("Executing BEQ(%d), $%u = $%u + $%u (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+        case BEQ: //if $s == $t advance_pc (offset << 2))
+            printf("Executing BEQ(%d), if $%u == $%u; advance_pc by (%d) (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  (IR_meta->immediate << 2) / 4, IR_meta->function);
             break;
-        case J:
-            printf("Executing J(%d), $%u = $%u + $%u (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+        case J: //PC = PC[31-28] | (imm << 2 = (%d))
+            printf("Executing J(%d), jump to %d (function: %u) \n",
+                IR_meta->opcode, (get_piece_of_a_word(arch_state.curr_pipe_regs.pc,28,4) | IR_meta->immediate << 2) / 4, IR_meta->function);
             break;
-        case SLT:
-            printf("Executing SLTJ(%d), $%u = $%u + $%u (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+        case SLT: //if $s < $t $d = 1
+            printf("Executing SLTJ(%d), if $%u < $%u; $%u = 1 (function: %u) \n",
+                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  IR_meta->reg_11_15, IR_meta->function);
             break;
         case EOP:
             printf("Executing EOP(%d)\n", 
@@ -449,7 +457,7 @@ void assign_pipeline_registers_for_the_next_cycle()
     struct pipe_regs *next_pipe_regs = &arch_state.next_pipe_regs;
 
 
-    if (control->IRWrite) {
+    if (control->IRWrite ) {
         curr_pipe_regs->IR = next_pipe_regs->IR;
         printf("PC %d: ", curr_pipe_regs->pc / 4);
         set_up_IR_meta(curr_pipe_regs->IR, IR_meta);
@@ -457,7 +465,8 @@ void assign_pipeline_registers_for_the_next_cycle()
     curr_pipe_regs->ALUOut = next_pipe_regs->ALUOut;
     curr_pipe_regs->A = next_pipe_regs->A;
     curr_pipe_regs->B = next_pipe_regs->B;
-    if (control->PCWrite) {
+    curr_pipe_regs->MDR = next_pipe_regs->MDR;
+    if (control->PCWrite || (control->PCWriteCond && next_pipe_regs->ALUOut == 0)) {
         check_address_is_word_aligned(next_pipe_regs->pc);
         curr_pipe_regs->pc = next_pipe_regs->pc;
     }
@@ -478,9 +487,9 @@ int main(int argc, const char* argv[])
         /// Do NOT modify the main() itself, you only need to
         /// write code inside the definitions of the functions called below.
 
-
+        //debugDumpRegisters(4,6);
         FSM();
-       //debugDumpCurrentPipeRegs();
+        //debugDumpCurrentPipeRegs();
         instruction_fetch();
 
         decode_and_read_RF();
@@ -488,11 +497,11 @@ int main(int argc, const char* argv[])
         execute();
 
         memory_access();
-
+       // printf("MDR after read: %d \n",arch_state.next_pipe_regs.MDR);
         write_back();
 
-       //debugDumpNextPipeRegs();
-
+        //debugDumpNextPipeRegs();
+        //printf("ALUOUT: &%d\n",arch_state.curr_pipe_regs.ALUOut);
         assign_pipeline_registers_for_the_next_cycle();
 
 
@@ -502,10 +511,12 @@ int main(int argc, const char* argv[])
         // Check exit statements
         if (arch_state.state == EXIT_STATE) { // I.E. EOP instruction!
             printf("Exiting because the exit state was reached \n");
+            printf("lw hits: %d, lw total: %d\n",arch_state.mem_stats.lw_cache_hits,arch_state.mem_stats.lw_total);
+            printf("sw hits: %d, sw total: %d\n",arch_state.mem_stats.sw_cache_hits,arch_state.mem_stats.sw_total);
             break;
         }
         if (arch_state.clock_cycle == BREAK_POINT) {
-            printf("Exiting because the break point (%u) was reached \n", BREAK_POINT);
+            printf("Ewillxiting because the break point (%u) was reached \n", BREAK_POINT);
             break;
         }
     }
