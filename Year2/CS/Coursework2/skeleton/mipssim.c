@@ -7,7 +7,7 @@
 
 #include "mipssim.h"
 
-#define BREAK_POINT 10 // exit after so many cycles -- useful for debugging
+#define BREAK_POINT 20000 // exit after so many cycles -- useful for debugging
 
 //added, these were missing, the hell boris :C
 //register types
@@ -241,8 +241,9 @@ s
 
 void instruction_fetch()
 {
-    if (arch_state.control.MemRead) {
+    if (arch_state.control.MemRead && arch_state.control.IRWrite) {
         int address = arch_state.curr_pipe_regs.pc;
+        //printf("IR = MEM[%d]\n",address/4);
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
 } 
@@ -349,6 +350,7 @@ void memory_access() {
   {
     if(arch_state.control.MemRead)
     {
+     //  printf("MDR = MEM[%d]\n",address/4);
        arch_state.next_pipe_regs.MDR = memory_read(address);
     }
     else if(arch_state.control.MemWrite)
@@ -438,7 +440,7 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
                 IR_meta->opcode, (get_piece_of_a_word(arch_state.curr_pipe_regs.pc,28,4) | IR_meta->immediate << 2) / 4, IR_meta->function);
             break;
         case SLT: //if $s < $t $d = 1
-            printf("Executing SLTJ(%d), if $%u < $%u; $%u = 1 (function: %u) \n",
+            printf("Executing SLT(%d), if $%u < $%u; $%u = 1 (function: %u) \n",
                 IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  IR_meta->reg_11_15, IR_meta->function);
             break;
         case EOP:
@@ -480,6 +482,8 @@ int main(int argc, const char* argv[])
     /--------------------------------------*/
     parse_arguments(argc, argv);
     arch_state_init(&arch_state);
+    int instructions_processed = -1;
+    int number_loop = 0;
     ///@students WARNING: Do NOT change/move/remove main's code above this point!
     while (true) {
 
@@ -488,7 +492,10 @@ int main(int argc, const char* argv[])
         /// write code inside the definitions of the functions called below.
 
         //debugDumpRegisters(4,6);
+        printf("state: %d\n",arch_state.state);
         FSM();
+        if(arch_state.state == INSTR_FETCH)instructions_processed++;
+        if(arch_state.curr_pipe_regs.pc == 6*4 && arch_state.state == INSTR_FETCH)number_loop++;
         //debugDumpCurrentPipeRegs();
         instruction_fetch();
 
@@ -511,8 +518,9 @@ int main(int argc, const char* argv[])
         // Check exit statements
         if (arch_state.state == EXIT_STATE) { // I.E. EOP instruction!
             printf("Exiting because the exit state was reached \n");
-            printf("lw hits: %d, lw total: %d\n",arch_state.mem_stats.lw_cache_hits,arch_state.mem_stats.lw_total);
-            printf("sw hits: %d, sw total: %d\n",arch_state.mem_stats.sw_cache_hits,arch_state.mem_stats.sw_total);
+            printf("lw hits: %lu, lw total: %lu\n",arch_state.mem_stats.lw_cache_hits,arch_state.mem_stats.lw_total);
+            printf("sw hits: %lu, sw total: %lu\n",arch_state.mem_stats.sw_cache_hits,arch_state.mem_stats.sw_total);
+            printf("total instructions: %d\ntotal loops: %d\n",instructions_processed, number_loop);
             break;
         }
         if (arch_state.clock_cycle == BREAK_POINT) {
