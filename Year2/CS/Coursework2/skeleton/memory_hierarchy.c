@@ -200,19 +200,21 @@ void memory_write(int address, int write_data){
             arch_state.mem_stats.sw_cache_hits+=1;
             printBlock(&mapped_block);
 
+          //write the value to the main memory
+           arch_state.memory[address/4] = (uint32_t) write_data;
 
-        printf("contents: ");
-        print_binary_32bit_or_less_lsb(write_data,32);
-        printf("\n");
+           //write the value to the cache;
+           load_cache_block(address);
+
+           printf("contents: ");
+            print_binary_32bit_or_less_lsb(write_data,32);
+           printf("\n");
         }
         else
         {
-
+            //write no -allocate
+            arch_state.memory[address/4] = (uint32_t) write_data;
         }
-        //write the value to the main memory
-        arch_state.memory[address/4] = (uint32_t) write_data;
-
-        //write the value to the cache;
-        load_cache_block(address);
+ 
     }
 }
