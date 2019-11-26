@@ -7,7 +7,7 @@
 
 #include "mipssim.h"
 
-#define BREAK_POINT 20000 // exit after so many cycles -- useful for debugging
+#define BREAK_POINT 200000 // exit after so many cycles -- useful for debugging
 
 //added, these were missing, the hell boris :C
 //register types
@@ -35,36 +35,7 @@
 char mem_init_path[1000];
 char reg_init_path[1000];
 
-// debug functions
-void debugDumpCurrentPipeRegs()
-{
-    printf("/////curr_pipe_regs/////\nstate: %d\nPC: %d\nMDR: %d\nIR: %x\nA: %d\nB: %d\nALUOut: %d\n////////////////\n",
-        arch_state.state,
-        arch_state.curr_pipe_regs.pc,
-        arch_state.curr_pipe_regs.MDR,
-        arch_state.curr_pipe_regs.IR,
-        arch_state.curr_pipe_regs.A,
-        arch_state.curr_pipe_regs.B,
-        arch_state.curr_pipe_regs.ALUOut);
-}
-void debugDumpRegisters(int start, int end)
-{
-    for(int i = start; i < end;i++)
-    {
-        printf("$%d = %d\n",i,arch_state.registers[i]);
-    }
-}
-void debugDumpNextPipeRegs()
-{
-    printf("/////next_pipe_regs/////\nstate: %d\nPC: %d\nMDR: %d\nIR: %x\nA: %d\nB: %d\nALUOut: %d\n////////////////\n",
-        arch_state.state,
-        arch_state.next_pipe_regs.pc,
-        arch_state.next_pipe_regs.MDR,
-        arch_state.next_pipe_regs.IR,
-        arch_state.next_pipe_regs.A,
-        arch_state.next_pipe_regs.B,
-        arch_state.next_pipe_regs.ALUOut);
-}
+
 //
 uint32_t cache_size = 0;
 struct architectural_state arch_state;
@@ -108,38 +79,6 @@ void FSM()
     //reset control signals
     memset(control, 0, (sizeof(struct ctrl_signals)));
 
-    /*
-    #define INSTR_FETCH 0
-    #define DECODE 1
-    #define MEM_ADDR_COMP 2
-    #define MEM_ACCESS_LD 3
-    #define WB_STEP 4
-    #define MEM_ACCESS_ST 5
-    #define EXEC 6
-    #define R_TYPE_COMPL 7
-    #define BRANCH_COMPL 8
-    #define JUMP_COMPL 9
-    #define EXIT_STATE 10
-    #define I_TYPE_EXEC 11
-    #define I_TYPE_COMPL 12
-    
-    //Instruction types
-    #define R_TYPE 1s
-    #define I_TYPE 1s
-    #define EOP_TYPE 6s
-s
-s
-    // OPCODESs
-    #define SPECIAL 0 //s 000000 x
-    #define ADD 32    //s 100000 x
-    #define ADDI 8    //s 001000 x
-    #define LW 35     //s 100011 x
-    #define SW 43     // 101011  x
-    #define BEQ  4    // 000100  x
-    #define J 2       // 000010  x
-    #define SLT 42    // 101010  
-    #define EOP 63    // 111111  x
-    */
     int opcode = IR_meta->opcode;
     int state = arch_state.state;
     switch (state) {
@@ -243,7 +182,7 @@ void instruction_fetch()
 {
     if (arch_state.control.MemRead && arch_state.control.IRWrite) {
         int address = arch_state.curr_pipe_regs.pc;
-        //printf("IR = MEM[%d]\n",address/4);
+       
         arch_state.next_pipe_regs.IR = memory_read(address);
     }
 } 
@@ -257,7 +196,6 @@ void decode_and_read_RF()
     check_is_valid_reg_id(read_register_2);
     arch_state.next_pipe_regs.A = arch_state.registers[read_register_1];
     arch_state.next_pipe_regs.B = arch_state.registers[read_register_2];
-    //PC increment is included in execute... why do ya gotta complicate my life dear Boris :C
 }
 
 void execute()
@@ -328,7 +266,6 @@ void execute()
         //previouscurrut
         case 1:
             //the currcurr pipe reg, i the result from the previous cycle
-            printf("REACHED, new PC = $%d\n",curr_pipe_regs->ALUOut / 4);
             next_pipe_regs->pc = curr_pipe_regs->ALUOut;
             break;
         //lower 26 bits pc << 2 concatenated with IR[]
@@ -355,8 +292,7 @@ void memory_access() {
     }
     else if(arch_state.control.MemWrite)
     {
-       printf("MEM[%d] = %d\n",address / 4, arch_state.curr_pipe_regs.B);
-       memory_write(address,arch_state.curr_pipe_regs.B);
+        memory_write(address,arch_state.curr_pipe_regs.B);
     }
   }
 }
@@ -394,7 +330,7 @@ void write_back()
         }
         if (write_reg_id > 0) {
             arch_state.registers[write_reg_id] = write_data;
-            printf("Reg $%u = %d \n", write_reg_id, write_data);
+            //printf("Reg $%u = %d \n", write_reg_id, write_data);
         } else printf("Attempting to write reg_0. That is likely a mistake \n");
     }
 }
@@ -417,8 +353,14 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
             if (IR_meta->function == ADD) //$d = $s + $t;
                 printf("Executing ADD(%d), $%u = $%u + $%u (function: %u) \n",
                        IR_meta->opcode,  IR_meta->reg_11_15, IR_meta->reg_21_25,  IR_meta->reg_16_20, IR_meta->function);
+            else if(IR_meta->opcode = SLT) {
+                printf("Executing SLT(%d), if $%u < $%u; $%u = 1 (function: %u) \n",
+                    IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  IR_meta->reg_11_15, IR_meta->function);
+            }
             else assert(false);
+            
             break;
+
         case ADDI: //$t = $s + imm
             printf("Executing ADDI(%d), $%u = $%u + %u (function: %u) \n",
                 IR_meta->opcode,  IR_meta->reg_16_20, IR_meta->reg_21_25,  IR_meta->immediate, IR_meta->function);
@@ -438,10 +380,6 @@ void set_up_IR_meta(int IR, struct instr_meta *IR_meta)
         case J: //PC = PC[31-28] | (imm << 2 = (%d))
             printf("Executing J(%d), jump to %d (function: %u) \n",
                 IR_meta->opcode, (get_piece_of_a_word(arch_state.curr_pipe_regs.pc,28,4) | IR_meta->immediate << 2) / 4, IR_meta->function);
-            break;
-        case SLT: //if $s < $t $d = 1
-            printf("Executing SLT(%d), if $%u < $%u; $%u = 1 (function: %u) \n",
-                IR_meta->opcode,  IR_meta->reg_21_25, IR_meta->reg_16_20,  IR_meta->reg_11_15, IR_meta->function);
             break;
         case EOP:
             printf("Executing EOP(%d)\n", 
@@ -482,8 +420,6 @@ int main(int argc, const char* argv[])
     /--------------------------------------*/
     parse_arguments(argc, argv);
     arch_state_init(&arch_state);
-    int instructions_processed = -1;
-    int number_loop = 0;
     ///@students WARNING: Do NOT change/move/remove main's code above this point!
     while (true) {
 
@@ -491,12 +427,8 @@ int main(int argc, const char* argv[])
         /// Do NOT modify the main() itself, you only need to
         /// write code inside the definitions of the functions called below.
 
-        //debugDumpRegisters(4,6);
-        printf("state: %d\n",arch_state.state);
         FSM();
-        if(arch_state.state == INSTR_FETCH)instructions_processed++;
-        if(arch_state.curr_pipe_regs.pc == 6*4 && arch_state.state == INSTR_FETCH)number_loop++;
-        //debugDumpCurrentPipeRegs();
+
         instruction_fetch();
 
         decode_and_read_RF();
@@ -504,11 +436,9 @@ int main(int argc, const char* argv[])
         execute();
 
         memory_access();
-       // printf("MDR after read: %d \n",arch_state.next_pipe_regs.MDR);
+
         write_back();
 
-        //debugDumpNextPipeRegs();
-        //printf("ALUOUT: &%d\n",arch_state.curr_pipe_regs.ALUOut);
         assign_pipeline_registers_for_the_next_cycle();
 
 
@@ -518,13 +448,10 @@ int main(int argc, const char* argv[])
         // Check exit statements
         if (arch_state.state == EXIT_STATE) { // I.E. EOP instruction!
             printf("Exiting because the exit state was reached \n");
-            printf("lw hits: %lu, lw total: %lu\n",arch_state.mem_stats.lw_cache_hits,arch_state.mem_stats.lw_total);
-            printf("sw hits: %lu, sw total: %lu\n",arch_state.mem_stats.sw_cache_hits,arch_state.mem_stats.sw_total);
-            printf("total instructions: %d\ntotal loops: %d\n",instructions_processed, number_loop);
             break;
         }
         if (arch_state.clock_cycle == BREAK_POINT) {
-            printf("Ewillxiting because the break point (%u) was reached \n", BREAK_POINT);
+            printf("Exiting because the break point (%u) was reached \n", BREAK_POINT);
             break;
         }
     }

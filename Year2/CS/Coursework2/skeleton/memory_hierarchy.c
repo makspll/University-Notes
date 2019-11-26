@@ -63,9 +63,6 @@ void load_cache_block(int address)
             mapped_block->data[(w*4) + b] = portion_bits;
         }
     }
-
-    printf("replaced block %d, new contents:\n",mapped_block->index);
-    //printBlock(mapped_block);
 }
 
 //reads the cache at given address
@@ -94,7 +91,6 @@ void memory_state_init(struct architectural_state * arch_state_ptr) {
         tag_bits = 32- index_bits - offset_bits;
         memory_stats_init(arch_state_ptr,tag_bits);
 
-        printf("tag_bits: %d, index_bits: %d, offset_bits: %d\n",tag_bits,index_bits,offset_bits);
         //initialize cache
         cache = malloc(num_blocks * sizeof(struct block));
         for(int i = 0; i < num_blocks;i++)
@@ -117,10 +113,11 @@ void printBlock(struct block* block)
     }
     printf("\n");
 }
+
 // returns data on memory[addres            print_binary_32bs / 4]
 int memory_read(int address){
     check_address_is_word_aligned(address);
-    printf("reading: %d\n",address/4);
+
     arch_state.mem_stats.lw_total++;
     if(cache_size == 0){
         // CACHE DISABLED
@@ -134,11 +131,9 @@ int memory_read(int address){
         struct block * mapped_block = &cache[index];
         assert(&cache[index] != NULL);
         //see if it's a miss of not
-        if(mapped_block->valid && tag != mapped_block->tag) printf("\nVALID MISS\n\n");
         if((mapped_block->valid == true) && (tag == mapped_block->tag))
         {
             //hit
-            printf("\nHIT block: %d %d\n\n",mapped_block->index, mapped_block->valid);
             //printBlock(mapped_block);
             arch_state.mem_stats.lw_cache_hits+=1;
         }
@@ -146,9 +141,6 @@ int memory_read(int address){
         {
             //miss
             //load whole block from main memory
-            printf("MISS block %d, address:",mapped_block->index);
-            print_binary_32bit_or_less_lsb(address,32);
-            printf("\n");
             load_cache_block(address);
             
         }
@@ -163,9 +155,6 @@ int memory_read(int address){
             address+= 1;
         }
 
-        printf("contents: ");
-        print_binary_32bit_or_less_lsb(word,32);
-        printf("\n");
         return word;
 
 
@@ -196,7 +185,6 @@ void memory_write(int address, int write_data){
         //check if we have a hit
         if(mapped_block.valid && tag == mapped_block.tag)
         {
-            printf("STORE HIT\n");
             arch_state.mem_stats.sw_cache_hits+=1;
             printBlock(&mapped_block);
 
@@ -206,9 +194,6 @@ void memory_write(int address, int write_data){
            //write the value to the cache;
            load_cache_block(address);
 
-           printf("contents: ");
-            print_binary_32bit_or_less_lsb(write_data,32);
-           printf("\n");
         }
         else
         {
