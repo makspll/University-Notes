@@ -94,12 +94,18 @@ $|X| < |Y|$ iff $|X| \leq |Y| \land |X| \neq |Y|$}
 \nDefinition{n-ary relation}{given sets $A_{1},...,A_{n}$ a subset $R \subseteq A_{1},...,A_{n}$ is an n-ary relation}
 \nTheorem{Relation Union and Intersection}{if $R_{i}$ are relations on $AxB \forall i \in I$ then $\bigcup_{i\in I}R_{i}$ and $\bigcap_{i\in I}R_{i}$ are relations on AxB}
 \nDefinition{Relation composition}{let $R \subseteq BxC$ and $S \subseteq A x B$ the composition relation $(R \circ S) \subseteq A x C$ is\\ $\{(a,c) | \exists b(a,b) \in S \land (b,c) \in R\}$}
+\nDefinition{Closures}{Closure R is a relation on A: 
+\begin{itemize}
+    \item $R^{0}$ is the identity relation $(\mathbf{i}_{A})$
+    \item $R^{n+1} = R^{n} \circ R$
+    \item $R^{*} = \bigcup_{n \geq 0} R^{n}$
+\end{itemize}
+$R^{*}$ is the reflexive and transitive closure of R}
 \nDefinition{Properties of binary relations}{the relation R on A is:\\
 reflexive iff $\forall x \in A. (x,x) \in R$\\
 symmetric iff $\forall x,y \in A. ((x,y) \in R \rightarrow (y,x) \in R)$\\
 antisymmetric iff $\forall x,y \in A (((x,y) \in R \land (y,x) \in R) \rightarrow x = y)$\\
 transitive iff $\forall x,y,z \in A(((x,y)\in R \land (y,z) \in R) \rightarrow (x,z) \in R)$}
-\nDefinition{Closures}{$R^{*}$ is the reflexive and transitive closure of R}
 \nDefinition{Equivalence relations}{A relation R on a set A is an equivalence relation iff it is reflexive, symmetric and transitive}
 \nDefinition{Equivalence classes}{let R be an equivalence relation on a set A and $a\in A$. Then\\ $[a]_{R} = \{s|(a,s \in R)\}$\\
 is the equivalence class of a w.r.t R}
@@ -121,8 +127,24 @@ if f and g are both injective/surjective/bijective then $f\circ g$ is also injec
 \nDefinition{Surjective Functions (onto)}{$f : A \rightarrow B$ is surjective iff $\forall b\in B\exists a\in A(f(a) = b)$}
 \nDefinition{Bijective Functions (One-to-one correspondence)}{$f : A \rightarrow B$ is a bijection iff it is both injective and surjective}
 
-\nDefinition{Inverse Functions}{let $f : A \rightarrow B$ be a bijection, then the inverse of f, $f^{-1}: B \rightarrow A$ is $f^{-1}(b) = a$ iff $f(a) = b$. So the inverse function exists only for bijections, and it exists for only the elements in B which are mapped to by some element $a \in A$}
+\nDefinition{Inverse Functions}{let $f : A \rightarrow B$ be a bijection, then the inverse of f, $f^{-1}: B \rightarrow A$ is $f^{-1}(b) = a$ iff $f(a) = b$. So the inverse function exists only for bijections, and it exists for only the elements in B which are mapped to by some element $a \in A$ by f}
 \nSection{Sequences}
+\nDefinition{Sequences}{Sequences are ordered lists of elements, \\
+Example: $f : \mathbb{Z}^{+} \rightarrow \mathbb{Q} f(n) = \frac{1}{n}$ defines the sequence $1,1/2,1/3,1/4,...$ assuming $a_{n} = f(n)$ the sequence is also written $a_{1},a_{2},a_{3}...$ or as $\{a_{n\in\mathbb{Z}^{+}}\}$}
+\nDefinition{Sequence over a Set}{a sequence over a set S is a function f from a subset of the integers to the set S. If the domain of f is finite then the sequence is finite.}
+\nDefinition{Geometric and Arithmetic progressions}{A geometric progression is a sequence of the form $a, ar, ar^{2},...ar^{n},..$\\
+An arithmetic progression is a sequence of the form $a, a + d, a + 2d,...,a + nd$, where the initial elements a, the common ratio r and the common difference d are real numbers}
+\nDefinition{Reccurence relations}{A reccurencerelation for $\{a_{n}\}_{n\in \mathbb{N}}$ is an equation that expresses $a_{n}$ in terms of one or more of the elements $a_{0},a_{1},...,a_{n-1}$\\
+the initial conditions specify the first elements of the sequence, before the recurrence relation applies\\
+A sequence is called a solution of a recurrence relation iff its terms satisfy the recurrence relation}
+\nDefinition{Fibonnaci Sequence}{$f(1) = 1, f(2) = 1, f(n) = f(n-1) + f(n-2) for n > 2$}
+\nDefinition{Solving recurrence relations with iteration}{$a_{n} = a_{n-1} + 3$ for $n \geq 2$ with $a_{1} = 2$\\ Forward Substitution Method:\\
+$a_{2} = 2 + 3$\\
+$a_{3} = (2 + 3) + 3 = 2 + 3 \cdot 2$\\
+$a_{4} = (2 + 2 \cdot 3) + 3 = 2 + 3 \cdot 3$\\
+$a_{n} = a_{n-1} + 3 = (2 + 3 \cdot (2 - 2)) + 3 = 2 + 3 \cdot (n-1)$
+}
+\nDefinition{Common Sequences}{}
 \nSection{Sums}
 \nSection{Number Theory}
 \nSection{Counting}
