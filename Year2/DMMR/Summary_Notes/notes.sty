@@ -1,0 +1,16 @@
+\ProvidesPackage{notes}
+
+\usepackage{xcolor}
+\usepackage{amsthm}
+\usepackage{tcolorbox}
+\usepackage[a4page, total={6in,10in}]{geometry}
+
+
+\definecolor{titleColor}{RGB}{0,0,0}
+
+\newtcolorbox{theoremBox}[1]{colback=red!5!white,colframe=red!75!black,fonttitle=\bfseries,title=#1}
+\newtcolorbox{definitionBox}[1]{colback=blue!5!white,colframe=blue!75!white,fonttitle=\bfseries,title=#1}
+
+\newcommand{\nDefinition}[2]{\begin{definitionBox}{\bf{#1}}#2\end{definitionBox} }}
+\newcommand{\nTheorem}[2]{\begin{theoremBox}{\bf{#1}}#2\end{definitionBox} }}
+\newcommand{\nSection}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{#1}\end{center}}}}

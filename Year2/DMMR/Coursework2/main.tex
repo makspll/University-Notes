@@ -1,0 +1,89 @@
+
+
+\documentclass{report}
+
+\usepackage[a4page, total={6in,10in}]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+\title{DMMR Coursework 2}
+\author{Maksymilian Mozolewski - S1751752}
+\maketitle
+
+\section*{Q1.}
+Part1: \newline
+Claim: $(n/2)^{(n/2)} \leq r_{n} \leq n^n$ where n $\subseteq \mathbb{Z}$ and $n \geq 2$ \newline
+Combinatorial Proof: let [n] be the set under consideration with $|[n]|$ = n and let $S_{i} \subseteq [n]$ be the i'th subset of [n] where 1\leq i\leq $r_{n}$ and $\bigcup\limits_{i = 1} A_{i} = [n] $ and $\bigcap\limits_{i=1} A_{i} = \emptyset$. \newline
+when picking a subset, each element must only be picked once, and all elements must be placed within one of the subsets. Therefore a separation of [n] into i subsets can be represented with a string of n digits each with value k where $1\leq k\leq n$, where the digit $d_{i}$ is equal to k if the i'th element of [n] has been placed in the subset $A_{k}$ (we ignore the subsets $A_{i}$ if i is not present in the string)e.g.: \\ \break
+let [n] = \{1,2,3,4\} then the string 1234, represents the partitioning of [n] into:\newline
+$A1 = \{1\}$ \\
+$A2 = \{2\}$ \\ 
+$A3 = \{3\}$ \\
+$A4 = \{4\}$ \\ \break
+We therefore have found an injection f from the set of outcomes to the set of n-ary strings of length n. We therefore know that the cardinality of the outcome space must be smaller or equal to the set of n-ary strings of length n. So we can find the upper bound for $r_{n}$ by noticing that there can be no more valid partitions than there are valid partitioning strings. There are $n^n$ valid partitioning strings according to the product rule, therefore $r_{n} \leq n^n$. \\ \break
+For the other side of the inequality - we notice what happens when we restrict the number of subsets to $n/2$ \\ \break
+So let i be an integer in the range $1\leq i\leq n/2$.
+let each $A_{i}$ be a non-empty subset of [n] with the same properties as before. \\ \break
+this time
+we place each element i of [n] in $A_{i}$
+this creates $n/2$ subsets, we are then left with the upper n/2 elements in [n] to place in subsets - we can pick any of the subsets we already created and so according to the product rule, there are $(n/2) ^{(n/2)}$ ways to place each of the leftover elements into one of the $A_{i}$'s and each one of those ways creates a valid partition. Hence we've found the lower limit and therefore $(n/2) ^{(n/2)} \leq r_{n}$   
+\section*{Q2.}
+Claim: $\sum_{i=1} k \cdot {n \choose k} = n \cdot 2 ^{n-1}$\\ \break
+Proof:
+let A be a set with n elements. let's suppose we want to pick an element $a \in A$ as well as a subset $S \subseteq A - \{a\}$ with $n-1$ elements.\\
+the right hand side does this: n is the number of ways to pick an element $a \in A$ and $2^{n-1}$ is the number of ways you can pick a subset from a set with n-1 elements. \\ \break
+the left hand side does it too, 
+each iteration of the summation does the following:\\
+it counts the ways to pick a subset with k elements from A, and picks an element out of that subset.this leaves us with an element $a \in A$ and a subset $S \subseteq A - \{a\}$ with k-1 elements. \\
+since we're summing over k from 1 to n, k-1 will range from 0 to n-1. This means we're covering the choice of subsets of all sizes for a set with n-1 elements - all the subsets of the set $A - \{a\}$ and in fact we're considering all possible subsets of all different sizes for a set with n-1 elements for our subset S as well as all elements of A for our element a when we're summing. There is also no overlap since each iteration of the summation, covers a subset of different size. Therefore both sides of the equation count the same thing
+
+\section*{Q3.}
+Claim: $d^{out}(A) + d^{out}(B) \geq d^{out}(A \cap B) + d^{out}(A \cup B)$ \\ \break
+Proof:\\
+we first notice that edges could be counted multiple times, due to the way the inequality is structured, and we need to find out how many times every 'kind' of edge is counted on the LHS and the RHS\\
+we split up the proof, by partitioning the vertices:\\
+$V_{A \cap B} = A \cap B\\
+V_{A-B} = A - B\\
+V_{B-A} = B - A\\
+V_{V-A-B} = V - A - B$\\
+let us consider edges e going between each vertex partition and note how it relates to the claimed inequality, the following table portrays how many times at most an edge with its tail in a vertex in the set in the row is counted on the LHS and RHS when its head is at some vertex in the set in the column :\\
+
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+(LHS\|RHS) &$V_{A-B}$ &$V_{B-A}$ & $V_{V-A-B}$&$V_{A \cap B}$\\\hline
+$V_{A-B}$& 0\|0& 1\|0& 1\|1& 1\|0\\\hline
+$V_{B-A}$& 1\|0 & 0\|0 & 1\|1 & 1\|0\\\hline
+$V_{V-A-B}$& 0\|0& 0\|0& 0\|0& 0\|0 \\\hline
+$V_{A \cap B}$& 1\|1& 1\|1 & 2\|2& 0\|0\\\hline
+\end{tabular}\\
+
+since these are all disjoint sets, and no kind of edge is ever counted more times on the right hand side than on the left hand side, and also there are some edges which are counted more times on the left hand side than on the right hand side, the claimed inequality must hold.
+
+
+
+\section*{Q4.}
+let's first calculate the probability of picking exactly 2 red balls in a single iteration/sampling of the whole experiment:\\
+let the set of balls be represented by the set B = \{1,2,3..12\}
+where balls 1,2 and 3 are red\\
+let the sample space $\Omega =\{(b_{1},b_{2},...,b_{5})| 1 \leq b_{i} \leq 12\ \wedge b_{i} \neq b_{j}$  for all $i \subseteq \mathbb{Z},j\subseteq \mathbb{Z} \wedge b_{i} < b_{j}$ for all  $i \subseteq \mathbb{Z}, j \subseteq \mathbb{Z}$ where $i < j\}$ in other words: the set of 5-tuples of balls taken from the set B.
+each of which has the same probability of happening and there are ${12 \choose 5} = 792$ such outcomes since the ordering doesn't matter. We can also order them within the tuples as an increasing sequence.
+the probability of an outcome with exactly 2 red balls, will be equal to the number of such outcomes divided by the number of all outcomes.\\ \break
+To count the number of 2-red ball outcomes, we can do it like so:
+pick 2 out of the 3 red balls, there are ${3\choose 2}$ ways to do that, we then remove the 3 balls from our next available choice(we now cannot choose 1,2 or 3) so 9 balls left. We then choose 3 other balls, there are $9 \choose 3$ ways to do that with the available blue balls.
+According to the product rule, we have ${3\choose 2} \cdot {9 \choose 3} = 3 \cdot 84 = 252$ outcomes where there are exactly 2 red balls chosen. \\ \break
+the probability of choosing exactly 2 red balls is then $252/792 = 7/22 \approx 0.318$ or approximately 32\%.
+If we now let $\Omega_{2}$ be the sample space of the whole experiment. then $\Omega_{2}$ is the set$\{T_{1},T_{2}...T{n} | T_{i} \in \Omega$ $\wedge $ $T_{n}$ either contains 1 and 2 or 2 and 3 or 1 and 3 $\}$.
+Each tuple represents a single sampling, or experiment - so each shuffle and check of the balls.
+Let r.v. X(r) = number of experiments performed before finding exactly 2 red balls in a sampling. The individual experiments are mutually independent, and are also exactly equivalent to mutually independent Bernoulli trials. The probability of success $p = \frac{7}{22}$,and $P(X = r) = (1-p)^{r-1} \cdot p$  for all $r \geq 1$. Therefore X has a geometric distribution with parameter $\frac{7}{22}$. \\ The expected value of a geometrically distributed r.v. with parameter p is $\frac{1}{p}$ and so for X it will be exactly $\frac{1}{p} = 1/(7/22) = 22/7 $ \\ \break
+the expected number of times you will sample 5 balls from the bag  is equal to E(X) and \\ \break 
+E(X) $\approx 3.14$.
+
+\section*{Q5.}
+First we notice that there are only certain indexes at which the permutation can even have non-zero probability of being greater than twice those indexes. The cutoff point after which  and including that index itself no value can be greater than twice the index at that point, that is at $2i \geq 2n$, so when $i \geq n$. This means that less than half the indexes can even have some value that satisfies the given predicate.\\ 
+lets now calculate the probability that each index will yield a value in the permutation which is bigger than twice that index. There are $n-1$ probable indices, index 1, has $2n - 2$ possible 'satisfying' values, index 2 has $2n - 4$, index 3 has $2n - 6$... index $n-1$ has $2$, so in general $2n - i\cdot2$ satisfying values for index $i < n$, and $0$ for any index $i \geq n$. We can calculate the probability of getting a satisfying value by dividing the values that will satisfy the index, over the total values which can be picked for each index. The total values are always = $2n$, so for index $i$, the probability of a random permutation satisfying the predicate at that index is: $\frac{2n - 2i}{2n} = \frac{n - i}{n} = 1 - \frac{i}{n}, i < n$.\\
+Let X = $b_{\pi}$. Then let $X_{i}(o) = $ 1 if index i of the permutation o is greater than twice i and otherwise 0. We notice that $X(o) = X_{1}(o) + X_{2}(o) + .. + X_{n-1}(o)$, since each $X_{i}$ is either 0 or 1, and summing them over 1 through n-1  will yield the total number of elements in the permutation o with value bigger than twice their index, since any element with index i $\geq n$ cannot have such value.\\ \break
+As the final step, we will use the extremely useful fact that expectation is linear and so $E(X) = E(b_{\pi}) = \sum_{i = 1}^{n-1} E(X_{i}) = \sum_{i = 1}^{n-1} P(X_{i} = 1)$ since there are only two values in the range of $X_{i}$ = \{0,1\} and only the outcomes which lead to a non-zero probability contribute to the expectation. We know that $P(X_{i} = 1) = 1 - \frac{i}{n}$ and so $\sum_{i = 1}^{n-1} P(X_{i} = 1) = \sum_{i = 1}^{n-1}  1 - \frac{i}{n} = \sum_{i = 1}^{n-1} 1  - \sum_{i = 1}^{n-1} \frac{i}{n} = n-1 - \frac{n-1}{2} = \frac{n-1}{2}$.\\ \break
+Therefore the expected value $E(b_{\pi}) = \frac{n-1}{2}$.
+\end{document}

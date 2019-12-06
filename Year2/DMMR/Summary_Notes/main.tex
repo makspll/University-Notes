@@ -1,0 +1,82 @@
+\documentclass{article}
+
+\usepackage{notes}
+\usepackage{array}
+\begin{document}
+
+\title{DMMR Condensed Summary Notes For Quick In-Exam Strategic Fact Deployment }
+\author{Maksymilian Mozolewski}
+\maketitle
+\pagebreak
+\nSection{Boolean Logic}
+\nDefinition{Equivalence of prepositional statements}{$P \equiv Q$ denotes a logical equivalence between the propositional statements P and Q. Two equivalent propositions have the same truth tables}
+\nDefinition{Contrapositive}{let S be a statement of the form $P \rightarrow Q$ then the Contrapositive of S is $\neg Q \rightarrow \neg P$. The Contrapositive of S is logically equivalent to S}
+\nTheorem{Boolean Logic Laws}{
+\begin{flushleft}
+\begin{tabular*}{\textwidth}{lll}
+Identity Law: &$P \land T \equiv P$ & $P \lor F \equiv P$\\
+Domination Law: &$P \land F \equiv F$ & $P \lor T \equiv T$\\
+Idempotency Law: &$P \land P \equiv P$ & $P \lor P \equiv P$\\
+Double Negation: &$\neg(\neg P) \equiv P$ &  $ $\\
+Commutativity Law: &$P \land Q \equiv Q \land P$ & $P \lor Q \equiv Q \lor P$ \\
+Associativity law: &$P \land (Q \land R) \equiv (Q \land P) \land R$ & $P \lor (Q \lor R) \equiv (Q \lor P) \lor R$\\
+Distributive Law: &$P \land (Q \lor R) \equiv (P \land Q) \lor (P \land R)$ & $P \lor (Q \land R) \equiv (P \lor Q) \land (P \lor R)$\\
+De Morgan's Law: & $\neg(P \land Q) \equiv \neg P \land \neg Q$
+\end{tabular*}
+\end{flushleft}
+}
+\nTheorem{Negation of Quantifiers}{
+\begin{tabular*}{\textwidth}{ll}
+$\neg(\forall x(P(x))) \equiv \exists x \neg P(x)$ & $\neg(\exists x P(x)) \equiv \forall x \neg P(x)$
+\end{tabular*}
+}
+\nSection{Proof Techniques}
+\nDefinition{Direct Proof}{use existing propositions and rules of inference to prove the given proposition}
+\nDefinition{Proof by Contraposition}{just like direct proof but we use prove contraposition of the given proposition}
+\nDefinition{Proof by Contradiction}{let P be the proposition to be proven, then assume $\neg P$ is true and show that $\neg P \rightarrow C$ where C is some logical contradiction of an earlier assumption or fact}
+\nSection{Induction}
+\nDefinition{Normal Induction}{if P(n) is a predicate on $\mathbb{Z}^{+}$ we follow this process:\\
+\emph{Base Case:} we prove P(1) is true\\
+\emph{Inductive Hypothesis:} we assume $P(k)$ is true and we set to prove $P(k) \rightarrow P(k + 1)$ is true\\
+\emph{Inductive Step:} we show that $P(k) \rightarrow P(k+1)$ is true
+
+}
+
+\nDefinition{Strong Induction}{same as normal induction however instead of assuming P(k) is true, we assume $P(1) \land .. P(k)$ is true and show that it being true implies P(k + 1)}
+\nSection{Sets}
+\nDefinition{Set}{an unordered collection of objects, called members/elements}
+\nDefinition{Power Set}{the power set of a set A consists of all the possible subsets of A including the empty set. if A has n elements, then P(A) will contain $2^{n}$ elements}
+\nDefinition{Complement}{the complement of A is the set $\bar{A}$ which contains all the elements which are not in A, relative to the universe of discourse}
+\nDefinition{Proofs with sets}{to prove a set is a subset of another, show that an element in the first one must be in the other one, to prove two sets are equal, prove that they are both subsets of each other}
+\nTheorem{Set Identities}{
+\begin{flushleft}
+\begin{tabular*}{\textwidth}{lll}
+Identity Law: &$A \cap U = A$ & $A \cup \emptyset = A$\\
+Idempotency Law: &$A \cap A = A$ & $A \cup A = A$\\
+Commutativity Law: &$A \cap B = B \cap A$ & $A \cup B = B \cup A$\\
+De Morgan's Law:&$\overline{A \cap B} = \bar{A} \cap \bar{B}$ & $\overline{A \cup B} = \bar{A} \cup \bar{B}$\\
+Absorption Law: &$A \cup (A \cap B) = A$&$A \cap (A \cup B) $\\
+Domination Law: &$A \cap \emptyset = \emptyset$&$A \cup U = U$\\
+Complementation law: &$ \overline{(\overline{A})} = A$ &$ $\\
+Associative Law: &$A \cap (B \cap C) = (A \cap B) \cap C$ & $A \cup (B \cup C) = (A \cup B) \cup C$\\
+Distributive Law:& $A \cup (B \cup C) = (A \cup B) \cap (A \cup B)$ &$A \cap (B \cap C) = (A \cap B) \cup (A \cap C)$\\
+Complement Law: &$A \cap \overline{A} = \emptyset$&$A \cup \overline{A} = U$\\
+\end{tabular*}
+\end{flushleft}
+}
+\nDefinition{Cartesian Product}{$A x B$ is the set of all ordered pairs (a,b) such that $a \in A \land b \in B$}
+\nSection{Cardinality}
+\nSection{Relations}
+\nSection{Functions}
+\nDefinition{Function}{let A and B be a non-empty set, then a function f maps exactly one element of B to each element of A. so every element in the function must be defined on all elements in A}
+\nDefinition{function Composition}{if f and g are functions then $f \circ g = f(g(x))$}
+\nTheorem{new Functions from old functions}{if f and g are functions then $f + g$ and $f \circ g$ are also functions}
+\nSection{Sequences}
+\nSection{Sums}
+\nSection{Number Theory}
+\nSection{Counting}
+\nSection{Graphs}
+\nSection{Trees}
+\nSection{Discrete Probability}
+\nSection{Examples in Probability}
+\end{document}
