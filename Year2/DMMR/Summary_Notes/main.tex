@@ -66,6 +66,18 @@ Complement Law: &$A \cap \overline{A} = \emptyset$&$A \cup \overline{A} = U$\\
 }
 \nDefinition{Cartesian Product}{$A x B$ is the set of all ordered pairs (a,b) such that $a \in A \land b \in B$}
 \nSection{Cardinality}
+\nDefinition{Cardinality}{the set A has cardinality $|A|$ which is the number of elements in A}
+\nTheorem{Sets comparisons}{for all sets, $|X| \leq |Y|$ iff there is an injection $f: X \rightarrow Y$\\
+$|X| = |Y|$ iff there is a bijection $f : X \rightarrow Y$\\
+$|X| < |Y|$ iff $|X| \leq |Y| \land |X| \neq |Y|$}
+\nDefinition{Countability}{A set S is called countably infinite, iff it has the same cardinality as the positive integers, $|\mathbb{Z}^{+}| = |S|$ we then say it has cardinality $\aleph$\\ A set is called countable iff it is either finite or countably infinite, otherwise it's called uncountable}
+\nTheorem{Countability and Union}{if A and B are countable sets, then $A\cup B$ is countable}
+\nTheorem{Countability of Big Union}{if I is countable and for each $i \in I$ the set $A_{i}$ is countable then $\bigcup_{i\in I} A_{i}$ is countable}
+\nTheorem{Cardinality of Finite Strings}{The set $\sum^{*}$ of all finite strings over a finite alphabet $\sum$ is countably infinite}
+\nTheorem{Uncountable sets}{The set of infinite binary strings is uncountable\\The set $[0,1] \subseteq R$ is uncountable\\The set of functions $F = \{f|f : \mathbb{Z} \rightarrow \mathbb{Z}\}$ is uncountable}
+\nTheorem{Schroder-Bernstein Theorem}{if $|A| \leq |B| \land |B| \leq |A|$ then $|A| = |B|$}
+\nTheorem{Cantor's theorem}{$|A| < |P(A)|$}
+\nTheorem{Continuum}{the cardinality of the set $\mathbb{R}$ is $\mathfrak{c}$, and $\aleph < \mathfrak{c}$, there exists an infinite hierarchy of cardinalities of infinite sets}
 \nSection{Relations}
 \nDefinition{Binary relation}{a binary relation R on sets A and B is a subset $R \subseteq A x B$. e.g. a set of tuples (a,b) with $a \in A \land b \in B$}
 \nDefinition{n-ary relation}{given sets $A_{1},...,A_{n}$ a subset $R \subseteq A_{1},...,A_{n}$ is an n-ary relation}
@@ -88,8 +100,7 @@ is the equivalence class of a w.r.t R}
 \end{itemize}
 }
 \nDefinition{Partitions of a set}{A partition of a set A is a collection of disjoint, nonempty subsets that have A as their union.}
-\nTheorem{Equivalence To Partition}{If R is an equivalence on A, then the equivalence classes of R form a partition of A. Conversely, given a partition ${A_{i}|i \in I}$ of A there exists an equivalence relation R that has exactly the sets A_{i} for i \in I as its equivalence classes}
-
+\nTheorem{Equivalence To Partition}{If R is an equivalence on A, then the equivalence classes of R form a partition of A. Conversely, given a partition ${A_{i}|i \in I}$ of A there exists an equivalence relation R that has exactly the sets $A_{i}$ for $i \in I$ as its equivalence classes}
 \nSection{Functions}
 \nDefinition{Function}{let A and B be a non-empty set, then a function f maps exactly one element of B to each element of A. so every element in the function must be defined on all elements in A and there cannot be more than one element of B associated with any element of A}
 \nDefinition{function Composition}{if f and g are functions then $f \circ g = f(g(x))$}
