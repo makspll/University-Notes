@@ -67,6 +67,29 @@ Complement Law: &$A \cap \overline{A} = \emptyset$&$A \cup \overline{A} = U$\\
 \nDefinition{Cartesian Product}{$A x B$ is the set of all ordered pairs (a,b) such that $a \in A \land b \in B$}
 \nSection{Cardinality}
 \nSection{Relations}
+\nDefinition{Binary relation}{a binary relation R on sets A and B is a subset $R \subseteq A x B$. e.g. a set of tuples (a,b) with $a \in A \land b \in B$}
+\nDefinition{n-ary relation}{given sets $A_{1},...,A_{n}$ a subset $R \subseteq A_{1},...,A_{n}$ is an n-ary relation}
+\nTheorem{Relation Union and Intersection}{if $R_{i}$ are relations on $AxB \forall i \in I$ then $\bigcup_{i\in I}R_{i}$ and $\bigcap_{i\in I}R_{i}$ are relations on AxB}
+\nDefinition{Relation composition}{let $R \subseteq BxC$ and $S \subseteq A x B$ the composition relation $(R \circ S) \subseteq A x C$ is\\ $\{(a,c) | \exists b(a,b) \in S \land (b,c) \in R\}$}
+\nDefinition{Properties of binary relations}{the relation R on A is:\\
+reflexive iff $\forall x \in A. (x,x) \in R$\\
+symmetric iff $\forall x,y \in A. ((x,y) \in R \rightarrow (y,x) \in R)$\\
+antisymmetric iff $\forall x,y \in A (((x,y) \in R \land (y,x) \in R) \rightarrow x = y)$\\
+transitive iff $\forall x,y,z \in A(((x,y)\in R \land (y,z) \in R) \rightarrow (x,z) \in R)$}
+\nDefinition{Closures}{$R^{*}$ is the reflexive and transitive closure of R}
+\nDefinition{Equivalence relations}{A relation R on a set A is an equivalence relation iff it is reflexive, symmetric and transitive}
+\nDefinition{Equivalence classes}{let R be an equivalence relation on a set A and $a\in A$. Then\\ $[a]_{R} = \{s|(a,s \in R)\}$\\
+is the equivalence class of a w.r.t R}
+\nTheorem{Properties on equivalent relations}{let R be an equivalence relation on A and a,b $\in A$ the following three statements are equivalent:
+\begin{itemize}
+    \item aRb
+    \item $[a]_{R} = [b]){r}$
+    \item $[a]_{R} \cap [b]){r} \neq \emptyset$
+\end{itemize}
+}
+\nDefinition{Partitions of a set}{A partition of a set A is a collection of disjoint, nonempty subsets that have A as their union.}
+\nTheorem{Equivalence To Partition}{If R is an equivalence on A, then the equivalence classes of R form a partition of A. Conversely, given a partition ${A_{i}|i \in I}$ of A there exists an equivalence relation R that has exactly the sets A_{i} for i \in I as its equivalence classes}
+
 \nSection{Functions}
 \nDefinition{Function}{let A and B be a non-empty set, then a function f maps exactly one element of B to each element of A. so every element in the function must be defined on all elements in A and there cannot be more than one element of B associated with any element of A}
 \nDefinition{function Composition}{if f and g are functions then $f \circ g = f(g(x))$}
