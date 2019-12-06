@@ -70,7 +70,13 @@ Complement Law: &$A \cap \overline{A} = \emptyset$&$A \cup \overline{A} = U$\\
 \nSection{Functions}
 \nDefinition{Function}{let A and B be a non-empty set, then a function f maps exactly one element of B to each element of A. so every element in the function must be defined on all elements in A and there cannot be more than one element of B associated with any element of A}
 \nDefinition{function Composition}{if f and g are functions then $f \circ g = f(g(x))$}
-\nTheorem{new Functions from old functions}{if f and g are functions then $f + g$ and $f \circ g$ are also functions}
+\nTheorem{new Functions from old functions}{if f and g are functions then $f + g$ and $f \circ g$ is also a function\\
+if f and g are both injective/surjective/bijective then $f\circ g$ is also injective/surjective/bijective (respectively)}
+\nDefinition{Injective Functions (one-to-one)}{$f: A\rightarrow B$ is injective iff $\forall a,c \in A (f(a) = f(c) \rightarrow a = c)$}
+\nDefinition{Surjective Functions (onto)}{$f : A \rightarrow B$ is surjective iff $\forall b\in B\exists a\in A(f(a) = b)$}
+\nDefinition{Bijective Functions (One-to-one correspondence)}{$f : A \rightarrow B$ is a bijection iff it is both injective and surjective}
+
+\nDefinition{Inverse Functions}{let $f : A \rightarrow B$ be a bijection, then the inverse of f, $f^{-1}: B \rightarrow A$ is $f^{-1}(b) = a$ iff $f(a) = b$. So the inverse function exists only for bijections, and it exists for only the elements in B which are mapped to by some element $a \in A$}
 \nSection{Sequences}
 \nSection{Sums}
 \nSection{Number Theory}
