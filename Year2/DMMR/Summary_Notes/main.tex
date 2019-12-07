@@ -4,6 +4,7 @@
 \usepackage{array}
 \usepackage{amsmath}
 
+\everymath{\displaystyle}
 \begin{document}
 
 \title{DMMR Condensed Summary Notes For Quick In-Exam Strategic Fact Deployment }
@@ -140,14 +141,14 @@ An arithmetic progression is a sequence of the form $a, a + d, a + 2d,...,a + nd
 the initial conditions specify the first elements of the sequence, before the recurrence relation applies\\
 A sequence is called a solution of a recurrence relation iff its terms satisfy the recurrence relation}
 \nDefinition{Fibonnaci Sequence}{
-    \begin{equation}
+    \begin{equation*}
         f(x) = 
         \begin{cases}
             1 & n = 1\\
             1 & n = 2\\
             f(n-1) + f(n-2) & n > 2\\
        \end{cases}
-    \end{equation}
+    \end{equation*}
     }
 \nDefinition{Solving recurrence relations with iteration}{$a_{n} = a_{n-1} + 3$ for $n \geq 2$ with $a_{1} = 2$\\ Forward Substitution Method:\\
 $a_{2} = 2 + 3$\\
@@ -176,6 +177,40 @@ $\hspace{7}= a_{2} + 3(n - 2) = (a_{1} + 3) + 3 \cdot (n-2) = 2 + 3(n-1)$\\
     \end{tabular*}
 }
 \nSection{Sums}
+\nDefinition{Sums}{
+given a sequence $\{a_{n}\}$, the sum of terms $a_{m},a_{m+1},...,a_{\mathfbb{l}}$ is \\
+\begin{gather*}
+    a_{m} + a_{m+1} + ... + a_{\mathfbb{l}} \text{ or}\\
+    \sum_{j=m}^{\mathbb{l}}{a_{j}} \text{ or } \sum_{m\leq j \leq \mathfbb{l}}{a_{j}} 
+\end{gather*}
+more generally for an index set S: 
+\begin{equation*}
+    \sum_{j\in S}{a_{j}}
+\end{equation*}
+}
+\nTheorem{Useful Summation Formulas}{
+\begin{tabular*}{\linewidth}{l|l}
+Sum & Closed Form\\
+\hline\\[1pt]
+ $\sum_{k=0}^{n}{ar^{k}} (r \neq 0)$ & $\frac{ar^{n+1}-a}{r-1} , r\neq 1$\\[15pt]
+$\sum_{k=1}^{n}{k}$ & $\frac{n(n+1)}{2}$\\[15pt]
+$\sum_{k=1}^{n}{k^{2}}$ & $\frac{n(n+1)(2n+1)}{6}$\\[15pt]
+$\sum_{k=1}^{n}{k^{3}}$ & $\frac{n^{2}(n+1)^{2}}{4}$\\[15pt]
+$\sum_{k=0}^{\infty}{x^{k}, |x| < 1}$ & $\frac{1}{1-x}$\\[15pt]
+$\sum_{k=1}^{\infty}{kx^{k-1}, |x| < 1}$ & $\frac{1}{(1-x)^{2}}$
+\end{tabular*}
+}
+\nDefinition{Products}{
+given a sequence $\{a_{n}\}$, the product of terms $a_{m},a_{m+1},...,a_{\mathfbb{l}}$ is \\
+\begin{gather*}
+    a_{m} + a_{m+1} + ... + a_{\mathfbb{l}} \text{ or}\\
+    \prod_{j=m}^{\mathbb{l}}{a_{j}} \text{ or } \prod_{m\leq j \leq \mathfbb{l}}{a_{j}} 
+\end{gather*}
+more generally for an index set S: 
+\begin{equation*}
+    \prod_{j\in S}{a_{j}}
+\end{equation*}
+}
 \nSection{Number Theory}
 \nSection{Counting}
 \nSection{Graphs}
