@@ -164,7 +164,7 @@ $\hspace{7}= a_{n-3} + 3 \cdot 2 = a_{n-2} + 3 \cdot 3$\\
 $\hspace{7}= a_{2} + 3(n - 2) = (a_{1} + 3) + 3 \cdot (n-2) = 2 + 3(n-1)$\\
 }
 \nDefinition{Common Sequences}{
-\begin{tabular*}{\textwidth}{l|l}
+\begin{tabular*}{0.7\textwidth}{l|l}
     nth Term & First 10 terms\\
     \hline
     $n^{2}$ & $1,4,9,16,25,36,49,64,81,100,...$\\
@@ -189,7 +189,7 @@ more generally for an index set S:
 \end{equation*}
 }
 \nTheorem{Useful Summation Formulas}{
-\begin{tabular*}{\linewidth}{l|l}
+\begin{tabular*}{0.45\linewidth}{l|l}
 Sum & Closed Form\\
 \hline\\[1pt]
  $\sum_{k=0}^{n}{ar^{k}} (r \neq 0)$ & $\frac{ar^{n+1}-a}{r-1} , r\neq 1$\\[15pt]
@@ -212,9 +212,112 @@ more generally for an index set S:
 \end{equation*}
 }
 \nSection{Number Theory}
+\nDefinition{Division}{if a and b are integers with $a \neq 0$, then a divides b, written $a|b$, if there exists an integer c such that $b = ac$}
+\nTheorem{Divisibility Results}{
+if $a,b,c$ are integers, then the following hold:
+\begin{itemize}
+    \item $a|b \land a|c \rightarrow a|(b+c) \land a|(b-c)$
+    \item $a|b \rightarrow a|bc$
+    \item $a|b \land b|c \rightarrow a|c$
+\end{itemize}
+}
+\nTheorem{Division Algorithm}{if a is an integer and d is a positive integer, then there are unique integers q and r, with $0 \leq r < d$, such that $a = dq + r$.\\ q is the quotient, r is the remainder, q = a div b and r = a mod d}
+\nDefinition{Congruency}{
+if a and b are integers and m is a positive integer, then\\ a is congruent to b modulo m, written $a \equiv b$ (mod m), iff $m|(a-b)$}
+\nTheorem{Congruence is an equivalence relation}{$a \equiv b$ (mod m) iff a mod m = b mod m}
+\nTheorem{Congruence Result}{$a\equiv b$ (mod m) iff there is an integer k such that a = b + km}
+\nTheorem{Congruences of sums,differences and products}{
+if $a\equiv b$ (mod m) and $c \equiv d$ (mod m), then $a + c \equiv b + d$ (mod m) and $ac \equiv bd$ (mod m)}
+\nTheorem{Corollary}{
+\begin{itemize}
+    \item $(a + b)$ (mod m) = ((a mod m) + (b mod m)) mod m
+    \item $ab$ mod m = ((a mod m)(b mod m)) mod m
+\end{itemize}}
+\nDefinition{Arithmetic modulo m}{$\mathbb{Z}_{m} = \{0,1,...,m-1\}$\\
+$+_{m}$ on $\mathbb{Z}_{m}$ is $a +_{m}b = (a + b)$ mod m\\
+$\cdot_{m}$ on $\mathbb{Z}_{m}$ is $a \cdot_{m}b = (a + b)$ mod m}
+\nDefinition{Primes}{A positive integer p > 1 is called \emph{prime} iff the only positive factors of p are 1 and p. otherwise it is called \emph{composite}}
+\nTheorem{Fundamental Theorem of Arithmetic}{Every positive integer greater than 1 can be written uniquely as a prime or as the product of its prime factors, written in order of non-decreasing size}
+\nTheorem{Lemma}{ if p is prime and $p|a_{1}a_{2}...a_{n}$ where each $a_{i}$ is an integer, then $p|a_{j}$ for some $1 \leq j \leq n $}
+\nTheorem{Infinity of primes}{Every natural number greater than one is either prime or it has a prime divisor and there are infinitely many primes}
+\nTheorem{Trial Division}{if n is a composite integer, then n has a prime divisor less than or equal to $\sqrt{n}$}
+\nDefinition{The Sieve of Eratosthenes}{To find all primes between 2 and n:\\
+try every integer $i \leq \sqrt{n}$ and see if n is divisible by i
+\begin{itemize}
+    \item write the numbers 2,..,n into a list. Let i := 2
+    \item remove all strict multiples of i from the list
+    \item let k be the smallest number present in the list s.t k > i and let i:= k
+    \item if $i > \sqrt{n}$ then stop else go to step 2
+\end{itemize}
+}
+\nDefinition{Greatest Common Divisor}{
+Let a, b ∈ Z
++.The largest integer d such that $d|a$ and $d|b$ is called the
+greatest common divisor of a and b, written gcd(a, b)}
+\nDefinition{Coprimes}{The integers a and b are relatively prime (coprime) iff gcd(a, b) = 1}
+\nTheorem{GCD from prime factors}{gcd(a,b) = $p_{1}^{min(a_{1},b_{1})}p_{2}^{min({a_{1},b_{2})}}...p_{n}^{min({a_{n},b_{n})}}$}
+\nTheorem{Euclidian Algorithm}{if x and y are integers and $x \geq y$ then\\ gcd(x,y) = gcd(y,x mod y) and\\
+gcd(x,0) = x}
+\nTheorem{Bezout's Theorem}{If x and y are positive integers,then \\there exist integers a and b such
+that gcd(x, y) = ax + by}
+\nTheorem{Extended Euclidian algorithm}{
+algorithm e-gcd(x,y)\\
+\hspace*{6mm} if y = 0\\
+\hspace*{6mm} then return(x, 1, 0)\\
+\hspace*{6mm} else\\
+\hspace*{10mm} (d, a, b) := e-gcd(y, x mod y)\\
+\hspace*{10mm} return((d, b, a - ((x div y) * b)))\\
+\emph{example:}\\
+e-gcd(22,4) = (2,1,0-($5\cdot 1$)) = (2,1,-5)\\
+e-gcd(4,2) = (2,0,1-($2 \cdot 0$)) = (2,0,1)\\
+e-gcd(2,0) = (2,1,0)\\
+so gcd(22,4)$ = 2 = 1 \cdot 22 + (-5) \cdot 4$
+}
+\nTheorem{Properties}{if a,b,c are positive integers such that gcd(a,b) = 1 and $a|bc$ then $a|c$\\ i.e. if a has no common factors with b (except 1) but has common factors with bc then a has common factors with c}
+\nTheorem{Further Properties}{let m be a positive integer and let a,b,c be integers.\\ if $ac \equiv bc$ (mod m) and gcd(c,m) = 1, then $a \equiv b$ (mod m)}
+\nDefinition{Multiplicative Inverses}{let x,y,m be integers, then y is a multiplicative inverse modulo m of x when $xy \equiv 1$ (mod m)}
+\nTheorem{Existence of inverses}{if m,x are positive integers and gcd(m,x) = 1 then x has a multiplicative inverse mod m (and it is unique mod m)}
+
+\nTheorem{Chineese Reminder Theorem}{
+Let $m_{1},...,m_{n}$ be pairwise relatively prime positive integers greater than 1 and $a_{1},...,a_{n}$ be arbitrary integers. Then the system:
+\begin{gather*}
+    x \equiv a_{1} \Mod{m_{1}}\\
+    x \equiv a_{2} \Mod{m_{2}}\\
+    \vdots\\
+    x \equiv a_{n} \Mod{m_{n}}
+\end{gather*}
+has a unique solution modulo $m = m_{1}m_{2}\cdots m_{n}$\\
+here is a general construction to find such solution:\\
+\begin{itemize}
+    \item Compute M = $m_{1}m_{2}\cdots m_{n}$
+    \item for each i = 1,2,...,n, compute: $y_{i} = \frac{M}{m_{i}} = m_{1}m_{2}\cdots m_{i-1}m_{i+1}\cdots m_{n}$
+    \item for each i = 1,2,...,n, compute $z_{i} \equiv y_{i}^{-1} \Mod{m_{i}}$ (the inverse of each y, can be found using the e-gcd algorithm by taking the result of $e-gcd(m_{i},y_{i})$ = ($1 = a\cdot y_{i} + b\cdot m_{i})$ and taking $\Mod{m_{i}}$ of both sides)
+    \item the integer $x = \sum_{i=1}^{k}{a_{i}y_{i}z_{i}}$ is a solution to the system of congruences and x mod N is the unique solution modulo M
+\end{itemize}
+any other solutions will be multiples of M
+}
+\nTheorem{Fermat's little Theorem}{if p is prime and $p \not| \;a$ then $a^{p-1} \equiv 1 \Mod{p}$. Furthermore, for every integer a we have:\\ $a^{p}\equiv a\Mod{p}$}
+\nDefinition{RSA cryptography}{Choose two distinct prime numbers pand q\\
+let n = pq and k = (p-1)(q-1)\\
+choose integer e where 1 < e < k and gcd (e,k) = 1\\
+(n,e) is released as the public key\\
+let d be the multiplicative inverse of e modulo k, so $de \equiv 1 \Mod k$\\
+(n,d) is the private key and kept secret\\
+Encryption:
+\begin{itemize}
+    \item Bob has public key (n,e) but no private key
+    \item turns M into integer m, $0 \leq m < n$, using an agreed-upon reversible protocol - the padding scheme
+    \item he computes the ciphertext c corresponding to $c = m^{e}$ mod n.
+    \item Bob transmits c to alice
+\end{itemize}
+Decryption:
+\begin{itemize}
+    \item using her private key (n,d), computes $m = c^{d}$ mod n
+    \item given m, she can recover the original message M by reversing the padding scheme
+\end{itemize}
+}
 \nSection{Counting}
 \nSection{Graphs}
 \nSection{Trees}
 \nSection{Discrete Probability}
-\nSection{Examples in Probability}
 \end{document}
