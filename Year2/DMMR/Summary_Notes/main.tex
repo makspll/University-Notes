@@ -3,8 +3,13 @@
 \usepackage{notes}
 \usepackage{array}
 \usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\graphicspath{{./Images/}}
 
 \everymath{\displaystyle}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
 \begin{document}
 
 \title{DMMR Condensed Summary Notes For Quick In-Exam Strategic Fact Deployment }
@@ -317,6 +322,98 @@ Decryption:
 \end{itemize}
 }
 \nSection{Counting}
+\nTheorem{Product Rule}{if A and B are finite sets then: $|A x B| = |A| \cdot |B|$}
+\nTheorem{General Product Rule}{if $A_{1},A_{2},...,A_{m}$ are finite sets then: $|A_{1},A_{2},...,A_{m}| = |A_{1}|\cdot|A_{2}|\cdots|A_{m}|$}
+\nTheorem{Counting Subsets}{A finite set, S, has $2^{|S|}$ distinct subsets}
+\nTheorem{Counting Functions}{For all finite sets A and B, the number of distinct functions, $f : A \rightarrow B$, mapping A to B is:
+\begin{align*}
+    |B|^{|A|}
+\end{align*}
+}
+\nTheorem{Sum Rule}{if A and B are finite sets that are disjoint, then:
+\begin{align*}
+    |A\cup B| = |A| + |B|
+\end{align*}}
+\nTheorem{General Sum Rule}{
+if $A_{1},...,A_{m}$ are finite sets that are pairwise disjoint, then:
+\begin{align*}
+    |A_{1},...,A_{m}| = |A_{1}| +...+ |A_{m}| 
+\end{align*}}
+\nTheorem{Pigeonhole Principle}{For any positive integer k, if k + 1 objects (pigeons) are placed in k
+boxes (pigeonholes), then at least one box contains two or more
+objects.}
+\nTheorem{Generalized Pigeonhole Principle}{If N ≥ 0 objects are placed in k ≥ 1 boxes, then at least one box contains at least $\ceil[\bigg]{\frac{N}{k}
+}$
+objects}
+\nDefinition{Permutations}{A permutation of a set S is an ordered arrangement of the elements
+of S.
+In other words, it is a sequence containing every element of S exactly
+once}
+\nDefinition{R-Permutations}{An r-permutation of a set S, is an ordered arrangement (sequence) of
+r distinct elements of S.
+(For this to be well-defined, r needs to be an integer with $0 \leq r \leq |S|.)$}
+\nTheorem{Calculating r-permutations}{let P(n,r) denote the number of r-permutations of an n-elements set. For all integers $n \geq 1$, and all integers r such that $1 \leq r \leq n$: \\P(n,r) = $\frac{n!}{(n-r)!}$}
+\nTheorem{How big is n!}{$n! \leq n^{n}$ for all n bigger than 0\\
+$2^{n} < n!$ for all n bigger or equal than 4}
+\nTheorem{Stirling's approximation formula}{
+$n! \approx \sqrt{2\pin} \cdot (\frac{n}{e})^{n}$ or \\
+\begin{align*}
+    \sqrt{2\pin} \cdot (\frac{n}{e})^{n} \cdot e^{\frac{1}{12n + 1}} \leq n! \leq \sqrt{2\pin} \cdot (\frac{n}{e})^{n} \cdot e^{\frac{1}{12n}}
+\end{align*}}
+\nDefinition{R-Combinations}{An r-combination of a set S is an unordered collection of r elements
+of S. In other words, it is simply a subset of S of size r}
+\nTheorem{Calculating R-Combinations}{
+let C(n,r) denote the number of r-combinations of an n-element set, which is also written as $n\choose r$. Then for all integers $n \geq 1$, and for all integers r such taht $0 \leq r \leq n$:\\
+\begin{align*}
+    C(n,r) = {n \choose r} = \frac{n!}{r! \cdot (n-r)!} = \frac{n\cdot(n-1)\cdots(n-r+1)}{r!}
+\end{align*}}
+\nTheorem{Bounds for Combinations}{
+using basic considerations and stirling's approximation formula, one can easilly estabilish the following bounds and approximations for $n \choose r$:
+\begin{gather*}
+    (\frac{n}{r})^{r} \leq {n \choose r} \leq (\frac{n\cdot e}{r})^{r}\\
+    {2n \choose n} \approx \frac{2^{2n}}{\sqrt{\pi n}}\\
+    \frac{2^{2n}}{2n+1} \leq {2n \choose n} \leq 2^{2n}
+\end{gather*}}
+\nTheorem{Combinations Identity}{For all integers $n \geq 1$ and all integers r $1 \leq r \leq n$:\\
+\begin{align*}
+    {n \choose r} = {n \choose n-r}
+\end{align*}}
+\nTheorem{The Binomial Theorem}{For all $n \geq 0$:
+\begin{align*}
+    (x + y)^{n} = \sum_{j=0}^{n}{{n \choose j}x^{n-j}y^{j}}
+\end{align*}
+}
+\nTheorem{Corollary}{
+\begin{align*}
+    \sum_{j=0}^{n}{n\choose j} = 2^{n}
+\end{align*}}
+\nTheorem{Pascal's Identity}{
+For all integers $n \geq 0$, and all integers r, $0 \leq r \leq n+1$:
+\begin{align*}
+    {n+1 \choose r} = {n\choose r-1} + {n \choose r}
+\end{align*}
+\includegraphics[scale=0.55]{Triangle}}
+\nTheorem{Vandermonde's identity}{
+for m,n,r $\geq 0$, r $\leq m$ and r $\leq$ n, we have:
+\begin{align*}
+    {m + n \choose r} = \sum_{k=0}^{r}{m \choose r-k}{n \choose k}
+\end{align*}}
+\nDefinition{r-Combinations with repetition}{from a set S is simply a multi-set of size r over S (set which can contain multiple of each element)}
+\nTheorem{counting r-combinations with repetition}{
+For all integers n,r $\geq 1$, the number of r-combs-w.r. from a set S of size n is
+\begin{align*}
+    {n+r-1\choose r} = {n+r-1 \choose n-1}
+\end{align*}}
+\nTheorem{}{The number of permutations of n objects, with $n_{1}$
+indistinguishable objects of Type 1, $n_{2}$ indistinguishable objects of Type
+2,..., and $n_{k}$ indistinuishable objects of Type k, is: 
+\begin{align*}
+    {n \choose n_{1},n_{2},...,n_{k}} = \frac{n!}{n_{1}!n_{2}!...n_{k}!}
+\end{align*}}
+\nTheorem{Multinomial theorem}{for all n $\geq$ 0 and all k $\geq 1$:
+\begin{align*}
+    ({x_{1}+x_{2}+...+x_{k}})^{n} = \sum_{0\leq n_{1},n_{2},...,n_{k}\leq n}{n\choose n_{1},n_{2},...,n_{k}}x_{1}^{n_{1}}x_{2}^{n_{2}}...x_{k}^{n_{k}}
+\end{align*}}
 \nSection{Graphs}
 \nSection{Trees}
 \nSection{Discrete Probability}
