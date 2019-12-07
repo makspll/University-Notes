@@ -2,6 +2,8 @@
 
 \usepackage{notes}
 \usepackage{array}
+\usepackage{amsmath}
+
 \begin{document}
 
 \title{DMMR Condensed Summary Notes For Quick In-Exam Strategic Fact Deployment }
@@ -137,14 +139,42 @@ An arithmetic progression is a sequence of the form $a, a + d, a + 2d,...,a + nd
 \nDefinition{Reccurence relations}{A reccurencerelation for $\{a_{n}\}_{n\in \mathbb{N}}$ is an equation that expresses $a_{n}$ in terms of one or more of the elements $a_{0},a_{1},...,a_{n-1}$\\
 the initial conditions specify the first elements of the sequence, before the recurrence relation applies\\
 A sequence is called a solution of a recurrence relation iff its terms satisfy the recurrence relation}
-\nDefinition{Fibonnaci Sequence}{$f(1) = 1, f(2) = 1, f(n) = f(n-1) + f(n-2) for n > 2$}
+\nDefinition{Fibonnaci Sequence}{
+    \begin{equation}
+        f(x) = 
+        \begin{cases}
+            1 & n = 1\\
+            1 & n = 2\\
+            f(n-1) + f(n-2) & n > 2\\
+       \end{cases}
+    \end{equation}
+    }
 \nDefinition{Solving recurrence relations with iteration}{$a_{n} = a_{n-1} + 3$ for $n \geq 2$ with $a_{1} = 2$\\ Forward Substitution Method:\\
 $a_{2} = 2 + 3$\\
 $a_{3} = (2 + 3) + 3 = 2 + 3 \cdot 2$\\
 $a_{4} = (2 + 2 \cdot 3) + 3 = 2 + 3 \cdot 3$\\
-$a_{n} = a_{n-1} + 3 = (2 + 3 \cdot (2 - 2)) + 3 = 2 + 3 \cdot (n-1)$
+& \vdots \notag \\
+$a_{n} = a_{n-1} + 3 = (2 + 3 \cdot (2 - 2)) + 3 = 2 + 3 \cdot (n-1)$\\
+Backward Substitution Method:\\
+$a_{n} = a_{n-1} + 3$\\
+$\hspace{7}= a_{n-2} + 3 = a_{n-2} + 3 \cdot 2$\\
+$\hspace{7}= a_{n-3} + 3 \cdot 2 = a_{n-2} + 3 \cdot 3$\\
+& \vdots \notag \\
+$\hspace{7}= a_{2} + 3(n - 2) = (a_{1} + 3) + 3 \cdot (n-2) = 2 + 3(n-1)$\\
 }
-\nDefinition{Common Sequences}{}
+\nDefinition{Common Sequences}{
+\begin{tabular*}{\textwidth}{l|l}
+    nth Term & First 10 terms\\
+    \hline
+    $n^{2}$ & $1,4,9,16,25,36,49,64,81,100,...$\\
+    $n^{3}$ & $1,8,27,64,125,216,343,512,729,1000,...$\\
+    $n^{4}$ & $1, 16, 81, 256, 625, 1296, 2401, 4096, 6561, 10000,...$\\
+    $2^{n}$ & $ 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024,...$\\
+    $3^{n}$ & $ 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049,...$\\
+    $n!$ & $ 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800,...$\\
+    $f_{n}$ & $ 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89,...$\\ 
+    \end{tabular*}
+}
 \nSection{Sums}
 \nSection{Number Theory}
 \nSection{Counting}
