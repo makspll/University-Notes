@@ -690,11 +690,99 @@ The \textbf{clique number $\omega(G)$}, of a graph G is the maximum
 positive integer $r \geq 1$, such that $K_{r}$
 is a subgraph of G.\\
 Note that for all graphs G, $\omega(G) \leq \chi(G)$: if G has an
-r-clique then it is not (r − 1)-colorable. However in general:\\
+r-clique then it is not (r - 1)-colorable. However in general:\\
 $\omega(G)
 \not = \chi(G)$. For instance, The
 5-cycle, $C_{5}$, has $ω(C_{5}) = 2 < \chi(C_{5}) = 3$.
 }
 \nSection{Trees}
+\nDefinition{Trees}{
+A \textbf{tree} is a connected simple undirected graph with no simple
+circuits.\\
+A \textbf{forest} is a (not necessarily connected) simple undirected
+graph with no simple circuits.}
+\nTheorem{Facts}{
+A graph G is a tree if and only if there is a unique
+simple (and tidy) path between any two vertices of G.\\\\
+Every tree, T = (V,E) with $|V| \geq 2$, has at least
+two vertices that have degree = 1.\\\\
+Every tree with n vertices has exactly $n - 1$ edges.
+}
+\nDefinition{Rooted Trees}{
+A rooted tree, is a pair (T, r) where T = (V,E) is a tree, and
+$r \in V$ is a chosen root vertex of the tree.
+Often, the edges of a rooted tree (T,r) are viewed as being
+directed, such that for every vertex v the unique path from r to v
+is directed away from (or towards) r.\\\\
+Terminology:
+\begin{itemize}
+    \item For each node $v \not = r$ the \textbf{parent},
+is the unique vertex u such that
+$(u, v) \in E$. v is then called a \textbf{child} of u.
+Two vertices with the same parent are called \textbf{siblings}.
+    \item \textbf{A} leaf is a vertex with no children. Non-leaves are called \textbf{internal vertices}
+    \item The \textbf{height} of a rooted tree is the length of the longest directed path from the root to any leaf.
+    \item \textbf{The ancestors (descendants,} respectively) of a vertex v are all vertices u $\not = $ v such that there is a directed path from u to v (from v to u, respectively).
+    \item The \textbf{subtree} rooted at v, is the subgraph containing v and all its descendants, and all directed edges between them.
+\end{itemize}
+}
+\nDefinition{M-ary Trees}{
+For $m \geq 1$, A rooted tree is called a m-ary tree if every internal node has at most m children. It is called a full m-ary tree if every internal node has exactly m children. An m-ary tree with m = 2 is called a binary tree.
+}
+\nDefinition{Rooted Ordered Tree}{
+A \textbf{trooted ordered tree} is a rooted tree (T, r) where in addition
+the children of each internal vertex v are linearly ordered
+according to some ordering $\leq_{v}$ .
+When drawing the tree, we usually write ordered children (from
+least to greatest) from left to right.
+If the rooted ordered tree is a \textbf{binary} tree, then the first child is
+called \textbf{left child} and the second child is called \textbf{right child}.
+}
+\nTheorem{Counting Nodes 1}{
+For all $m \geq 1$, every full m-ary tree with i internal
+vertices has exactly $n = m \cdot i + 1$ vertices.
+}
+\nTheorem{Counting Nodes 2}{
+For all $m \geq 1$, a full m-ary tree with:
+\begin{itemize}
+    \item n vertices has $i = \frac{n − 1}{m}$ internal vertices and
+$l = \frac{(m − 1)n + 1}{m}$ leaves
+    \item i internal vertices has $n = m \cdot i + 1$ vertices and
+$l = (m − 1)i + 1$ leaves
+    \item if $m \geq 2$, then if the m-ary tree has l leaves then it has $n = \frac{ml − 1}{m − 1}$ vertices and $i = \frac{l − 1}{m − 1}$ internal vertices.
+\end{itemize}}
+\nTheorem{Counting Leaves}{
+There are at most $m^{h}$
+leaves in an m-ary tree of
+height h.
+}
+\nTheorem{Height of trees}{
+If an m-ary tree has l leaves, and h is its height,
+then $h \geq \ceil{\log_{m}l}$.
+}
+\nTheorem{Number of Comparisons in a sort}{
+You have to sort a list of distinct unknown numbers:
+$a_{1},..., a_{n}$, using only the operation of comparing two numbers:$a_{i} <_{?} a_{j}$. How many comparisons do you need, in the worst case, in order to sort all the numbers correctly? Answer:
+\begin{align*}
+    n\log_{2}n
+\end{align*}
+}
+\nDefinition{Spanning Trees}{
+For a simple undirected graph G, a spanning tree of G is a
+subgraph T of G such that T is a tree and T contains every
+vertex of G.}
+\nTheorem{Existence of Spanning Trees}{
+Every connected graph G has a spanning tree.}
+\nTheorem{Prim's Algorithm for a minimum spanning tree}{
+\textbf{Input:} Connected, edge-weighted, undirected graph G = (V,E, w).\\
+\textbf{Output:} A minimum-cost spanning tree T for G.\\
+\textbf{Algorithm:}\\
+\hspace*{6pt}\textbf{Initialize:} T := \{e\}, where e is a minimum-weight edge in E.\\
+\hspace*{6pt}\textbf{for} i := 1 to n − 2 \textbf{do}\\
+\hspace*{12pt}Let $e^{'}$ := a minimum-weight edge incident to-\\
+\hspace*{25pt}some vertex in T, and not forming a circuit if added to T;\\
+\hspace*{12pt}T := $T \cup \{e^{'}\}$;\\
+\hspace*{6pt}\textbf{end for}\\
+\hspace*{6pt}Output the tree T.}
 \nSection{Discrete Probability}
 \end{document}
