@@ -5,6 +5,7 @@
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{graphicx}
+\usepackage{amssymb}
 \graphicspath{{./Images/}}
 
 \everymath{\displaystyle}
@@ -398,7 +399,7 @@ for m,n,r $\geq 0$, r $\leq m$ and r $\leq$ n, we have:
 \begin{align*}
     {m + n \choose r} = \sum_{k=0}^{r}{m \choose r-k}{n \choose k}
 \end{align*}}
-\nDefinition{r-Combinations with repetition}{from a set S is simply a multi-set of size r over S (set which can contain multiple of each element)}
+\nDefinition{R-Combinations with repetition}{from a set S is simply a multi-set of size r over S (set which can contain multiple of each element)}
 \nTheorem{counting r-combinations with repetition}{
 For all integers n,r $\geq 1$, the number of r-combs-w.r. from a set S of size n is
 \begin{align*}
@@ -415,6 +416,285 @@ indistinguishable objects of Type 1, $n_{2}$ indistinguishable objects of Type
     ({x_{1}+x_{2}+...+x_{k}})^{n} = \sum_{0\leq n_{1},n_{2},...,n_{k}\leq n}{n\choose n_{1},n_{2},...,n_{k}}x_{1}^{n_{1}}x_{2}^{n_{2}}...x_{k}^{n_{k}}
 \end{align*}}
 \nSection{Graphs}
+\nDefinition{Graph Types}{
+\begin{tabular*}{\textwidth}{l|l|l|l}
+     \emph{Type} & \emph{Edges} & \emph{Multi-Edges} & \emph{Loops}\\
+     \hline
+     (simple undirected) graph & Undirected & No & No \\
+     (undirected) multigraph & Undirected & Yes & No \\
+     (undirected) pseudograph & Undirected & Yes & Yes\\
+     directed graph & Directed & No & Yes\\
+     simple directed graph & Directed & No & No \\
+     directed multigraph & Directed &Yes& No\\
+     directed pseudograph & Directed &Yes & Yes\\
+     mixed graph & Both & Yes& Yes
+\end{tabular*}
+}
+\nDefinition{Directed Graph Definition}{A directed graph (digraph), G = (V, E), consists of a non-empty set,
+V, of vertices (or nodes), and a set $E \subseteq V × V$ of directed edges (or
+arcs). Each directed edge $(u, v) \in E$ has a start (tail) vertex u, and a
+end (head) vertex v.
+Note: a directed graph G = (V, E) is simply a set V together with a
+binary relation E on V}
+\nDefinition{Undirected Graph Definition}{
+A (simple,undirected) graph, G = (V, E), consists of a non-empty set
+V of vertices (or nodes), and a set$ E \subseteq [V]$
+2
+of (undirected) edges.
+Every edge ${u, v} \in E$ has two distinct vertices u 6= v as endpoints,
+and such vertices u and v are then said to be adjacent in the graph G.}
+\nDefinition{Degree of a vertex}{
+The degree of a vertex v in a
+undirected graph is the number of edges
+incident with it. The degree of the vertex v is
+denoted by deg(v).}
+\nDefinition{The Neighbourhood of a vertex}{
+The neighborhood (neighbor set)
+of a vertex v in a undirected graph, denoted
+N(v) is the set of vertices adjacent to v.}
+\nTheorem{Handshaking Theorem}{
+ If
+G=(V,E) is a undirected graph with m edges. let $V_{1}$ be the vertices of even degree and $V_{2}$ be the vertices of odd degree in G,
+then:
+\begin{align*}
+    2m = \sum_{v \in V}deg(v) = \sum_{v \in V_{1}}deg(v) + \sum_{v \in V_{2}}deg(v)
+\end{align*}}
+\nDefinition{In/Out degree}{
+The in-degree of a vertex v,
+denoted $deg_{-}(v)$, is the number of edges
+directed into v. The out-degree of v, denoted
+$deg_{+}(v)$, is the number of edges directed out of
+v. Note that a loop at a vertex contributes 1 to
+both in-degree and out-degree.}
+\nTheorem{Number of Edges of a Directed Graph}{
+ Let G = (V, E) be a directed graph.
+Then:
+\begin{align*}
+    |E| = \sum_{v \in V}deg^{-}(v) = \sum_{v \in V}deg^{+}(v)
+\end{align*}}
+\nDefinition{Complete Graphs}{
+A \emph{complete graph} on n vertices, denoted by $K_{n}$
+is the simple graph that contains exactly one
+edge between each pair of distinct vertices.}
+\nDefinition{Cyclical Graphs}{
+A cycle $C_{n}$ for $n \geq 3$ consists of n vertices $v_{1},v_{2},v_{n}$ and edges \\ $(v_{1},v_{2}),(v_{2},v_{3}),...,(v_{n-1},v_{n}),(v_{n},v_{1})$
+}
+\nDefinition{n-Cubes}{
+An n-dimensional hypercube, or n-cube, is a
+graph with $2^{n}$ vertices representing all bit
+strings of length n, where there is an edge
+between two vertices if and only if they differ in
+exactly one bit position.}
+\nDefinition{Bipartite Graphs}{
+An equivalent definition of a bipartite graph is
+one where it is possible to color the vertices
+either red or blue so that no two adjacent
+vertices are the same color.}
+\nDefinition{Complete Bipartite Graphs}{
+A complete bipartite graph
+is a graph that has its vertex set partitioned
+into two subsets $V_{1}$ of size m and $V_{2}$ of size n
+such that there is an edge from every vertex in
+$V_{1}$ to every vertex in $V_{2}$.}
+\nDefinition{Subgraphs}{
+A subgraph of a graph G =
+(V,E) is a graph (W,F), where
+$W \subseteq V$ and $F \subseteq E$. A subgraph H of G is a proper
+subgraph of G if $H \neq G$.}
+\nDefinition{Induced Subgraphs}{
+Let G = (V, E) be a graph. The
+subgraph induced by a subset W of the vertex
+set V is the graph H= (W,F), whose edge
+set F contains an edge in E if and only if both
+endpoints are in W. }
+\nDefinition{Bipartite Graph alternative Definition}{
+A bipartite graph is a (undirected) graph G = (V,E) whose
+vertices can be partitioned into two disjoint sets $(V_{1},V_{2}
+)$, with
+$V_{1} \cap V_{2} = \emptyset$ and $V_{1} \cup V_{2} = V$, such that for every edge $e \in E$,
+e = \{u, v\} such that $u \in V_{1}$
+and $v \in V_{2}$. In other words, every
+edge connects a vertex in $V_{1}$ with a vertex in $V_{2}$.\\
+Equivalently, a graph is bipartite if and only if it is possible to
+color each vertex red or blue such that no two adjacent vertices
+are the same color.
+}
+\nDefinition{Matchings}{
+A \textbf{matching}, M, in a graph, G = (V,E), is a subset of edges,
+$M \subseteq E$, such that there does not exist two distinct edges in M
+that are incident on the same vertex. In other words, if
+$\{u, v\}, \{w, z\} \in M$, then either $\{u, v\} = \{w, z\}$ or
+$\{u, v\} \cap \{w, z\} = \emptyset.$\\\\
+A \textbf{maximum matching} in graph G is a matching in G with the
+maximum possible number of edges.}
+\nDefinition{Perfect/Complete Matchings}{
+For a graph G = (V,E), we say that a subset of edges, $W \subseteq E$,
+\textbf{covers} a subset of vertices, $A \subseteq V$, if for all vertices $u \in A$,
+there exists an edge $e \in W$, such that e is incident on u, i.e.,
+such that e = \{u, v\}, for some vertex v.\\\\
+In a bipartite graph G = (V,E) with bipartition $(V_{1},V_{2}
+)$, a
+\textbf{complete matching} with respect to $V_{1}$, is a matching $M^{'}
+\subseteq E$
+that covers $V_{1}$, and a \textbf{perfect matching} is a matching, $M_{*}
+\subseteq E$,
+that covers V.
+}
+\nTheorem{Hall's Marriage Theorem}{
+For a bipartite graph G = (V,E), with bipartition $(V_{1},V_{2}
+)$, there
+exists a matching $M \subseteq E$ that covers $V_{1}$ if and only if for all
+$S \subseteq V_{1}, |S| \leq |N(S)|$.}
+\nTheorem{Corollary}{
+Corollary A bipartite graph G = (V,E) with bipartition $(V_{1},V_{2}
+)$
+has a perfect matching if and only if $|V_{1}| = |V_{2}|$ and $\forall S \subseteq V_{1},
+|S| \leq |N_{G}(S)|$.}
+\nTheorem{New Graphs From Old}{
+The union of two simple graphs
+ $G_{1} = (V_{1}, E_{1})$ and $G_{2} = (V_{2}, E_{2})$ is the
+simple graph with vertex set $V_{1} \cup V_{2}$ and edge
+set $E_{1} \cup E_{2}$. The union of $G_{1}$ and $G_{2}$ is denoted
+by $G_{1} \cup G_{2}$.}
+\nDefinition{Representing Graphs: Adjacency Lists}{
+ An \textbf{adjacency list} represents a
+graph (with no multiple edges) by specifying
+the vertices that are adjacent to each vertex.
+}
+\nDefinition{Adjacency Matrix}{
+Suppose that G = (V, E) is a simple
+graph where $|V| = n$. Arbitrarily list the vertices
+of G as $v_{1}, v_{2},..., v_{n}.$
+The adjacency matrix, A, of G, with respect to
+this listing of vertices, is the $n \: x \: n$ 0-1 matrix
+with its (i, j)th entry = 1 when $v_{i}$ and $v_{j}$ are
+adjacent, and = 0 when they are not adjacent}
+\nDefinition{Isomorphism of graphs}{
+Definition: Two (undirected) graphs
+$G_{1} = (V_{1}, E_{1})$ and $G_{2} = (V_{2}, E_{2})$ are
+isomorphic if there is a bijection, ,
+with the property that for all vertices $a,b \in V_{1}$
+\begin{align*}
+    \{a,b\}\in E_{1} \; \text{if and only if} \; \{f(a),f(b)\}\in E_{2}
+\end{align*}
+Such a function f is called an isomorphism.
+Intuitively, isomorphic graphs are “THE SAME”,
+except for “renamed” vertices.}
+\nDefinition{Paths}{
+For an undirected graph(same definition for directed graphs) G = (V,E), an integer
+$n \geq 0$, and vertices $u, v \in V,$ \textbf{a path (or walk) of length n from u
+to v} in G is a sequence:\\
+$x_{0}, e_{1}, x_{1}, e_{2},..., x_{n−1}, e_{n}, x_{n}$\\
+of interleaved vertices $x_{j} \in V$ and edges $e_{i} \in E$,
+such that $x_{0} = u$ and $x_{n} = v$, and such that $e_{i} = \{x_{i−1}, x_{i}
+\} \in E$ for
+all $i \in {1,..., n}.$\\
+Such a path \textbf{starts} at u and \textbf{ends} at v. A path of length $n \geq 1$ is
+called a \textbf{circuit (or cycle)} if $n \geq 1$ and the path starts and ends at
+the same vertex, i.e., u = v.\\
+A path or circuit is called \textbf{simple} if it does not contain the same
+edge more than once.(And we call it \textbf{tidy} if it does not contain the same vertex more than once, except possibly the first and last in case u = v and the path is a circuit (cycle))
+}
+\nDefinition{Connectedness in Undirected Graphs}{
+An undirected graph G = (V,E) is called connected,
+if there is a path between every pair of distinct vertices.
+It is called disconnnected otherwise.\\ \\ There is always a simple, and tidy path between any pair of vertices u,v of a connected undirected graph G.
+}
+\nDefinition{Connected Components}{
+A connected component $H = (V^{'},E^{'})$ of a graph
+G = (V,E) is a maximal connected subgraph of G, meaning H
+is connected and $V^{'}
+\subseteq V$ and $E^{'}
+\subseteq E$, but H is not a proper
+subgraph of a larger connected subgraph R of G.
+}
+\nDefinition{Connectedness in Directed Graphs}{
+A directed graph G = (V,E) is called \textbf{strongly
+connected}, if for every pair of vertices u and v in V, there is a (directed) path from u to v, and a directed path from v to u.\\\\
+(G = (V,E) is \textbf{weakly connected} if there is a path between
+every pair of vertices in V in the underlying undirected graph
+(meaning when we ignore the direction of edges in E.)\\\\
+A \textbf{strongly connected component (SCC)} of a directed graph G,
+is a maximal strongly connected subgraph H of G which is not
+contained in a larger strongly connected subgraph of G
+}
+\nDefinition{Directed Acyclic Graph (DAG)}{
+A Directed Acyclic Graph (DAG), is a directed graph that
+contains no circuits or loops.}
+\nDefinition{Euler Path}{
+An \textbf{Euler path} in a multigraph G is a simple path that
+contains every edge of G.
+(So, every edge occurs exactly once in the path.)\\\\
+An \textbf{Euler circuit}in an multigraph G is a simple circuit that
+contains every edge of G.
+(So, every edge occurs exactly once in the circuit.)
+}
+\nTheorem{Euler's Theorem (Euler's Circuits)}{
+A connected undirected multigraph with at least two vertices has
+an Euler circuit if and only if each of its vertices has even
+degree.
+}
+\nTheorem{Euler's Theorem (Euler's Paths)}{
+A connected undirected multigraph G has an Euler path which is
+not an Euler circuit if and only if G has exactly two vertices of
+odd degree.
+}
+\nDefinition{Hamiltonian Paths}{
+A \textbf{Hamiltonian path} in a (undirected) graph G is a
+simple path that visits every vertex exactly once. (In other
+words, it is a tidy path that visits every vertex.)\\\\
+A \textbf{Hamiltonian circuit} in a (undirected) graph G is a simple circuit
+that passes through every vertex exactly once (except for the
+common start and end vertex, which is seen exactly twice).
+}
+\nDefinition{Graphs With Edge Weights}{
+An edge-weighted directed graph, G = (V,E, w), has a
+length/weight/cost function, $w : E \rightarrow \mathbb{N}$, which maps each edge $(u, v) \in E$ to a non-negative integer “length” (or “weight”, or “cost”): $w(u, v) \in \mathbb{N}$.\\\\
+We can extend the “length” function w to a function
+$w : V \; x \; V \rightarrow \mathbb{N} \cap \{\infty\}$, by letting w(u, u) = 0, for all u $\in$ V,
+and letting $w(u, v) = \infty$ for all $(u, v) \not\in E$.
+}
+\nTheorem{Dijkstra's Algorithm}{
+\textbf{Input:} Edge-weighted graph, G = (V,E, w), with (extended)
+weight function $w : V \; x \; V \rightarrow N$, and a source vertex $s \in V$.\\
+\textbf{Output:} Function $L : V \rightarrow N \cup \{∞\}$, such that for all $v \in V$, L(v) is the length of the shortest path from s to v in G.\\
+\textbf{Algorithm:}\\
+\hspace*{6pt}Initialize: S := \{s\}; L(s) := 0;\\
+\hspace*{6pt}Initialize: L(v) := w(s, v), for all $v \in V - \{s\}$;\\
+\hspace*{6pt}\textbf{while} (S \not = \; V) \textbf{do}\\
+\hspace*{12pt}u := $arg min_{z\in V-S} \{L(z)\}$\\
+\hspace*{12pt}$S := S \cap \{u\}$\\
+\hspace*{12pt}\textbf{for all} $v \in V - S$ such that $(u, v) \in E$ \textbf{do}\\
+\hspace*{18pt}L(v) := min\{L(v), L(u) + w(u, v)\}\\
+\hspace*{12pt}\textbf{end for}\\
+\hspace*{6pt}\textbf{end while}\\
+\hspace*{6pt}Output function L(·).
+}
+\nSection{Graph Colouring}
+\nDefinition{K-Colouring}{
+Suppose we have k distinct colours with which to colour the
+vertices of a graph. Let $[k] = \{1,..., k\}$. For an undirected
+graph, $G = (V,E)$, an admissible vertex \textbf{k-colouring} of G is a function $c : V \rightarrow [k]$, such that for all u, $v \in V$, if $\{u, v\} \in E$
+then $c(u) \not = c(v).$\\\\
+For an integer $k \geq 1$, we say an undirected graph $G = (V,E)$ is
+\textbf{k-colourable} if there exists a \textbf{k-colouring} of G.
+The chromatic number of G, denoted $\chi(G)$, is the smallest
+positive integer k, such that G is k-colourable. \\\\
+Every Graph with n vertices is n-colourable}
+\nDefinition{N-Clique}{
+The \textbf{n-Clique}, $K_{n}$, i.e., the complete graph on n vertices,
+has chromatic number $\chi(K_{n}
+)$ = n. All its vertices must get
+assigned different colours in any admissible colouring.\\\\
+The \textbf{clique number $\omega(G)$}, of a graph G is the maximum
+positive integer $r \geq 1$, such that $K_{r}$
+is a subgraph of G.\\
+Note that for all graphs G, $\omega(G) \leq \chi(G)$: if G has an
+r-clique then it is not (r − 1)-colorable. However in general:\\
+$\omega(G)
+\not = \chi(G)$. For instance, The
+5-cycle, $C_{5}$, has $ω(C_{5}) = 2 < \chi(C_{5}) = 3$.
+}
 \nSection{Trees}
 \nSection{Discrete Probability}
 \end{document}
