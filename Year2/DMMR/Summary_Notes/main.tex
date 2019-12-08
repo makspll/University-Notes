@@ -785,4 +785,217 @@ Every connected graph G has a spanning tree.}
 \hspace*{6pt}\textbf{end for}\\
 \hspace*{6pt}Output the tree T.}
 \nSection{Discrete Probability}
+\nDefinition{Sample Space}{
+For any probabilistic experiment or process, the set $\Omega$ of all its possible outcomes is called its \textbf{sample space}.
+}
+\nDefinition{Probability Distribution}{
+A probability distribution over a finite or countable set $\Omega$, is a
+function:
+\begin{align*}
+    P : \Omega \rightarrow [0, 1]
+\end{align*}
+such that $\sum_{s\in \Omega}P(s) = 1$.
+}
+\nDefinition{Event in a countable sample space}{
+For a countable sample space $\Omega$, an \textbf{event}, E, is simply a subset $E \subseteq \Omega$ of the set of possible outcomes.
+Given a probability distribution $P : \Omega \rightarrow [0, 1]$, we define the probability of the event $E \subseteq \Omega$ to be $P(E) =\sum_{s\in E} P(s)$.
+}
+\nTheorem{Facts about Probability of events}{
+Suppose $E_{0},E_{1},E_{2},...$ are a (finite or countable)
+sequence of pairwise disjoint events from the sample space $\Omega$.
+In other words, $_{i} \in \Omega$, and $E_{i} \cap E_{j} = \emptyset$ for all $i, j \in \mathbb{N}$. Then
+\begin{align*}
+    P(\bigcup_{i} E_{i}) = \sum_{i}P(E_{i})
+\end{align*}
+Furthermore, for each event $E \subseteq \Omega, P(\bar{E}) = 1 - P(E)$.
+}
+\nDefinition{Conditional Probability}{
+Let $P : \Omega \rightarrow [0, 1]$ be a probability distribution, and let $E, F \subseteq \Omega$ be two events, such that $P(F) > 0$.
+The conditional probability of E given F, denoted $P(E | F)$, is
+defined by:
+\begin{align*}
+    P(E | F) = \frac{P(E \cap F)}{P(F)}    
+\end{align*}
+}
+\nDefinition{Independent Events}{
+Events A and B are called independent if
+$P(A \cap B) = P(A)P(B)$.\\
+Note that if $P(B) > 0$ then A and B are independent if and only if 
+\begin{align*}
+    P(A|B) = \frac{P(A\cap B)}{P(B)} =  P(A)
+\end{align*}
+}
+\nDefinition{Pairwise and Mutual Independence}{
+Events $E_{1},...,E_{n}$ are called \textbf{pairwise independent},
+if for every pair $i, j \in {1,..., n}, i \not = j$, $E_{i}$ and $E_{j}$ are independent(i.e., $P(E_{i} \cap E_{j}) = P(E_{i})P(E_{j}))$.\\\\
+Events $E_{1},...,E_{n}$ are called \textbf{mutually independent}, if for every subset $J \subseteq {1,..., n}$:
+\begin{align*}
+    P(\bigcap_{j\in J} E_{j}) = \prod_{j\in J}P(E_{j})
+\end{align*}
+}
+\nTheorem{Binomial Distribution Theorem}{
+The probability of exactly k successes in n (mutually)
+independent Bernoulli trials, with probability p of success and
+q = (1 − p) of failure in each trial, is
+\begin{align*}
+    {n\choose k}p^{k}q^{n-k}
+\end{align*}
+}
+\nDefinition{Binomial Distribution}{
+The binomial distribution, with parameters n and
+p, denoted b(k; n, p), defines a probability distribution on
+$k \in {0,..., n}$, given b
+\begin{align*}
+    b(k;n,p) = {n \choose k} \cdot p^{k}q^{n-k}
+\end{align*}
+}
+\nDefinition{Random Variable}{
+ A \textbf{random variable}, is a function $X : \omega \rightarrow R$, that
+assigns a real value to each outcome in a sample space $\Omega$.\\\\
+For a random variable X, we write $P(X = r)$ as
+shorthand for the probability $P(\{s \in \Omega | X(s) = r\})$. \textbf{The
+distribution} of a random variable X is given by the set of pairs
+$\{(r,P(X = r)) | r$ is in the range of $X\}$.
+}
+\nDefinition{Geometric Distribution}{
+A random variable $X : \Omega \rightarrow \mathbb{N}$, is said to have a geometric
+distribution with parameter p, $0 \leq p \leq 1$, if for all positive
+integers $k \geq 1, P(X = k) = (1 - p)^{k-1}p$.}
+\nTheorem{Baye's Theorem}{
+Let A and B be two events from a (countable) sample space $\Omega$,
+and $P : \Omega \rightarrow [0, 1]$ a probability distribution on $\Omega$, such that $0 < P(A) < 1$, and $P(B) > 0$. Then
+\begin{align*}
+    P(A|B) = \frac{P(B|A)P(A)}{P(B|A)P(A) + P(B|\bar{A})P(\bar{A})}
+\end{align*}
+}
+\nTheorem{Generalised Baye's Theorem}{
+Suppose that $E, F_{1},..., F_{n}$ are events from sample space $\Omega$, and
+that $P : \Omega \rightarrow [0, 1]$ is a probability distribution on $\Omega$. Suppose that $\cup_{i=1}^{n}F_{j} = \Omega$ and that $F_{i} \cap F_{j} = \emptyset$ for all $i \not = j$.\\
+Suppose $P(E) > 0$, and $P(F_{j}) > 0$ for all j. Then for all j:
+\begin{align*}
+    P(F_{j}|E) = \frac{P(E|F_{j})P(F_{j})}{\sum_{i=1}^{n}P(E|F_{i})P(F_{i}))}
+\end{align*}
+}
+\nSection{Expected Value And Variance}
+\nDefinition{Expected Value}{
+The expected value, or expectation, or mean, of a random
+variable $X : \Omega \rightarrow R$, denoted by E(X), is defined by:
+\begin{align*}
+    E(X) = \sum_{s \in \Omega}P(s)X(s)
+\end{align*}
+Here $P : \Omega \rightarrow [0, 1]$ is the underlying probability distribution on $\Omega$.
+}
+\nTheorem{Better expression for Expectation}{
+For a random variable $X : \Omega \rightarrow \mathbb{R}$
+\begin{align*}
+    E(X) = \sum_{r\in range(X)}P(X = r)\cdot r
+\end{align*}}
+\nTheorem{\textbf{Linearity of Expectation}}{
+Theorem (\textbf{Linearity of Expectation}):For any random variables
+$X,X_{1},...,X_{n}$on $\Omega$, $E(X_{1} + X_{2} + ... + X_{n}) = E(X_{1}) + ... + E(X_{n})$.\\\\
+Furthermore, for any $a, b \in R$,
+$E(aX + b) = aE(X) + b$.\\
+(In other words, the expectation function is a linear function.)
+}
+\nTheorem{Expectation on n Bernouli Trials}{
+The expected no. of successes in n (\textbf{Not necessarily independent})
+Bernoulli trials, with probability p of success in each, is
+\begin{align*}
+    np
+\end{align*}
+}
+\nTheorem{Expectation of a geometrically distributed r.v}{
+ the expected value E(X) of a
+geometrically distributed random variable with parameter p is
+\begin{align*}
+    \frac{1}{p}
+\end{align*}}
+\nDefinition{Independence of Random Variables}{
+Two random variables, X and Y, are called
+\textbf{independent} if for all $r_{1}, r_{2} \in \mathbb{R}$:
+\begin{align*}
+    P(X = r_{1} \text{ and } Y = r_{2}) = P(X = r_{1}) \cdot P(Y = r_{2})
+\end{align*}
+}
+\nTheorem{Expectation of Independent Variables}{
+: If X and Y are independent random variables on the
+same space $\Omega$. Then
+\begin{align*}
+    E(XY) = E(X)E(Y)
+\end{align*}
+}
+\nDefinition{Variance and Standard Deviation}{
+For a random variable X on a sample space $\Omega$, the
+\textbf{variance} of X, denoted by V(X), is defined by:
+\begin{align*}
+    V(X) = E((X - E(X))^{2}) = \sum_{s\in \Omega}(X(s) - E(X))^{2}P(s)
+\end{align*}
+The \textbf{standard deviation} of X, denoted $\sigma(X)$, is defined by:
+\begin{align*}
+    \sigma(X) = \sqrt{V(X)}    
+\end{align*}
+
+}
+\nTheorem{Variance Identity}{
+For any random variable X.
+\begin{align*}
+    V(X) = E(X^{2}) - E(X)^{2}
+\end{align*}}
+\nTheorem{Markov's Inequality}{
+For a nonnegative random variable, $X : \Omega \rightarrow R$,
+where $X(s) \geq 0$ for all $s \in \Omega$, for any positive real number $a > 0$:
+\begin{align*}
+    P(X \geq a) \leq \frac{E(X)}{a}
+\end{align*}
+}
+\nTheorem{Chebyshev's Inequality}{
+Let $X : \Omega \rightarrow R$ be any random variable, and let $r > 0$ be any positive real number. Then:
+\begin{align*}
+    P(|X - E(X)| \geq r) \leq \frac{V(X)}{r^{2}}    
+\end{align*}}
+\nTheorem{Birthday Paradox}{
+Suppose that each of $m \geq 1$ pigeons independently
+and uniformly at random enter one of $n \geq 1$ pigeon-holes. If
+\begin{align*}
+    m \geq (1.1775 \cdot \sqrt{n}) + 1
+\end{align*}
+
+then the probability that two pigeons go into the same
+pigeon-hole is greater than 1/2.
+}
+\nSection{Examples in Probability}
+\nTheorem{Friends and Enemies}{
+Suppose that in a group of 6 people every pair are
+either friends or enemies.
+Then, there are either 3 mutual friends or 3 mutual enemies.}
+\nTheorem{Ramsey's Theorem}{
+For any positive integer, k, there is a positive integer,
+n, such that in any undirected graph with n or more vertices:\\
+either there are k vertices that are all mutually adjacent,
+meaning they form a k-clique,\\
+or, there are k vertices that are all mutually non-adjacent,
+meaning they form a k-independent-set.\\\\
+For each integer $k \geq 1$, let R(k) be the smallest integer $n \geq 1$
+such that every undirected graph with n or more vertices has
+either a k-clique or a k-independent-set as an induced
+subgraph.
+}
+\nTheorem{Erdos,1947}{
+For all $k \geq 3$
+\begin{align*}
+    R(k) > 2^{k/2}
+\end{align*}}
+\nTheorem{Probabilistic Method}{
+To show the
+existence of a hard-to-find object with a desired property, Q, try
+to construct a probability distribution over a sample space $\Omega$ of
+objects, and show that with positive probability a randomly
+chosen object in $\Omega$ has the property Q.
+}
+\nTheorem{Union Bound}{
+For any (finite or countable) sequence of events
+$E_{1},E_{2},E_{3},...$
+\begin{align*}
+    P(\bigcup_{i}E_{i}) \leq \sum_{i}P(E_{i})
+\end{align*}}
 \end{document}
