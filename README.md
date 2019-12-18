@@ -7,4 +7,4 @@ This repository contains coursework, notes, projects and other files related to 
 Year | Course | Stuff
 --- | --- | --- 
 2|DMMR|CW 2 - Proofs in LaTeX<br>Strategic Summary Notes in LaTeX
-2|CS|CW 2 - Multi-Cycle processor in C
+2|CS|CW 1 - MIPS and C implementation of a word search puzzle
