@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage{notes}
+\usepackage{Custom_Latex/Summary_Notes/notes}
 \usepackage{array}
 \usepackage{amsmath}
 \usepackage{mathtools}
@@ -17,32 +17,9 @@
 \author{Maksymilian Mozolewski}
 \maketitle\\
 
-\begin{center}
-{\Large{\\\\\\\
-\begin{tabular*}{\textwidth}{l|l}
-     \textbf{Topic} & \textbf{Page} \\ \hline
-     Boolean Logic & 2\\ \hline
-     Proof Techniques & 2\\ \hline
-     Induction & 3\\ \hline
-     Sets & 3\\ \hline
-     Cardinality & 4\\ \hline
-     Relations & 5\\ \hline
-     Functions & 6\\ \hline
-     Sequences & 7\\ \hline
-     Sums & 8\\ \hline
-     Number Theory & 9\\ \hline
-     Counting & 13\\ \hline
-     Graphs & 17\\ \hline
-     Graph Colouring & 22 \\ \hline
-     Trees & 22\\\hline
-     Discrete Probability & 24\\ \hline
-     Expected Value and Variance & 26\\ \hline
-     Examples in Probability & 28 \\ \hline
-\end{tabular*}}}
-\end{center}
+\tableofcontents
 
-\pagebreak
-\nSection{Boolean Logic}
+\section{Boolean Logic}
 
 \nDefinition{Equivalence of prepositional statements}{$P \equiv Q$ denotes a logical \textbf{equivalence} between the propositional statements P and Q. Two equivalent propositions have the same truth tables}
 
@@ -66,18 +43,16 @@ De Morgan's Law: & $\neg(P \land Q) \equiv \neg P \land \neg Q$
 \nTheorem{Negation of Quantifiers}{
 \begin{tabular*}{\textwidth}{ll}
 $\neg(\forall x(P(x))) \equiv \exists x \neg P(x)$ & $\neg(\exists x P(x)) \equiv \forall x \neg P(x)$
-\end{tabular*}
-}
-
-\nSection{Proof Techniques}
+\end{tabular*}}
+\section{Proof Techniques}
 
 \nDefinition{Direct Proof}{use existing propositions and rules of inference to prove the given proposition}
 
 \nDefinition{Proof by Contraposition}{just like direct proof but we use prove contraposition of the given proposition}
 
 \nDefinition{Proof by Contradiction}{let P be the proposition to be proven, then assume $\neg P$ is true and show that $\neg P \rightarrow C$ where C is some logical contradiction of an earlier assumption or fact}
-\pagebreak
-\nSection{Induction}
+
+\section{Induction}
 
 \nDefinition{Normal Induction}{if P(n) is a predicate on $\mathbb{Z}^{+}$ we follow this process:\\
 \textbf{Base Case:} we prove P(1) is true\\
@@ -87,7 +62,7 @@ $\neg(\forall x(P(x))) \equiv \exists x \neg P(x)$ & $\neg(\exists x P(x)) \equi
 
 \nDefinition{Strong Induction}{same as normal induction however instead of assuming P(k) is true, we assume $P(1) \land .. P(k)$ is true and show that it being true implies P(k + 1)}
 
-\nSection{Sets}
+\section{Sets}
 
 \nDefinition{Set}{an \textbf{unordered} collection of objects, called members/elements. \\ A multi-set is a set which holds the multiplicity of objects as well as the objects}
 
@@ -125,7 +100,7 @@ Complement Law: &$A \cap \overline{A} = \emptyset$&$A \cup \overline{A} = U$\\
 }
 \nDefinition{Cartesian Product}{$A \bigtimes B$ is the set of \textbf{all ordered pairs} (a,b) such that $a \in A \land b \in B$}
 
-\nSection{Cardinality}
+\section{Cardinality}
 
 \nDefinition{Cardinality}{the set A has \textbf{cardinality} $|A|$ which is the number of elements in A}
 
@@ -158,7 +133,7 @@ Complement Law: &$A \cap \overline{A} = \emptyset$&$A \cup \overline{A} = U$\\
 
 \nTheorem{Continuum}{the cardinality of the set $\mathbb{R}$ is $\mathfrak{c}$, and $\aleph < \mathfrak{c}$, there exists an infinite hierarchy of cardinalities of infinite sets}
 
-\nSection{Relations}
+\section{Relations}
 
 \nDefinition{Binary relation}{a \textbf{binary relation} R on sets A and B is a subset $R \subseteq A x B$. e.g. a set of tuples (a,b) with $a \in A \land b \in B$}
 
@@ -201,7 +176,7 @@ is the \textbf{equivalence class} of a w.r.t R}
 
 \nTheorem{Equivalence To Partition}{If R is an equivalence on A, then the equivalence classes of R form a partition of A. Conversely, given a partition ${A_{i}|i \in I}$ of A there exists an equivalence relation R that has exactly the sets $A_{i}$ for $i \in I$ as its equivalence classes}
 
-\nSection{Functions}
+\section{Functions}
 
 \nDefinition{Function}{let A and B be a non-empty set, then a \textbf{function} f maps exactly one element of B to each element of A. so every element in the function must be defined on all elements in A and there cannot be more than one element of B associated with any element of A}
 
@@ -219,7 +194,7 @@ is the \textbf{equivalence class} of a w.r.t R}
 
 \nDefinition{Inverse Functions}{let $f : A \rightarrow B$ be a bijection, then the inverse of f, $f^{-1}: B \rightarrow A$ is $f^{-1}(b) = a$ iff $f(a) = b$. So the inverse function exists only for bijections, and it exists for only the elements in B which are mapped to by some element $a \in A$ by f}
 
-\nSection{Sequences}
+\section{Sequences}
 
 \nDefinition{Sequences}{\textbf{Sequences} are ordered lists of elements, \\
 Example: $f : \mathbb{Z}^{+} \rightarrow \mathbb{Q} f(n) = \frac{1}{n}$ defines the sequence $1,1/2,1/3,1/4,...$ assuming $a_{n} = f(n)$ the sequence is also written $a_{1},a_{2},a_{3}...$ or as $\{a_{n\in\mathbb{Z}^{+}}\}$}
@@ -272,7 +247,7 @@ $\hspace{7}= a_{2} + 3(n - 2) = (a_{1} + 3) + 3 \cdot (n-2) = 2 + 3 \cdot(n-1)$\
     \end{tabular*}
 }
 
-\nSection{Sums}
+\section{Sums}
 
 \nDefinition{Sums}{
 given a sequence $\{a_{n}\}$, \textbf{the sum} of terms $a_{m},a_{m+1},...,a_{\mathfbb{l}}$ is \\
@@ -311,7 +286,7 @@ more generally for an index set S:
 \end{equation*}
 }
 
-\nSection{Number Theory}
+\section{Number Theory}
 
 \nDefinition{Division}{if a and b are integers with $a \neq 0$, then \textbf{a divides b}, written $a|b$, if there exists an integer c such that $b = ac$}
 
@@ -453,7 +428,7 @@ Decryption:
 \end{itemize}
 }
 
-\nSection{Counting}
+\section{Counting}
 
 \nDefinition{Counting Summary}{
 \begin{tabular*}{\textwidth}{l|l|l}
@@ -580,7 +555,7 @@ indistinguishable objects of Type 1, $n_{2}$ indistinguishable objects of Type
     ({x_{1}+x_{2}+...+x_{k}})^{n} = \sum_{0\leq n_{1},n_{2},...,n_{k}\leq n}{n\choose n_{1},n_{2},...,n_{k}}x_{1}^{n_{1}}x_{2}^{n_{2}}...x_{k}^{n_{k}}
 \end{align*}}
 
-\nSection{Graphs}
+\section{Graphs}
 
 \nDefinition{Graph Types}{
 \begin{tabular*}{\textwidth}{l|l|l|l}
@@ -870,8 +845,8 @@ weight function $w : V \; x \; V \rightarrow N$, and a source vertex $s \in V$.\
 \hspace*{6pt}\textbf{end while}\\
 \hspace*{6pt}Output function L(·).
 }
-\pagebreak
-\nSection{Graph Colouring}
+
+\section{Graph Colouring}
 
 \nDefinition{K-Colouring}{
 Suppose we have k distinct colours with which to colour the
@@ -898,7 +873,7 @@ $\omega(G)
 5-cycle, $C_{5}$, has $ω(C_{5}) = 2 < \chi(C_{5}) = 3$.
 }
 
-\nSection{Trees}
+\section{Trees}
 
 \nDefinition{Trees}{
 A \textbf{tree} is a connected simple undirected graph with no simple
@@ -1000,7 +975,7 @@ Every connected graph G has a spanning tree.}
 \hspace*{6pt}\textbf{end for}\\
 \hspace*{6pt}Output the tree T.}
 
-\nSection{Discrete Probability}
+\section{Discrete Probability}
 
 \nDefinition{Sample Space}{
 For any probabilistic experiment or process, the set $\Omega$ of all its possible outcomes is called its \textbf{sample space}.
@@ -1105,7 +1080,7 @@ Suppose $P(E) > 0$, and $P(F_{j}) > 0$ for all j. Then for all j:
 \end{align*}
 }
 
-\nSection{Expected Value And Variance}
+\section{Expected Value And Variance}
 
 \nDefinition{Expected Value}{
 The expected value, or expectation, or mean, of a random
@@ -1202,7 +1177,7 @@ then the probability that two pigeons go into the same
 pigeon-hole is greater than 1/2.
 }
 
-\nSection{Examples in Probability}
+\section{Examples in Probability}
 
 \nTheorem{Friends and Enemies}{
 Suppose that in a group of 6 people every pair are
