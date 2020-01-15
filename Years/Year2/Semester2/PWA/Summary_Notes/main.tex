@@ -1,0 +1,68 @@
+\documentclass{article}
+
+\usepackage{Custom_Latex/Summary_Notes/notes}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\graphicspath{{./Images/}}
+
+\everymath{\displaystyle}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\begin{document}
+\title{PWA - Summary Notes}
+\author{Maksymilian Mozolewski}
+\maketitle
+\pagebreak
+\tableofcontents
+\pagebreak
+% WEEK 1 %
+% TUTORIAL - DONE %
+% HAND-IN - COMPLETE %
+
+% DAY - TUESDAY %
+% LECTURE - 1 %
+% READING - 100% %
+% NOTES_COMPLETE - SAME AS DMMR  %
+
+\section{Introduction}
+\subsection{Information}
+general information\bigskip\\
+new course, restructured.
+\section{Counting}
+\nTheorem{Product Rule}{if A and B are finite sets then: $|A \times B| = |A| \cdot |B|$}
+\nTheorem{General Product Rule}{if $A_{1},A_{2},...,A_{m}$ are finite sets then: $|A_{1},A_{2},...,A_{m}| = |A_{1}|\cdot|A_{2}|\cdots|A_{m}|$}
+\nDefinition{Counting Summary}{
+\begin{tabular*}{\textwidth}{l|l|l}
+    Type & Repetition Allowed ? & Formula\\
+    \hline
+    r-permutations & No & $\frac{n!}{(n-r)!}$\\[15pt]
+    r-combinations & No & $\frac{n!}{r!(n-r)!}$\\[15pt]
+    r-permutations & Yes & $n^{r}$\\[15pt]
+    r-combinations & Yes & $\frac{(n + r -1)!}{r!(n-1)!}$
+\end{tabular*}
+}
+
+\nDefinition{Permutations}{A permutation of a set S is an ordered arrangement of the elements
+of S.
+In other words, it is a sequence containing every element of S exactly
+once}
+
+\nTheorem{The Binomial Theorem}{For all $n \geq 0$:
+\begin{align*}
+    (x + y)^{n} = \sum_{j=0}^{n}{{n \choose j}x^{n-j}y^{j}}
+\end{align*}
+}
+
+\nTheorem{Multinomial theorem}{for all n $\geq$ 0 and all k $\geq 1$:
+\begin{align*}
+    ({x_{1}+x_{2}+...+x_{k}})^{n} = \sum_{0\leq n_{1},n_{2},...,n_{k}\leq n}{n\choose n_{1},n_{2},...,n_{k}}x_{1}^{n_{1}}x_{2}^{n_{2}}...x_{k}^{n_{k}}
+\end{align*}}
+
+% DAY - X %
+% LECTURE - 2 %
+% READING -  %
+% NOTES_COMPLETE -  %
+\end{document}
