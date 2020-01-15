@@ -6,5 +6,8 @@ This repository contains coursework, notes, projects and other files related to 
 ## Contents
 Year | Course | Stuff
 --- | --- | --- 
-2|DMMR|CW 2 - Proofs in LaTeX<br>Strategic Summary Notes in LaTeX
-2|CS|CW 1 - MIPS and C implementation of a word search puzzle
+2|Discrete Mathematics and Reasoning|CW 2 - Proofs in LaTeX<br>Strategic Summary Notes in LaTeX
+2|Computer Systems|CW 1 - MIPS and C implementation of a word search puzzle
+2|Reasoning & Agents|Course Notes in LaTeX
+2|Probabilities with Applications|Course Notes in LaTeX
+2|Learning|Course Notes in LaTeX
