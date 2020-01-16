@@ -137,4 +137,61 @@ How many objects must be modelled as agents. Weather agent B has to be modelled 
 % LECTURE 2 %
 % READING - NOT DONE %
 % NOTES_COMPLETE -  %
+\section{Searching}
+\subsection{Problem-solving agents}
+\nDefinition{Formulate-Search-Execute agents}{type of goal-based agents which have a one goal which needs to be achieved with a search of some sort. \par
+\bd{Action Sequence} - the result of a search, a series of actions required to reach the goal.\par 
+\bd{problem} - the model of the problem over which the action sequence is defined \par 
+When a problem-solving-agent has nothing in the action sequence it searches for one, and if it has one it follows it (think football)}
+\subsection{Problem types}
+\subsubsection{Determnistic, fully observable}
+\nDefinition{Determnistic, fully observable}{Agent knows exactly which state it will be in; solution is a sequence}
+\subsubsection{Non-observable}
+\nDefinition{Non-observable}{Agent may have no idea where it is; solution is a sequence}
+\subsubsection{Nondeterministic and/or partially observable}
+\nDefinition{Nondeterministic and/or partially observable}{contingency problem - percepts provide new information about current state \par
+often interleave search, execution}
+\subsubsection{Unknown state space}
+\nDefinition{Unknown state space}{exploration problem}
+
+\subsection{Problem formulation}
+\subsubsection{Problem Definition}
+\nDefinition{Problem Definition}{A problem is defined by four items:\par 
+\bd{initial state} - where do we start\par 
+\bd{actions or successor function} - set of action-state pairs\par
+\bd{goal test} - explicit/implicit (in Bucharest or Checkmate(x))\par
+\bd{path cost} - the cost of each action in each state\par
+\bd{a solution} - sequence of actions leading from the initial state go a goal state}
+\subsubsection{Choosing a State Space}
+\nDefinition{Choosing a State Space}
+{
+Real world is absurdly complex - state space must be \empg{abstracted} for problem solving.\par
+For guaranteed relizability, \bd{any} real state must get to some real state.\par
+Each abstract action should be "easier" than the original problem.\par
+\bd{(Abstract) States} - set of real states\par
+\bd{(Abstract) Actions} - complex combination of real actions which can be performed from each state/par
+}
+
+\subsection{Example problems}
+\subsubsection{The 8-puzzle}
+\nDefinition{8-puzzle}{
+\<diagram\>\par
+\bd{states?} locations of tiles\par
+\bd{actions} move blank left, right, up, down \par
+\bd{goal test?} = goal state(explicit)\par
+\bd{path cost?} 1 per move}
+\subsubsection{Robotic Assembly}
+\nDefinition{Robotic Assembly}{
+\<diagram\>\par
+\bd{states?} real-valued coordinates of robot joint angles \& parts of the object to be assembled \par
+\bd{actions} continuous motions of robot joints\par
+\bd{goal test?} complete assembly\par
+\bd{path cost?} time to execute
+}
+\subsection{Basic search algorithms}
+\subsubsection{Tree search algorithm}
+\nDefinition{}{basic idea: offline, simulated exploration of state space by generating successors of already-explored states (a.k.a expanding states) (think depth-first search)}
+\nDefinition{States vs. Nodes}{
+A state is a representation of a physical configuration \par
+A node is a book-keeping data structure constituting part of a \bd{search tree} includes state, parent node, action, path cost}
 \end{document}
