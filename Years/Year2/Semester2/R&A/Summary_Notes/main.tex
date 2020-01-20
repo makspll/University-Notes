@@ -194,4 +194,67 @@ Each abstract action should be "easier" than the original problem.\par
 \nDefinition{States vs. Nodes}{
 A state is a representation of a physical configuration \par
 A node is a book-keeping data structure constituting part of a \bd{search tree} includes state, parent node, action, path cost}
+% DAY - FRIDAY %
+% LECTURE 2 %
+% READING - NOT DONE %
+% NOTES_COMPLETE -  %
+\section{Tree Search Strategies}
+\nDefinition{Definition}{A \bd{search strategy} is defined by picking the order of node expansion - the order in which we pick nodes from the frontier \par
+Strategies are evaluated along the following dimensions:\par 
+\bd{completeness} - does it always find a solution if one exists? \par
+\bd{time complexity} - number of nodes generated \par
+\bd{space complexity} - maximum number of nodes in memory \par
+\bd{optimality} - does it always finda a least-cost solution? \par
+time and space complexity are measured in terms of:\par
+\bd{b}: maximum branching factor of a search tree\par
+\bd{d}: depth of the least-cost solution\par
+\bd{m}: maximum depth of the state space(may be \infty, think loops)}
+\subsection{Uninformed tree search strategies}
+\nDefinition{Definition}{use only information in problem definition}
+\subsubsection{Repeated states Problem}
+\nDefinition{Repeated states}{failure to detect repeated states can turn a \bd{linear} problem into an \bd{exponential} one!}
+\subsubsection{Graph search}
+\nDefinition{Graph Search}{it introduces a set of \bd{explored nodes}, it adds nodes to the frontier set only if they are not in the frontier or the explored set}
+\subsubsection{Breadth-first search}
+\nDefinition{Breadth-first search}{Expand shallowest unexplored node first. frontier is a FIFO queue, i.e. new successors go at end\par
+\bd{complete?} Yes (if b is finite)\par 
+\bd{Time?} $b+b^{2} + b^{3} + \hdots + b^{d} = O(b^{d})$ worst case b-ary tree of depth d (not m)\par 
+\bd{Space?} $O(b^{d})$ (keeps every node in memory) \par 
+\bd{optimal?} Yes (if cost = 1 per step, then a solution is optimal if it is closest to start node)}
+\subsubsection{Depth-first Search}
+\nDefinition{}{
+Expand deepest unexplored node, frontier = LIFO queue, i.e., put successors at front\par
+\bd{complete?} No: fails in infinite-depth spaces, spaces with loops - modify to avoid repeated nodes. Complete in finite spaces\par
+\bd{Time?} $O(b^{m})$ terrible if m is much larger than d, if solutions are dense, then may be much faster than breadth-first\par 
+\bd{Space?} $O(bm)$ i.e. linear spac!\par 
+\bd{optimal?} No 
+}
+
+\subsubsection{Depth-limited search}
+\nDefinition{}{
+This is depth-first search with a \bd{depth limit l}, i.e., nodes at depth l have no ancestors\par
+\bd{complete?}\par 
+\bd{Time?}\par 
+\bd{Space?}\par 
+\bd{optimal?} 
+}
+\subsubsection{Iterative deepening search}
+\nDefinition{}{Depth-limited search but done over a variety of l-values\par
+\bd{complete?} Yes\par 
+\bd{Time?} $(d)b + (d-1)b^2 + \hdots + (1)b(^{d})$\par 
+\bd{Space?}$O(bd)$\par 
+\bd{optimal?} Yes, if step cost = 1\par 
+11\% overhead over for repeated operations
+}
+\subsubsection{Uniform cost search}
+%HOMEWORK%
+\subsubsection{Summary of algorithms}
+\nDefinition{}{
+\begin{tabular}{c|c|c|c|c|c}
+    Criterion & Breadth-first & Uniform-cost & Depth-first & Depth-limited & Iterative Deepening\\\hline
+    Complete? & Yes & Yes & No & No & Yes\\\hline
+    Time O(b^{d})& & & & &\\
+    Space & & & & &\\ 
+    Optimal & Yes & Yes & No & No & Yes
+\end{tabular}}
 \end{document}
