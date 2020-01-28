@@ -112,7 +112,7 @@ Mail-sorting robot vs. crossword puzzle.
 
 \nDefinition{\textbf{Static} vs. \textbf{Dynamic}}{
 \bd{Static}: environment unchanged while agent deliberates (freezes). \par
-\bd{Semidynamic} : while agent deliberates, environment itself doesn't change, while the performance score does. \par
+\bd{Semi-dynamic} : while agent deliberates, environment itself doesn't change, while the performance score does. \par
 Crossword puzzle vs. chess. \par 
 Industrial robot vs. robot car
 }
@@ -204,7 +204,7 @@ Strategies are evaluated along the following dimensions:\par
 \bd{completeness} - does it always find a solution if one exists? \par
 \bd{time complexity} - number of nodes generated \par
 \bd{space complexity} - maximum number of nodes in memory \par
-\bd{optimality} - does it always finda a least-cost solution? \par
+\bd{optimality} - does it always find a a least-cost solution? \par
 time and space complexity are measured in terms of:\par
 \bd{b}: maximum branching factor of a search tree\par
 \bd{d}: depth of the least-cost solution\par
@@ -257,4 +257,172 @@ This is depth-first search with a \bd{depth limit l}, i.e., nodes at depth l hav
     Space & & & & &\\ 
     Optimal & Yes & Yes & No & No & Yes
 \end{tabular}}
+% DAY - TUESDAY %
+% LECTURE 3 %
+% READING - NOT DONE %
+% NOTES_COMPLETE -  %
+\section{Adversarial Search}
+\subsection{Games}
+\nDefinition{Definition}{We are usually interested in \bd{zero-sum} games of perfect information \par
+\begin{itemize}
+    \item Deterministic, fully observable
+    \item Agents act alternately
+    \item Utilities at end of game are equal and opposite
+\end{itemize}
+"Unpredictable" opponent - specifying a move for every possible opponent reply \par\smallskip
+Time limits - unlikely to find goal, must approximate\par
+Normal search: optimal decision is a sequence of actions leading ot a goal state (i.e. a winning terminak state)\par
+Adversarial search:\par
+\begin{itemize}
+    \item MIN has a say in game
+    \item MAX needs to find a contingent strategy which specifies:\par
+    MAX's move in initial state then... MAX's moves in states resulting from every response by MIN to the move then .. MAX's moves in states resulting from every response by MIN to all those moves, etc.
+\end{itemize}
+}
+\subsection{Game Tree}
+\nDefinition{Definition}{$<$Min Max diagram$>$}
+\nDefinition{Minimax Value}{
+definition}
+\nDefinition{Minimax example}{
+Perfect play for deterministic games\par 
+Idea: choose move to position with highest minimax value = best achievable payoff against best play.\par
+Example: 2-ply game:
+}
+\nDefinition{minimax Algorithm}{
+$<algorithm>$
+\bd{complete?} Yes(if tree is finite)\\
+\bd{Optimal?} Yes (against an optimal opponent)\\
+\bd{Time complexity?} $O(b^{m})$\\
+\bd{Space complexity?} $O(bm)$ (depth first exploration)\\
+}
+\nDefinition{$\alpha-\beta$ pruning algorithm}{
+prune the leaves of the game tree depending on the decisions of its opponent\par 
+does not affect final result of the game \par
+Good move ordering imporves effectiveness of pruning (How could previous tree be better ?) \par (the order of the leaves' utility matters greatly) \par 
+With perfect ordering time complexity: $O(b^{\frac{m}{2}})$\par\bigskip
+why alpha and beta pruning ? \par 
+alpha is the value of the best choice found so fat at any choice point along the path for MAX\par 
+if v is worse than alpha, MAX will avoid it - prune that branch\par 
+beta is the same thing for the MIN player\par
+$<algorithm>$}
+\subsubsection{Resource Limits}
+\nDefinition{Definition}{
+Suppose we have 100 secs, explore $10^4$ nodes/ sec - $10^6$ nodes per move\par
+standard approach: - cutoff test: e.g., depth limit (perhaps add quiescence search, which tries to search interesting positions)}
+\nDefinition{Evaluation functions}{
+For cheass typically linear weighted sum of features
+\begin{equation*}
+    EVAL(s) = w_{1}f_{1}(s) + w_{2}f_{2}(s)+ \hdots +w_{n}f_{n}(s) 
+\end{equation*}}
+\nDefinition{Cutting off search}{
+Minimax Cutoff is identical to MinimaxValue except - TERMINAL_TEST is replaced by CUTOFF, UTILITY is replaced by EVAL\par 
+does it work in practice? $b^{m} = 10^{6}, b= 35, m = 4$ 
+4-ply lookahead is a hopeless chess player}
+% DAY - THURSDAY %
+% LECTURE 4 %
+% READING - NOT DONE %
+% NOTES_COMPLETE -  %
+\section{Informed (Heuristic) Search Strategies}
+\nDefinition{Definition}{an \bd{informed} strategy - one with problem-specific knowledge beyond the definition of the problem itself.\par
+\bd{best-first-search} - instance of the general Tree-Search or Graph-Search algorithm in which a node is selected for expansion based on an \bd{evaluation function}($f(n)$)\par
+\bd{heuristic function} ($h(n)$) - estimates the cost of the cheapest path from the given node/state to the goal state/node\par
+}
+\subsection{Heuristic}
+\nDefinition{Definition}{
+From the greek word "Heuriskein" meaning "to disover" "to find"\par
+A heuristic is any method that is believed or practically proven to be useful for the solution of a given problem.}
+\subsection{Greedy best-first search}
+\nDefinition{Definition}{tries to expand the node that is 'closest' to the goal in terms, on the grounds this is likely to lead to a solution quickly.\par
+so $f(n) = h(n)$\par
+\bd{Complete?} No - can get stuck in loops (graph search version is complete in finite space, but not in infinite ones)\par
+\bd{Time?} $O(b^{m})$ for tree version, but a good heuristic can give dramatic improvement\par
+\bd{Space?} $O(b^{m})$\par
+\bd{Optimal?} no}
+\subsection{A* search}
+\nDefinition{Definition}{
+The most widely known form of best-first search. It evaluates nodes by combining $g(n)$, the cost to reach the node, and $h(n)$ the cost to get from the node to the goal - $f(n) = g(n) + h(n)$ e.g. the estimated cost of the cheapest solution through n.\par
+
+\bd{Complete?} Yes(unless there are infinitely many nodes with $f \leq f(G)$)\par
+\bd{Time?} Exponential\par
+\bd{Space?} Keeps all nodes in memory\par
+\bd{Optimal?} Yes 
+}
+\nTheorem{Optimal A*}{in order to be optimal, the heuristic needs to be:\par
+\bd{admissible} - never overestimate the cost to reach the goal.\par
+\bd{consistent} - for every node n and every successor $n^{'}$ of n generated by an action a, the estimated cost of reaching the goal from n is no greater than the step cost of getting to $n^{'}$ plus the estimated cost of reaching the goal from $n^{'}$
+\begin{equation*}
+    h(n) \leq c(n,a,n^{'}) + h(n^{'})
+\end{equation*}
+(\bd{the triangle inequality})\par
+$<proof from slides> f(n) < f(G_{2})$
+\bd{consistent} - if doing graph-search and the heuristic is consistent, then A* is optimal
+}
+\subsection{admissible heuristics}
+\nDefinition{Definitio}{
+8 puzzle example comparing heuristics}
+\subsection{Relaxed Problems}
+\nDefinition{Defintion}{
+A problem with fewer restrictions on the actions is called a \bd{relaxed problem}\par
+the cost of an optimal solution to a relaxed problem is an admissible heuristic for the original problem.\par
+if the rules of the 8-puzzle are relaxed so that a tile can move anywehre then $h_{1}(n)$ gives the shortest solution\par
+if the rules are relaxed so that a tile can move to any adjacent square then $h_{2}(n)$ gives the shortest solution}
+\section{Logical Agents}
+\subsection{Knowledge bases}
+\nDefinition{Knowledge Base}{Set of sentences in a formal language,which tell the agent what it needs to know, and the agent can follow the knowledge base for answers\par
+KB's can be part of an agent or be accessible to many agents.\par
+the agent's KB can be viewed at the knowledge level i.e. what it knows, regardless of how implemented\par
+on the implementation level, data structures in KB and algorithms that manipulate them.}
+\nDefinition{ knowledge-based agent}{
+$<pseudocode>$ the agent must be able to:\par
+represent states, actions, etc.\par
+incorporate new percepts\par
+update internal representations of the world\par
+deduce hidden properties of the world \par
+deduce appropriate actions}
+\nDefinition{WUMPUS world example}{
+\bd{Performance measure} - gold+1000, death -1000, -1 per step, -10 for using arrow\par
+\bd{Environment} - Squares adjacent to Wumpus are smelly, Squares adjacent to pits are breezy, Glitter iff gold is in the same square, Shooting kills wumpus if you are facing it, shooting uses up the only arrow,grabbing picks up gold if in same square, releasing drops the gold in same square\par
+\bd{Actuators} - Left turn, Right turn, Forward, Grab, Release, Shoot \par
+\bd{Sensors} - Stench, breeze, Glitter, Bump, Scream}
+\subsection{Logic in General}
+\nDefinition{Definition}{\bd{Logics} - are formal languages for representing information such taht conclusions can be drawn\par
+\bd{Syntax} - defines the sentences in the language\par
+\bd{Semantics} - defines the "meaning" of sentences (define truth of a sentence in a world)}
+\subsection{Entailment}
+\nDefinition{Entailment}{Entailment means that one thing follows from another: $\models$\par
+Knowledge base KB entails sentence a if and only if a is true in all worlds where KB is true}
+\subsection{Models}
+\nDefinition{Definition}{
+The models are formally structured worlds with respect to which truth can be evaluated. We say m is a model of a sentence a if a is true in m. M(a) is the set of all models of a \begin{equation*}
+    KB \entails a iff M(KB) \subseteq M(a)
+\end{equation*}
+}
+\subsection{Inference}
+\nDefinition{Inference}{$KB \inferes_{i} a$ : sentence a can be derived from KB by an a inference procedure i\par
+\bd{Soundness} - i is sound if whenever KB \inferes_{i} a it is also true that KB \models a\par
+\nd{completeness} i is complete if whenever KB \models a, it is also true that KB \inferes_{i} a}
+\subsection{Propositional Logic}
+\subsection{Inference bu enumeration}
+% DAY - TUESDAY %
+% LECTURE 5 %
+% READING - NOT DONE %
+% NOTES_COMPLETE -  %
+\section{Effective Propositional Inference}
+\subsection{Forms}
+\subsubsection{CNF}
+\nDefinition{CNF}{conjunctive normal form - conjunction of clauses (and of or's)}
+\nDefinition{Convert to CNF}{
+eliminate bi-implies, eliminate implies, move negations inwards using de Morgan's, apply distributivity law}
+\subsubsection{DPLL}
+\nDefinition{Definition}{Determine if an input propositional logic sentence (in CNF) is \bd{satisfiable}\par \emph{improvements} over truth table enumeration:\par
+Early termination (a clause is true if one of its literals is true, asentence is false if \bd{any} of its clauses is false), Pure symbol heuristic - (\bd{pure symbol} - \bd{always} appears with the same sign or polarity in \bd{all} clauses, make literal containing a pure symbol true (for satisfiability)), Unit clause Heuristic - (only one literal in the clause, e.g.. (A the only literal in a unit clause must be true, also includes clauses where all but one literal is false), tautology deletion (remove clauses where a literal appears both postitively and negatively)}
+\subsubsection{WalkSat}
+\nDefinition{Definition}{incomplete local search algorithm, Evaluation function: the min-conflict heuristic of minimizing the number of unsatisfied clauses, balance between greediness and randomness\par
+checks for satisfiability by randomly flipping the values of variables
+}
+\subsection{Inference-based agents in the wumpus world}
+\nDefinition{Definition}{
+A wumpus-world agent using propositional logic, the KB has 64 distinct proposition symbols and 155 sentences. 
+$<hybrid wumpus agent>$\par
+limitation of propositional logic, explosion of clauses}
 \end{document}
