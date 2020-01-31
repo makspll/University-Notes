@@ -1,16 +1,7 @@
 \documentclass{article}
 
 \usepackage{Custom_Latex/Summary_Notes/notes}
-\usepackage{array}
-\usepackage{amsmath}
-\usepackage{mathtools}
-\usepackage{graphicx}
-\usepackage{amssymb}
-\usepackage{tabularx}
-\graphicspath{{./Images/}}
 
-\everymath{\displaystyle}
-\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \begin{document}
 \title{Reasoning \& Agents - Summary Notes}
@@ -18,7 +9,9 @@
 \maketitle
 \pagebreak
 \tableofcontents
-\pagebreak
+\pagebreak 
+27
+
 
 % WEEK 1 %
 % TUTORIAL - NONE %
@@ -366,45 +359,85 @@ A problem with fewer restrictions on the actions is called a \bd{relaxed problem
 the cost of an optimal solution to a relaxed problem is an admissible heuristic for the original problem.\par
 if the rules of the 8-puzzle are relaxed so that a tile can move anywehre then $h_{1}(n)$ gives the shortest solution\par
 if the rules are relaxed so that a tile can move to any adjacent square then $h_{2}(n)$ gives the shortest solution}
+
+% DAY - TUESDAY %
+% READING - NOT DONE %
+% NOTES_COMPLETE -  %
+
 \section{Logical Agents}
-\subsection{Knowledge bases}
+\subsection{Knowledge Based Agents}
 \nDefinition{Knowledge Base}{Set of sentences in a formal language,which tell the agent what it needs to know, and the agent can follow the knowledge base for answers\par
 KB's can be part of an agent or be accessible to many agents.\par
 the agent's KB can be viewed at the knowledge level i.e. what it knows, regardless of how implemented\par
 on the implementation level, data structures in KB and algorithms that manipulate them.}
-\nDefinition{ knowledge-based agent}{
-$<pseudocode>$ the agent must be able to:\par
-represent states, actions, etc.\par
-incorporate new percepts\par
-update internal representations of the world\par
-deduce hidden properties of the world \par
-deduce appropriate actions}
-\nDefinition{WUMPUS world example}{
-\bd{Performance measure} - gold+1000, death -1000, -1 per step, -10 for using arrow\par
-\bd{Environment} - Squares adjacent to Wumpus are smelly, Squares adjacent to pits are breezy, Glitter iff gold is in the same square, Shooting kills wumpus if you are facing it, shooting uses up the only arrow,grabbing picks up gold if in same square, releasing drops the gold in same square\par
-\bd{Actuators} - Left turn, Right turn, Forward, Grab, Release, Shoot \par
-\bd{Sensors} - Stench, breeze, Glitter, Bump, Scream}
+\nDefinition{Knowledge-Based Agent}{
+
+\begin{algorithmic}[1]
+\Function{KB-Agent}{percept} \Comment{\bd{returns} an action}
+\State \bd{persistent}: $KB$ a knwoledge base
+\State \hspace*{58pt}$t$, a counter, initially 0, indicating time
+\State \Call{Tell}{$KB$,\Call{Make-Percept-Sentence}{$percept,t$}}
+\State $action \gets$\Call{Ask}{KB,\Call{Make-Action-Query}{t}}
+\State \Call{Tell}{KB,\Call{Make-Action-Sentence}{action,t}}
+\State $t \gets t + 1$
+\EndFunction
+\State \Return{action}
+
+\end{algorithmic}
+
+The agent must be able to: represent states, actions, etc. Incorporate new percepts, update internal representations of the world, deduce hidden properties of the world, deduce appropriate actions}
 \subsection{Logic in General}
-\nDefinition{Definition}{\bd{Logics} - are formal languages for representing information such taht conclusions can be drawn\par
-\bd{Syntax} - defines the sentences in the language\par
-\bd{Semantics} - defines the "meaning" of sentences (define truth of a sentence in a world)}
-\subsection{Entailment}
-\nDefinition{Entailment}{Entailment means that one thing follows from another: $\models$\par
-Knowledge base KB entails sentence a if and only if a is true in all worlds where KB is true}
+\nDefinition{Definition}{\bd{Logics} - are formal languages for representing information such that conclusions can be drawn\par
+\bd{Syntax} - defines all the well-formed sentences in the language\par
+\bd{Semantics} - defines the "meaning" or \bd{truth} of sentences with respect to some \bd{model/world}}
 \subsection{Models}
 \nDefinition{Definition}{
-The models are formally structured worlds with respect to which truth can be evaluated. We say m is a model of a sentence a if a is true in m. M(a) is the set of all models of a \begin{equation*}
-    KB \entails a iff M(KB) \subseteq M(a)
+The models are formally structured worlds with respect to which truth can be evaluated. We say m is a model of a sentence a, if a is true in m. M(a) is the set of all models of a 
+\begin{equation*}
+    \alpha \models \beta \textit{ iff } M(\alpha) \subseteq M(\beta)
 \end{equation*}
 }
+\subsection{Entailment}
+\nDefinition{Entailment}{ $\alpha \models \beta $:
+$\alpha$ entails sentence $\beta$ if and only if $\beta$ is true in all worlds where $\alpha$ is true}
+
 \subsection{Inference}
-\nDefinition{Inference}{$KB \inferes_{i} a$ : sentence a can be derived from KB by an a inference procedure i\par
-\bd{Soundness} - i is sound if whenever KB \inferes_{i} a it is also true that KB \models a\par
-\nd{completeness} i is complete if whenever KB \models a, it is also true that KB \inferes_{i} a}
-\subsection{Propositional Logic}
-\subsection{Inference bu enumeration}
+\nDefinition{Inference}{$\alpha \vdash _{i} \beta$ : sentence $\beta$ can be derived from $\alpha$ by an a inference procedure i\par}
+\nDefinition{Soundness}{
+    i is \bd{sound} if whenever $\alpha \vdash_{i} \beta$ it is also true that $\alpha \models \beta$
+}
+\nDefinition{Completeness}{
+    i is \bd{complete} if whenever $\alpha \models \beta$, it is also true that $\alpha \vdash_{i} \beta$}
+\subsection{Propositional Inference}
+\nDefinition{Algorithm}{
+\begin{algorithmic}[1]
+    \Function{TT-Entails?}{KB,\alpha}\Comment{\bd{returns} $true$ or $false $}
+    \State \bd{inputs:}
+    \State \AIndent[] $KB$, the knowledge base, a sentence in propositional logic.
+    \State \AIndent[] $\alpha$, the query, sentence in propositional logic
+    \Statex
+    \State $symbols \gets $ a list of the proposition symbols in KB and $\alpha$
+    \State \Return{\Call{TT-Check-ALL}{KB,$\alpha$,$symbols$, \{\}}}
+    \EndFunction
+    \Statex
+    \Function{TT-Check-All}{KB,$\alpha$,$symbols$,$model$} \Comment{\bd{returns} $true$ or$ false$ }
+    \If{\Call{Empty?}{$symbols$}}
+        \If{\Call{PL-True?}{$KB,model$}}
+            \State \Return{\Call{PL-True?}{$\alpha$,$model$}}
+        \Else
+            \State \Return{$true$} \Comment{When KB is false, always return true}
+        \EndIf
+    \Else
+    \State $P gets$ \Call{First}{$symbols$}
+    \State $rest \gets $ \Call{Rest}{$symbols$}
+    \State \Return
+    \State \AIndent[] {\Call{TT-Check-All}{$KB,\alpha,rest,model \cup \{P = true\}$}} 
+    \State \AIndent[ ]\bd{And}
+    \State \AIndent[] \Call{TT-Check-All}{$KB,\alpha ,rest, model \cup \{P = false\}$}
+    \EndIf
+    \EndFunction
+\end{algorithmic}}
 % DAY - TUESDAY %
-% LECTURE 5 %
 % READING - NOT DONE %
 % NOTES_COMPLETE -  %
 \section{Effective Propositional Inference}
@@ -425,4 +458,54 @@ checks for satisfiability by randomly flipping the values of variables
 A wumpus-world agent using propositional logic, the KB has 64 distinct proposition symbols and 155 sentences. 
 $<hybrid wumpus agent>$\par
 limitation of propositional logic, explosion of clauses}
+
+%LECTURE - THURSDAY%
+
+\section{Constrained Search (smart search with constraints)}
+\nDefinition{Definition}{A more efficient way of searching, which uses the fact that some problems have structure, or constraints which can be used to impose the structure onto a search problem}
+\nDefinition{State}{\bd{state} - a black box - any data struture that supports a successor function, a heuristic function and a goal test}
+\subsection{Constraint Satisfaction Problems (CSP)}
+\nDefinition{Definition}{
+X- set of variables,\par
+D - set of domains, each domain is a set of possible values for some X\par
+C - set of constraints - that specify accepted combinations of values\par
+a constraint c consists of a scope- tuple of variables involved in the constraint - and a relation that defines the values that the variables can take}
+\nDefinition{Solution}{complete and consistent assignments of values to variables}
+\nDefinition{Constraint graph}{
+Binary CSP, each constraint relates two variables, nodes are varialbes, edges represent constraints}
+\nDefinition{Varieties of CSP}{
+DISCRETE VARIABLES\par
+finite domains: n variables, domain size d, $\theta(d^{n}$ ) assignments. \par
+infinite domains:\par
+integers, strings, etc.. \par
+CONTINOUS VARIABLES\par
+e.g. start/end times for Hubble Space Telescope observations, linear constraints solvable in polynomial time by linear programming}
+\nDefinition{Varieties of constraints}{
+Unary - constraints involve a single variable\par
+Binary - constraints involve pairs of variables\par
+Higher-Order constraints- involve 3 or more variables.\par
+Global - constraints involve an arbitrary number of variables}
+\nDefinition{Standard Search formulation}{
+initial state: the empty assignment\par
+Successor function: assign a value to an unassigned variable that does not conflict with the current assignment -> fail if no legal assignments\par
+goal test: the current assignment is complete\par
+for CSP's with n variables, any solution appears at depth n, use depth-first search}
+\subsection{Backtracking search for CSP}
+\nDefinition{Definition}{
+variable assignments are \bd{commutative} e.g. it doesn't matter in which order i assign the values\par
+we only need to consider assignments to a single variable at each node. Thus b = d and there are $d^{n}$ leaves\par
+Depth-first search for CSP's with single-variable assignments is called backtracking search\par
+Backtracking search: the basic uninformed algorithm for CSP\par
+can solve the n-queens problem for $n \approx 25$}
+\subsection{Efficiency}
+\nDefinition{Improving Efficiency}{
+\bd{most constrained variable} first (minimum-remaining-values (MRV) heuristic)\par
+\bd{constraining variable} first - the variable with the most constraints on remaining variables, thus reducing branching factor\par 
+\bd{Least constraining value} - given a variable, choose the least constraining value - the one that rules out the fewest values in the remaining variables. (not helpful if you need all solutions)\par
+\bd{inference - forward checking} - keep track of remaining legal values for unassigned variables. Terminate the search when a variable has no more legal values\par
+\bd{arc consistency} - simplest form of propagation makes each arc \bd{consistent}\par
+$X \rightarrow Y$ is consistent iff\par
+for every value x in the domain of X, there is some allowed value y in the domain of y. e.g. an edge will be inconsistent if there is a value for one of its nodes that has no allowed counterpart in the other node that doesn't violate a constraint
+}
+\section{Coursework}
 \end{document}
