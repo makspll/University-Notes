@@ -1,0 +1,119 @@
+\documentclass{report}
+\usepackage{Custom_Latex/Summary_Notes/notes}
+
+\begin{document}
+\title{IADS - CW 2}
+\author{Maksymilian Mozolewski}
+\maketitle
+\pagebreak
+
+\section*{Question.1}
+\subsection*{1)}
+let $k_{j} = j$ where $ 1 \leq j \leq n$,\medskip\\
+then $\#_{t}(k_{j},i) = j \Modc{m}$ is an injection, since if:
+\begin{align*}
+    \#_{t}(k,i) = \#_{t}(k^{'},i)\\
+    (k + i) \Modc{m} = (k^{'} + i) \Modc{m}\\
+    k \equiv k^{'} \Mod{m}\\
+    k = k^{'} + cm : c \in \mathbb{Z}
+\end{align*}
+but $k_{j} \leq n \leq m$ and both $k$ and $k^{'}$ are between 1 and n inclusive, so: 
+\begin{equation*}
+    max(k,k^{'}) - min(k,k^{'}) \leq n-1 < m
+\end{equation*}
+and $k \equiv k^{'}$ iff  $c = 0$ and so $k = k^{'}$. The given sequence of keys: $1,2,3,\hdots,n$ will cost only one attempt per key, which is the smallest possible number of attempts for each key. Since each hash is unique among these keys the total number of attempts A is given by: 
+\begin{equation*}
+    A(n) = n
+\end{equation*}
+
+\subsection*{2)}
+
+let $k_{j} = m\cdot j$ where $ 1 \leq j \leq n$,\medskip\\
+then $\#_{t}(k_{j},i) = (k_{j} + i) \Modc{m} = (m \cdot j + i) \Modc{m} = i$. So all keys will hash to position 0 first which is the worst possible case (WLOG).\\
+Then the number of attempts for each k, $A_{k_{j}} = j$. The total number of attempts for the keys:\\ $m,2m,\hdots,mn$ is :
+\begin{equation*}
+    A(n) = \sum_{j=1}^{n} j = \frac{n(n+1)}{2}
+\end{equation*}
+A(n) = $\theta(n^{2})$
+
+\subsection*{3)}
+the worst case will stay the same no matter what probing order you choose. Consider the arbitrary hash function $\#_{j}(k,i)$. we can always choose a sequence of keys $K = k_{1},k_{2},\hdots,k_{n}$, such that $\#_{j}(k_{l},0) = 0$ for all $1 \leq l \leq n$, i.e. such that all keys map to the same position in the hash table, and so the worst case is the same as in the previous answer no matter what hash-probe function is used but of course the actual sequence of keys which causes the worst-case does differ between different functions.\\
+as for the best case, you cannot get less attempts than n - insertions, and for every possible hash-probe function you can always find a sequence of keys which will result in them hashing to distinct positions in the hash table and so achieving just n attempts (all inserts succeed on first try)
+\subsection*{4)}
+first let's prove the swapping of adjacent keys in the sequence to be inserted does not affect $A(k_{n})$ the total number of attempts.\\
+let i,j be integers between 1 and n, where $i \neq j \And j - i = 1$.\\
+let $k_{n} = k_{1},\hdots,k_{i},k_{j},\hdots,k_{n}$ be the sequence of keys to be inserted and $k_{i}$,$k_{j}$ the elements to be swapped.
+We can split the keys into sequences: left,middle,right, where left are the keys up to, not including $k_{i}$, middle are the  keys $k_{i},k_{j}$, and right are the keys after $k_{j}$. total attempts then can be split like so:
+\begin{equation*}
+ A_{total} = A_{left} + A_{middle} + A_{right}
+\end{equation*}%
+$A_{left}$ will clearly not be affected by the swapping of keys $k_{i}$ and $k_{j}$.\\
+
+let's now consider the middle sequence - $k_{i},k_{j}$.\medskip\\
+let:
+\begin{gather*}
+    frst(k_{i}) = \text{ \# of attempts key $k_{i}$ costs, when inserted after the keys in the sequence: left}\\
+    frst(k_{j}) = \text{ \# of attempts key $k_{j}$ costs, when inserted after the keys in the sequence: left}\\
+    snd(k_{i}) = \text{ \# of attempts key $k_{i}$ costs, when inserted after the keys in the sequence: left,$k_{j}$}\\
+    snd(k_{i}) = \text{ \# of attempts key $k_{j}$ costs, when inserted after the keys in the sequence: left,$k_{i}$}
+\end{gather*} 
+To see if $A_{middle}$ is affected we can define , and vice-versa for $snd(key)$ the cost when the key is inserted second (with the first key already placed in the table).\\
+$A_{middle}$ will be either:
+\begin{equation*}
+    O_{1} = frst(k_{i}) + snd(k_{j})
+\end{equation*}
+\begin{center}
+    or    
+\end{center}
+\begin{equation*}
+    O_{2} = frst(k_{j}) + snd(k_{i}) 
+\end{equation*}
+depending on the order of insertion.
+Let's analyze the possible cases:
+\begin{itemize}
+    \item both $k_{i}$ and $k_{j}$ end up at a different hash-table index if we insert them individually:\\ here $frst(k_{i}) = snd(k_{i})$ and $frst(k_{j}) = snd(k_{j})$ so $O_{1} = O_{2} = A_{middle}$ - order doesn't matter
+    \item both $k_{i}$ and $k_{j}$ end up at the same hash-table index when we insert them individually:\\
+    here, both the keys would have either 'descended' onto the empty position through a cluster, or directly hashed to it on the first attempt. If the slot 1 space after the empty space is empty (no cluster follows the empty space), then:
+    \begin{gather}
+      snd_{k_{i}} = frst(k_{i}) + 1\\
+      snd_{k_{j}} = frst(k_{j}) + 1\\
+      O_{1} = frst(k_{i}) + frst(k_{j}) + 1\\
+      O_{2} = frst(k_{j}) + frst(k_{i}) + 1\\
+      A_{middle} = O_{1} = O_{2}
+    \end{gather}
+    and if the slot after the empty space is not empty (a cluster follows after the empty space):
+    \begin{gather}
+        O_{1} = frst(k_{i}) + frst(k_{j}) + snd(k_{j}) - 1\\
+        O_{2} = first(k_{i}) + frst(k_{j}) + snd(k_{i}) - 1
+    \end{gather}
+    but since after 'descending' to the empty space, the cluster after the empty space will have the same length no matter what which key was first (since it doesn't affect it's length) and so:
+    \begin{gather*}
+        snd(k_{j}) = snd(k_{i})
+    \end{gather*}
+    meaning that, yet again: $A_{middle} = O_{1} = O_{2}$
+\end{itemize}
+no other cases exist, and since in every case $O_{1} = O_{2}$ i.e. $A_{middle}$ will not be affected by the order you insert keys in the middle sequence.\\
+
+As for $A_{right}$, we notice that the order in which the keys in the left and middle sequences where placed in the hash table, does not matter - all the indices that were going to be occupied before the swap, are going to be occupied, the only difference being that the actual keys that occupy them might be different. This means that $A_{right}$ is unaffected by the swap. Since $A_{total} = A_{left} + A_{middle} + A_{right}$ and none of its terms are affected by the swap, we prove that swapping adjacent keys in the sequence does not affect the total number of attempts in inserting the whole sequence.\\
+
+With that out of the way, since every permutation of the sequence of keys to be inserted can be expressed as a sequence of repeated pair-wise adjacent key swaps, we can then deduce that the order of a set of keys with the linear probing strategy, does not matter, $A_{total}$ is always going to be the same
+\subsection*{5)}
+It does not. Consider the following hash probe function:
+\begin{center}
+$\#_{x}(k,i) =$%
+\begin{cases}
+    \#_{t}(k,i) &\mbox{if k is even}\\
+    \#_{t}(k,-i) &\mbox{if k is odd}
+\end{cases}
+\end{center}
+This is a valid hash probe function since it produces a permutation $\pi_{k}$ when applied in sequence with i increasing to $m-1$\medskip\\
+let m = 5, n = 4 and consider the following keys: {0,1,2,7}. When inserted in the order: 0,1,2,7, the total number of attempts is 7. However when inserted in the following order: 0,1,7,2, the total number of attempts is 3. Clearly the claim does not hold for all possible hash probe functions
+\subsection*{6)}
+\begin{gather*}
+    \frac{E_{l}(\alpha)}{E_{u}(\alpha)} = \frac{-\alpha^{3} + 3\alpha^{2} - 4\alpha + 2}{2\alpha^{2} - 4\alpha + 2}\\
+    h(\alpha) = \frac{0.5}{1-\alpha}
+\end{gather*}
+$h(\alpha)$ clearly grows within a constant off of the ratio, both functions tend to infinity at $\alpha=1$
+\subsection{7)}
+
+\end{document}

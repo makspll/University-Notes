@@ -5,8 +5,20 @@
 \usepackage{tcolorbox}
 \usepackage[a4page, total={6in,10in}]{geometry}
 \usepackage{titlesec}[nostruts]
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{amssymb}
 
+\usepackage{tabularx}
+\usepackage{algpseudocode}
+\graphicspath{{./Images/}}
 
+\MakeRobust{\Call}
+
+\everymath{\displaystyle}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \definecolor{titleColor}{RGB}{0,0,0}
 
 \newtcolorbox{theoremBox}[1]{colback=red!5!white,colframe=red!75!black,fonttitle=\bfseries,title=#1}
@@ -21,6 +33,7 @@
   {0pt} % sep
   {\Huge}  
 \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
-
+\newcommand{\Modc}[1]{\ \mathrm{mod}\ #1}
 % snippets
 \newcommand{\bd}[1]{\textbf{#1}}
+\newcommand{\AIndent}[1][1]{\STATE\hspace{#1\algorithmicindent}}
