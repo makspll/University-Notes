@@ -17,7 +17,7 @@
 
 % DAY - TUESDAY %
 % LECTURE - 1 %
-% READING - 100% %
+% READING - DONE %
 % NOTES_COMPLETE - 40% %
 
 \title{Learning - Summary Notes}
@@ -65,6 +65,43 @@ distance between D-dimensional vectors: $\bd{u}=(u_{1},\hdots,u_{D})^{T}$ and $\
 
 % DAY - X %
 % LECTURE - 2 %
-% READING -  %
+% READING - 3 %
 % NOTES_COMPLETE -  %
+\section{Similarity and Recomendation systems}
+\subsection{Recomending movies toy example}
+\nDefinition{}{find the closest critic to the user, and fill in unseen movies' scores with that critics reviews}
+\section{clustering and data visualisation}
+\nDefinition{Clustering}{Partition a data set into meaningful or useful groups, based on distances between data points\par
+it's an unsupervised process - the data items do not have class labels\par 
+why cluster?\par \bd{interpreting data} - analyse and describe a situation by automatically dividing a data set into groupings\par 
+\bd{Compressing data} - represent data vectors by their cluster index - vector quantisation}
+\subsection{K-Means Clustering}
+\nDefinition{definition}{A simple algorithm to find clusters:\par Initialise K cluster centres\par\bigskip
+While not converged:\par
+\begin{itemize}
+    \item Assign each data vector to the closest cluster center
+    \item Recompute each cluster mean s the mean of the vectors assigned to that cluster
+\end{itemize}
+k-means clustering is optimal for finding a local solution not a global one
+}
+\subsubsection{Evaluation of clustering}
+\nDefinition{total squared error}{
+where $z_{kn}$ is 1 if the point $\bd{x}_{n}$ belongs to cluster k and 0 
+\begin{equation*}
+    E = \sum_{k=1}^{K}\sum_{n=1}^{N}z_{kn}||\bd{x}_{n} - \bd{m}_{k}||^{2}
+\end{equation*}
+the total squared error decreases as K increases (when K = N you win)}
+\subsection{dimensionality reduction and data visualisation}
+\nDefinition{Definition}{High-dimensional data are dificult to understand and visualise.\par
+consider dimensionality reduction of data for visualisation (3d to 2d, projection of points onto plane $||x||cos(\theta)$)\par
+better projections are spread out more, higher variance   
+\begin{equation*}
+    Var(y) = \frac{1}{N-1}\sum_{n=1}^{N}(y_{n} - \hat{y})^{2}
+\end{equation*}    
+    }
+    
+\nDefinition{Principal Component Analysis}{
+mapping D-dimensional data to a principal component axis \bd{u} that maximises Var(y)\par
+\bd{u} is given as the eigenvector with the largest eigenvalue of the covariance matrix, S:\par
+Eigen Values $\lambda$}
 \end{document}
