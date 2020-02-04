@@ -64,10 +64,17 @@ numNodes = 4
 -- Your function should return an empty list if the input search branch is empty.
 -- This implementation of next function does not backtrace branches.
 next::Branch -> Graph ->  [Branch]
-next branch g = undefined
-       
+next [] [] = []
+next [] _ = []
+next _ [] = []
+next (currNode,xs) g = (filter (\node -> node /= 0 ) ) 
+    where nodesCount = round $ sqrt $ length g
+          currNodeRow = (chunksOf nodesCount graph) !! currNode 
 
-
+-- CUSTOM HELPER: 
+-- This will extract the row i (0 <= i < numNodes) from the given graph
+extractRow:: Int -> Graph -> Graph
+extractRow i g = drop (i*numNodes) 
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
 checkArrival::Node -> Node -> Bool
