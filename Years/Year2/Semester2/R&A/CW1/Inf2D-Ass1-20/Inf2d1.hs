@@ -97,6 +97,7 @@ test_graph_1 = [0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
 breadthFirstSearch::Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
 breadthFirstSearch [] _ _ _ _ = Nothing
 breadthFirstSearch _ _ _ [] _ = Nothing 
+breadthFirstSearch graph destination next ([]:otherBranches) exploredList = breadthFirstSearch graph destination next otherBranches exploredList -- if we encounter empty branch, we skip it
 breadthFirstSearch graph destination next (firstExpandedBranch:otherBranches) exploredList
     | checkArrival destination currNode = Just firstExpandedBranch 
     | elem currNode exploredList =  breadthFirstSearch graph destination next otherBranches exploredList -- We never explore any node twice
@@ -104,8 +105,8 @@ breadthFirstSearch graph destination next (firstExpandedBranch:otherBranches) ex
         where
             -- The current node at the beggining of the queue (i.e. first expanded at this depth)
             currNode = head firstExpandedBranch
-            -- The successive branches of the current node (without the empty branches)
-            expandedFrontier = filter (\branch -> branch /= [] ) (next firstExpandedBranch graph)
+            -- The successive branches of the current node (can have empty branches)
+            expandedFrontier = next firstExpandedBranch graph
 
 -- | Depth-Limited Search
 -- The depthLimitedSearch function is similiar to the depthFirstSearch function,
@@ -121,8 +122,8 @@ depthLimitedSearch graph destination next (firstExpandedBranch:otherBranches) d 
         where
             -- The current node at the beggining of the queue (i.e. last expanded at this depth)
             currNode = head firstExpandedBranch
-            -- The successive branches of the current node (without the empty branches)
-            expandedFrontier = filter (\branch -> branch /= [] ) (next firstExpandedBranch graph)
+            -- The successive branches of the current node (can have empty branches)
+            expandedFrontier = if firstExpandedBranch next firstExpandedBranch graph
 
 
 -- | Section 4: Informed search
