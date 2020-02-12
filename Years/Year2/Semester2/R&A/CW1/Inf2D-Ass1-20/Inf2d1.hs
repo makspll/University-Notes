@@ -51,7 +51,7 @@ type Branch = [Node]
 type Graph= [Node]
 
 numNodes::Int
-numNodes = 4
+numNodes = 5
 
 
 
@@ -63,27 +63,31 @@ numNodes = 4
 -- The current location of the robot is the head of the input branch.
 -- Your function should return an empty list if the input search branch is empty.
 -- This implementation of next function does not backtrace branches.
+
 next::Branch -> Graph ->  [Branch]
-next [] [] = []
 next [] _ = []
 next _ [] = []
-next (currNode,xs) g = (filter (\node -> node /= 0 ) ) 
-    where nodesCount = round $ sqrt $ length g
-          currNodeRow = (chunksOf nodesCount graph) !! currNode 
-
--- CUSTOM HELPER: 
--- This will extract the row i (0 <= i < numNodes) from the given graph
-extractRow:: Int -> Graph -> Graph
-extractRow i g = drop (i*numNodes) 
+next branch@(currNode:xs) graph = 
+    let 
+        -- Get a graph, starting at the row corresponding to current head node of the branch
+        currNodeRow = drop (numNodes * currNode) graph
+        -- Get a list of successor nodes from this node
+        reachableNodes = [ col |(col,val)<-zip [0..] currNodeRow, val /= 0, col <= numNodes]
+        -- Prepend the branch to each successor
+        possibleBranches = map (\succNode -> succNode:branch) (reachableNodes) 
+        
+        in possibleBranches
+        
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
 checkArrival::Node -> Node -> Bool
-checkArrival destination curNode = undefined
+checkArrival destination curNode = destination == curNode
 
 
 explored::Node-> [Node] ->Bool
 explored point exploredList = undefined
-
+test_graph_1 :: Graph
+test_graph_1 = [0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
 -- Section 3 Uniformed Search
 -- | Breadth-First Search
 -- The breadthFirstSearch function should use the next function to expand a node,
@@ -91,15 +95,34 @@ explored point exploredList = undefined
 -- The function should search nodes using a breadth first search order.
 
 breadthFirstSearch::Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
-breadthFirstSearch destination next branches exploredList =undefined
-   
+breadthFirstSearch [] _ _ _ _ = Nothing
+breadthFirstSearch _ _ _ [] _ = Nothing 
+breadthFirstSearch graph destination next (firstExpandedBranch:otherBranches) exploredList
+    | checkArrival destination currNode = Just firstExpandedBranch 
+    | elem currNode exploredList =  breadthFirstSearch graph destination next otherBranches exploredList -- We never explore any node twice
+    | otherwise = breadthFirstSearch graph destination next (otherBranches++expandedFrontier) (currNode:exploredList) -- Expanded branches are placed at the end of the 'queue'
+        where
+            -- The current node at the beggining of the queue (i.e. first expanded at this depth)
+            currNode = head firstExpandedBranch
+            -- The successive branches of the current node (without the empty branches)
+            expandedFrontier = filter (\branch -> branch /= [] ) (next firstExpandedBranch graph)
 
 -- | Depth-Limited Search
 -- The depthLimitedSearch function is similiar to the depthFirstSearch function,
 -- except its search is limited to a pre-determined depth, d, in the search tree.
 depthLimitedSearch::Graph ->Node->(Branch ->Graph-> [Branch])->[Branch]-> Int->[Node]-> Maybe Branch
-depthLimitedSearch g destination next branches  d exploredList = undefined
-
+depthLimitedSearch [] _ _ _ _ _ = Nothing
+depthLimitedSearch _ _ _ [] _ _= Nothing
+depthLimitedSearch graph destination next ([]:otherBranches) d exploredList = depthLimitedSearch graph destination next otherBranches d exploredList -- if we encounter empty branch, we skip it
+depthLimitedSearch graph destination next (firstExpandedBranch:otherBranches) d exploredList
+    | checkArrival destination currNode = Just firstExpandedBranch 
+    | elem currNode exploredList =  depthLimitedSearch graph destination next otherBranches d exploredList -- We never explore any node twice
+    | otherwise = depthLimitedSearch graph destination next (expandedFrontier++otherBranches) d (currNode:exploredList) -- Expanded branches are placed at front of the 'queue'
+        where
+            -- The current node at the beggining of the queue (i.e. last expanded at this depth)
+            currNode = head firstExpandedBranch
+            -- The successive branches of the current node (without the empty branches)
+            expandedFrontier = filter (\branch -> branch /= [] ) (next firstExpandedBranch graph)
 
 
 -- | Section 4: Informed search
