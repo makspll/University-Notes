@@ -141,7 +141,6 @@ depthLimitedSearch graph goal next [branch] d exploredList
             currNode = head branch
             -- The successive branches of the current Node (can be empty)
             expandedFrontier = next branch graph
-            firstResultOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
 
 --HELPER
 debugP = flip trace 
@@ -203,14 +202,39 @@ aStarSearch graph goal next getHr hrTable cost (firstBranch:bs) exploredList
 
 -- The function determines the score of a terminal state, assigning it a value of +1, -1 or 0:
 eval :: Game -> Int
-eval game 
-    where role = length $ filter(\field -> field == 1) game
+eval game  = -- I know you hint at using terminal, but you explicitly state that this function is used to classify a "terminal state" so I am assuming it's terminal
+                case checkWin game compPlayer of -- checking comp first, because lets not kid ourselves, it will probably win more
+                    True -> -1 
+                    False -> if checkWin game humanPlayer --if MIN didn't win, it's either a draw or a win for MIN
+                                then
+                                    1
+                                else 
+                                    0
+
 
 -- | The alphabeta function should return the minimax value using alphabeta pruning.
 -- The eval function should be used to get the value of a terminal state. 
 alphabeta:: Role -> Game -> Int
-alphabeta  player game = undefined
-
+alphabeta  player game = undefined 
+    where
+        nextStates:: [Game]
+        nextStates = moves game player
+        
+        maxValue:: Game -> Int -> Int -> Int
+        maxValue game a b
+            | terminal game = eval game
+            | otherwise = let 
+                            v = -100 -- symbolic neg infinity
+                            stopCondition:: (Int,Int) -> Bool
+                            stopCondition (val,alpha) = val >= b -- we will use a scanl to traverse the branches and model the return with a dropWhile   
+                            
+                            ValsAndAlphas:: [(Int,Int)]
+                            ValsAndAlphas =  scanl (\(prevVal,prevAlpha) nxtState -> (max prevVal $ minValue nxtState prevAlpha b,max prevAlpha prevVal)) -- recurse like depth first
+                            
+                            (newVal,newAlpha) = takeFirstWithOrLastElem stopCondition ValsAndAlphas
+                            in case stopCondition (newVal,newAlpha) of
+                                    True  -> newVal
+                                    False ->  -- maks you dumb bitch
 
 -- | OPTIONAL!
 -- You can try implementing this as a test for yourself or if you find alphabeta pruning too hard.
@@ -225,3 +249,20 @@ minimax player game=undefined
 -- For each function, state its purpose and comment adequately.
 -- Functions which increase the complexity of the algorithm will not get additional scores
 -}
+
+-- given a list, will iterate through it and return the first Just value it finds, or a nothing if it doesn't
+-- when used on a map which maps depth first search to each branch, will cause the deepest branch to be evaluated first
+firstResultOrNothing:: [Maybe a] -> Maybe a
+firstResultOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
+
+takeFirst::(a->Bool) -> [a] -> a
+takeFirst chooseCondition list = find(\)
+
+headOrEmpty:: [a] -> a
+headOrEmpty (x:xs) = x
+headOrEmpty [] = []
+
+-- will take the first element satisfying the condition, or the last element if none do (last wont be checked)
+takeFirstWithOrLastElem:: (a-> Bool) -> [a] -> a
+takeFirstWithOrLastElem cond [x] = x
+takeFirstWithOrLastElem cond (x:xs) = if cond x then x else takeFirstWithOrLastElem cond xs 

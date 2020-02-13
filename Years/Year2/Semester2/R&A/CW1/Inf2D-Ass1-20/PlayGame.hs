@@ -6,7 +6,6 @@ import Control.Exception
 import Debug.Trace
 import Data.Function (on)
 import Data.List (sortBy)
-import Data.List.Split
 import Data.List
 
 playGameMain = do
