@@ -5,9 +5,10 @@
 
 module Inf2d1 where
 
-import Data.List (sortBy, elemIndices, elemIndex)
+import Data.List (sortBy,sortOn, elemIndices, elemIndex,find)
 import ConnectFourWithTwist
-
+import Data.Maybe (isNothing,fromMaybe)
+import Debug.Trace (trace)
 
 
 
@@ -85,9 +86,17 @@ checkArrival destination curNode = destination == curNode
 
 
 explored::Node-> [Node] ->Bool
-explored point exploredList = undefined
+explored point exploredList = elem point exploredList
+
 test_graph_1 :: Graph
 test_graph_1 = [0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
+test_graph_2 :: Graph
+test_graph_2 = [0,1,1,1,0, 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0 , 0,0,0,0,0]
+test_graph_3 :: Graph
+test_graph_3 = [0,2,1,0,0 ,0,0,0,0,4, 0,0,0,1,0, 0,0,0,0,4, 0,0,0,0,0]
+test_graph_3_heuristic :: [Int]
+test_graph_3_heuristic = [4,4,3,4,0]
+debug = True
 -- Section 3 Uniformed Search
 -- | Breadth-First Search
 -- The breadthFirstSearch function should use the next function to expand a node,
@@ -95,38 +104,48 @@ test_graph_1 = [0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
 -- The function should search nodes using a breadth first search order.
 
 breadthFirstSearch::Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
+
 breadthFirstSearch [] _ _ _ _ = Nothing
 breadthFirstSearch _ _ _ [] _ = Nothing 
-breadthFirstSearch graph destination next ([]:otherBranches) exploredList = breadthFirstSearch graph destination next otherBranches exploredList -- if we encounter empty branch, we skip it
-breadthFirstSearch graph destination next (firstExpandedBranch:otherBranches) exploredList
-    | checkArrival destination currNode = Just firstExpandedBranch 
-    | elem currNode exploredList =  breadthFirstSearch graph destination next otherBranches exploredList -- We never explore any node twice
-    | otherwise = breadthFirstSearch graph destination next (otherBranches++expandedFrontier) (currNode:exploredList) -- Expanded branches are placed at the end of the 'queue'
+breadthFirstSearch graph goal next ([]:otherBranches) exploredList = 
+    breadthFirstSearch graph goal next otherBranches exploredList -- if we encounter empty branch, we skip it
+breadthFirstSearch graph goal next (firstBranch:otherBranches) exploredList
+    | checkArrival goal currNode = Just firstBranch 
+    | explored currNode exploredList = 
+        breadthFirstSearch graph goal next otherBranches exploredList 
+    | otherwise = -- place the expanded branches at the end of the 'queue'
+        breadthFirstSearch graph goal next (otherBranches++expandedFrontier) (currNode:exploredList) `debugP` ("expanding: " ++ show firstBranch) 
         where
             -- The current node at the beggining of the queue (i.e. first expanded at this depth)
-            currNode = head firstExpandedBranch
+            currNode = head firstBranch
             -- The successive branches of the current node (can have empty branches)
-            expandedFrontier = next firstExpandedBranch graph
+            expandedFrontier = next firstBranch graph
 
--- | Depth-Limited Search
+
+-- | Depth-Limited Search:
 -- The depthLimitedSearch function is similiar to the depthFirstSearch function,
 -- except its search is limited to a pre-determined depth, d, in the search tree.
 depthLimitedSearch::Graph ->Node->(Branch ->Graph-> [Branch])->[Branch]-> Int->[Node]-> Maybe Branch
 depthLimitedSearch [] _ _ _ _ _ = Nothing
-depthLimitedSearch _ _ _ [] _ _= Nothing
-depthLimitedSearch graph destination next ([]:otherBranches) d exploredList = depthLimitedSearch graph destination next otherBranches d exploredList -- if we encounter empty branch, we skip it
-depthLimitedSearch graph destination next (firstExpandedBranch:otherBranches) d exploredList
-    | checkArrival destination currNode = Just firstExpandedBranch 
-    | elem currNode exploredList =  depthLimitedSearch graph destination next otherBranches d exploredList -- We never explore any node twice
-    | otherwise = depthLimitedSearch graph destination next (expandedFrontier++otherBranches) d (currNode:exploredList) -- Expanded branches are placed at front of the 'queue'
+depthLimitedSearch _ _ _ [] _ _= Nothing                                      
+depthLimitedSearch graph goal next [branch] d exploredList 
+    | d == 0 = if checkArrival goal currNode then Just branch else Nothing
+    | checkArrival goal currNode = Just branch
+    | explored currNode exploredList = Nothing -- if we reach an explored node, we 'backtrack' the recursion
+    | otherwise = 
+        -- We lazilly evaluate the successor branches of the first branch, meaning we only evaluate one path at a time
+        firstResultOrNothing $ 
+        map (\succBranch -> depthLimitedSearch graph goal next [succBranch] (d-1) (currNode:exploredList) `debugP` ("recursing into:" ++ show succBranch)) expandedFrontier
         where
-            -- The current node at the beggining of the queue (i.e. last expanded at this depth)
-            currNode = head firstExpandedBranch
-            -- The successive branches of the current node (can have empty branches)
-            expandedFrontier = if firstExpandedBranch next firstExpandedBranch graph
+            -- The node at the head of the deepest branch in the search
+            currNode = head branch
+            -- The successive branches of the current Node (can be empty)
+            expandedFrontier = next branch graph
+            firstResultOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
 
-
--- | Section 4: Informed search
+--HELPER
+debugP = flip trace 
+ -- | Section 4: Informed search
 
 
 -- | AStar Helper Functions
@@ -134,14 +153,20 @@ depthLimitedSearch graph destination next (firstExpandedBranch:otherBranches) d 
 -- | The cost function calculates the current cost of a trace. The cost for a single transition is given in the adjacency matrix.
 -- The cost of a whole trace is the sum of all relevant transition costs.
 cost :: Graph ->Branch  -> Int
-cost gr branch = undefined
+cost [] _ = 0
+cost _ [] = 0
+cost gr [initialNode] = 0
+cost gr (curNode:prevNode:ns) = prevToCur + cost gr (prevNode:ns)
+    where prevToCur = gr !! ((prevNode * numNodes) + curNode)
+          
+ 
 
 
     
 -- | The getHr function reads the heuristic for a node from a given heuristic table.
 -- The heuristic table gives the heuristic (in this case straight line distance) and has one entry per node. It is ordered by node (e.g. the heuristic for node 0 can be found at index 0 ..)  
 getHr:: [Int]->Node->Int
-getHr hrTable node = undefined  
+getHr hrTable node = hrTable !! node   
 
 
 -- | A* Search
@@ -150,7 +175,22 @@ getHr hrTable node = undefined
 ---- Nodes with a lower heuristic value should be searched before nodes with a higher heuristic value.
 
 aStarSearch::Graph->Node->(Branch->Graph -> [Branch])->([Int]->Node->Int)->[Int]->(Graph->Branch->Int)->[Branch]-> [Node]-> Maybe Branch
-aStarSearch g destination next getHr hrTable cost branches exploredList =undefined
+aStarSearch _ _ _ _ _ _ [] _ = Nothing
+aStarSearch [] _ _ _ _ _ _ _ = Nothing
+aStarSearch graph goal next getHr hrTable cost ([]:bs) exploredList =
+    aStarSearch graph goal next getHr hrTable cost bs exploredList --we skip empty branches
+aStarSearch graph goal next getHr hrTable cost (firstBranch:bs) exploredList
+    | checkArrival goal currNode = Just firstBranch
+    | explored currNode exploredList = aStarSearch graph goal next getHr hrTable cost (bs) exploredList
+    | otherwise = let 
+                    evaulationFunction branch = (getHr hrTable $ head branch) + cost graph branch -- we sort branches (without the one we just expanded) on evaluation function in ascending order  
+                    sortedBranches = sortOn evaulationFunction (expandedFrontier ++ bs)
+                    in aStarSearch graph goal next getHr hrTable cost (sortedBranches) (currNode:exploredList) `debugP` ("expanding: " ++ show firstBranch)
+        where
+            -- The node at the head of the deepest branch in the search
+            currNode = head firstBranch
+            -- The successive branches of the current Node (can be empty)
+            expandedFrontier = next firstBranch graph
 
 -- | Section 5: Games
 -- See ConnectFour.hs for more detail on  functions that might be helpful for your implementation. 
@@ -163,7 +203,8 @@ aStarSearch g destination next getHr hrTable cost branches exploredList =undefin
 
 -- The function determines the score of a terminal state, assigning it a value of +1, -1 or 0:
 eval :: Game -> Int
-eval game = undefined
+eval game 
+    where role = length $ filter(\field -> field == 1) game
 
 -- | The alphabeta function should return the minimax value using alphabeta pruning.
 -- The eval function should be used to get the value of a terminal state. 
