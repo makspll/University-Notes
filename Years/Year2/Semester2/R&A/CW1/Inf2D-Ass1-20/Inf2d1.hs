@@ -3,8 +3,8 @@
 -- {-# OPTIONS -Wall #-}
 
 
-module Inf2d1 where
-
+--module Inf2d1 where
+module Main where
 import Data.List (sortBy,sortOn, elemIndices, elemIndex,find)
 import ConnectFourWithTwist
 import Data.Maybe (isNothing,fromMaybe)
@@ -52,7 +52,7 @@ type Branch = [Node]
 type Graph= [Node]
 
 numNodes::Int
-numNodes = 5
+numNodes = 4
 
 
 
@@ -215,27 +215,52 @@ eval game  = -- I know you hint at using terminal, but you explicitly state that
 -- | The alphabeta function should return the minimax value using alphabeta pruning.
 -- The eval function should be used to get the value of a terminal state. 
 alphabeta:: Role -> Game -> Int
-alphabeta  player game = undefined 
+alphabeta player game
+    | player == maxPlayer = maxValue game (-2) 2 -- human player is max
+    | player == minPlayer = minValue game (-2) 2 -- comp player is min
     where
-        nextStates:: [Game]
-        nextStates = moves game player
-        
         maxValue:: Game -> Int -> Int -> Int
         maxValue game a b
             | terminal game = eval game
             | otherwise = let 
-                            v = -100 -- symbolic neg infinity
+                            v = -2 -- symbolic neg infinity
                             stopCondition:: (Int,Int) -> Bool
-                            stopCondition (val,alpha) = val >= b -- we will use a scanl to traverse the branches and model the return with a dropWhile   
-                            
-                            ValsAndAlphas:: [(Int,Int)]
-                            ValsAndAlphas =  scanl (\(prevVal,prevAlpha) nxtState -> (max prevVal $ minValue nxtState prevAlpha b,max prevAlpha prevVal)) -- recurse like depth first
-                            
-                            (newVal,newAlpha) = takeFirstWithOrLastElem stopCondition ValsAndAlphas
-                            in case stopCondition (newVal,newAlpha) of
-                                    True  -> newVal
-                                    False ->  -- maks you dumb bitch
+                            stopCondition (val,alpha) = val >= b -- we will use a scanl to traverse the options so we can halt early  
 
+                            nextStates:: [Game]
+                            nextStates = moves game maxPlayer
+
+                            newAlpha:: Int -> Int -> Int
+                            newAlpha prevAlpha val = if val >= b then val else max prevAlpha val
+    
+                            valsAndAlphas = 
+                                scanl (\(prevVal,prevAlpha) nxtState -> 
+                                    (max prevVal $ minValue nxtState prevAlpha b ,newAlpha prevAlpha prevVal)) (v,a) nextStates-- recurse depth-first
+                            
+                            (lastVal,lastAlpha) = takeFirstWithOrLastElem stopCondition valsAndAlphas 
+                            in lastVal 
+        
+        minValue:: Game -> Int -> Int -> Int
+        minValue game a b
+            | terminal game = eval game
+            | otherwise = let 
+                            v = 2 -- symbolic pos infinity
+                            stopCondition:: (Int,Int) -> Bool
+                            stopCondition (val,beta) = val <= a -- we will use a scanl to traverse the options so we can halt early  
+
+                            nextStates:: [Game]
+                            nextStates = moves game minPlayer
+                            
+                            newBeta:: Int -> Int -> Int
+                            newBeta prevBeta val = if val <= a then val else min prevBeta val
+
+                            valsAndBetas = 
+                                scanl (\(prevVal,prevBeta) nxtState -> 
+                                    (min prevVal $ maxValue nxtState a prevBeta,newBeta prevBeta prevVal)) (v,b) nextStates-- recurse depth-first
+                            
+                            (lastVal,lastBeta) = takeFirstWithOrLastElem stopCondition valsAndBetas
+                            in lastVal
+        
 -- | OPTIONAL!
 -- You can try implementing this as a test for yourself or if you find alphabeta pruning too hard.
 -- If you implement minimax instead of alphabeta, the maximum points you can get is 10% instead of 15%.
@@ -243,7 +268,20 @@ alphabeta  player game = undefined
 -- The minimax function should return the minimax value of the state (without alphabeta pruning).
 -- The eval function should be used to get the value of a terminal state.
 minimax:: Role -> Game -> Int
-minimax player game=undefined
+minimax player game
+    | player == maxPlayer = maxMin game
+    | otherwise = minMax game
+    where
+        minMax game
+            | terminal game = eval game
+            | otherwise = let
+                            successors = moves game minPlayer
+                            in minimum (map maxMin successors)
+        maxMin game
+            | terminal game = eval game
+            | otherwise = let
+                            successors = moves game maxPlayer
+                            in maximum (map minMax successors)
 {- Auxiliary Functions
 -- Include any auxiliary functions you need for your algorithms below.
 -- For each function, state its purpose and comment adequately.
@@ -256,13 +294,12 @@ firstResultOrNothing:: [Maybe a] -> Maybe a
 firstResultOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
 
 takeFirst::(a->Bool) -> [a] -> a
-takeFirst chooseCondition list = find(\)
+takeFirst = undefined--takeFirst chooseCondition list = find(\)
 
-headOrEmpty:: [a] -> a
-headOrEmpty (x:xs) = x
-headOrEmpty [] = []
 
 -- will take the first element satisfying the condition, or the last element if none do (last wont be checked)
 takeFirstWithOrLastElem:: (a-> Bool) -> [a] -> a
 takeFirstWithOrLastElem cond [x] = x
 takeFirstWithOrLastElem cond (x:xs) = if cond x then x else takeFirstWithOrLastElem cond xs 
+
+main = do putStrLn $ show $minimax 0 [-1 | x <- [1..16]]
