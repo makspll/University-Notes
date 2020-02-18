@@ -2,15 +2,13 @@
 -- Matriculation number:
 -- {-# OPTIONS -Wall #-}
 
-
---module Inf2d1 where
-module Main where
-import Data.List (sortBy,sortOn, elemIndices, elemIndex,find)
+module Main where 
+import Data.List (sortBy,sortOn, elemIndices, elemIndex,find,permutations)
 import ConnectFourWithTwist
-import Data.Maybe (isNothing,fromMaybe)
+import Data.Maybe (isNothing,fromMaybe,isJust)
 import Debug.Trace (trace)
-
-
+import Control.DeepSeq
+import Test.QuickCheck
 
 {- NOTES:
 
@@ -51,9 +49,9 @@ type Node = Int
 type Branch = [Node]
 type Graph= [Node]
 
-numNodes::Int
-numNodes = 4
 
+numNodes::Int
+numNodes = 5
 
 
 -- 
@@ -70,15 +68,26 @@ next [] _ = []
 next _ [] = []
 next branch@(currNode:xs) graph = 
     let 
-        -- Get a graph, starting at the row corresponding to current head node of the branch
-        currNodeRow = drop (numNodes * currNode) graph
-        -- Get a list of successor nodes from this node
-        reachableNodes = [ col |(col,val)<-zip [0..] currNodeRow, val /= 0, col <= numNodes]
-        -- Prepend the branch to each successor
-        possibleBranches = map (\succNode -> succNode:branch) (reachableNodes) 
-        
-        in possibleBranches
-        
+        -- A subgraph of graph, starting at the row corresponding to currNode
+        subGraph = drop (numNodes * currNode) graph 
+
+        -- Finds the successor nodes in reverse-lexicographic order (due to tail-recursion)
+        readSuccessorNodes :: Graph -> Int -> [Node] -> [Node]
+        readSuccessorNodes [] _ list = list
+        readSuccessorNodes graph@(val:xs) col list
+            | col >= numNodes = list
+            | otherwise = case val of
+                            0 -> readSuccessorNodes xs (col+1) (list) 
+                            _ -> readSuccessorNodes xs (col+1) (col:list)
+
+        -- Tail-recursively appends each of given succesors to the branch, and in doing so we get
+        -- a list of successor branches in lexicographic order, and there is no need to call reverse!
+        getSuccessorBranches :: [Node] -> [Branch] -> [Branch]
+        getSuccessorBranches [] list = list 
+        getSuccessorBranches (succNode:xs) list = (getSuccessorBranches xs ((succNode:branch):list))
+
+        in getSuccessorBranches (readSuccessorNodes subGraph 0 []) []
+
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
 checkArrival::Node -> Node -> Bool
@@ -89,13 +98,56 @@ explored::Node-> [Node] ->Bool
 explored point exploredList = elem point exploredList
 
 test_graph_1 :: Graph
-test_graph_1 = [0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]
+test_graph_1 = [0,1,1,1,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,1 ,0,0,0,0,0]
+{-|
+    0
+    |
+1   2   3
+        |
+        4
+-}
 test_graph_2 :: Graph
-test_graph_2 = [0,1,1,1,0, 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0 , 0,0,0,0,0]
+test_graph_2 = [0,1,1,1,0, 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0 ,0,0,0,0,0]
+{-|
+    0
+    |
+1   2   3
+|
+4
+-}
 test_graph_3 :: Graph
-test_graph_3 = [0,2,1,0,0 ,0,0,0,0,4, 0,0,0,1,0, 0,0,0,0,4, 0,0,0,0,0]
+test_graph_3 = [0,2,1,0,0 ,0,0,0,0,4, 0,0,0,1,0, 0,0,0,0,4 ,0,0,0,0,0]
+{-|
+    0
+    |
+  1   2   
+  |   |
+  |   3
+  |   |
+  |  /
+   4
+-}
 test_graph_3_heuristic :: [Int]
 test_graph_3_heuristic = [4,4,3,4,0]
+
+test_graph_4 :: Graph
+test_graph_4 = --A,T,Z,O,S,L,M,D,C,R,F,P,B
+                [0,118,75,0,140,0,0,0,0,0,0,0,0, --A
+                 118,0,0,0,0,111,0,0,0,0,0,0,0, --T
+                 75,0,0,71,0,0,0,0,0,0,0,0,0, --Z
+                 0,0,71,0,151,0,0,0,0,0,0,0,0, --O
+                 140,0,0,151,0,0,0,0,0,80,99,0,0, --S
+                 0,111,0,0,0,0,70,0,0,0,0,0,0, --L
+                 0,0,0,0,0,70,0,75,0,0,0,0,0, --M
+                 0,0,0,0,0,0,75,0,120,0,0,0,0, --D
+                 0,0,0,0,0,0,0,120,0,146,0,138,0, --C
+                 0,0,0,0,80,0,0,0,146,0,0,97,0, --R
+                 0,0,0,0,99,0,0,0,0,0,0,0,211, --F
+                 0,0,0,0,0,0,0,0,138,97,0,0,101, --P
+                 0,0,0,0,0,0,0,0,0,0,211,101,0] --B                    
+test_graph_4_heuristic :: [Int]
+test_graph_4_heuristic = [366,329,374,380,253,244,241,242,160,193,176,100,0]
+
 debug = True
 -- Section 3 Uniformed Search
 -- | Breadth-First Search
@@ -103,44 +155,74 @@ debug = True
 -- and the checkArrival function to check whether a node is a destination position.
 -- The function should search nodes using a breadth first search order.
 
+
+
+-- the state of the search, its agenda, explored nodes and solution if it was found, used to fold over the nodes
+type SearchState = ([Branch],[Node],Maybe Branch)
+
 breadthFirstSearch::Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
-
-breadthFirstSearch [] _ _ _ _ = Nothing
-breadthFirstSearch _ _ _ [] _ = Nothing 
-breadthFirstSearch graph goal next ([]:otherBranches) exploredList = 
-    breadthFirstSearch graph goal next otherBranches exploredList -- if we encounter empty branch, we skip it
-breadthFirstSearch graph goal next (firstBranch:otherBranches) exploredList
-    | checkArrival goal currNode = Just firstBranch 
-    | explored currNode exploredList = 
-        breadthFirstSearch graph goal next otherBranches exploredList 
-    | otherwise = -- place the expanded branches at the end of the 'queue'
-        breadthFirstSearch graph goal next (otherBranches++expandedFrontier) (currNode:exploredList) `debugP` ("expanding: " ++ show firstBranch) 
+breadthFirstSearch [] _    _    _      _ = Nothing  -- if the graph is empty, there are no nodes
+breadthFirstSearch _  _    _    []     _ = Nothing
+breadthFirstSearch g goal next ([]:xs) exploredList  = breadthFirstSearch g goal next xs exploredList   -- if the agenda is empty, we don't know where to start
+breadthFirstSearch g goal next agenda@(fa:xs) exploredList 
+    | any (isSolution) agenda = find isSolution agenda -- if solution is in agenda already, return it
+    | otherwise = bfs' g  goal next agenda exploredList -- if it isn't we can continue as normal
         where
-            -- The current node at the beggining of the queue (i.e. first expanded at this depth)
-            currNode = head firstBranch
-            -- The successive branches of the current node (can have empty branches)
-            expandedFrontier = next firstBranch graph
+            -- checks if a branches' head is a goal node
+            isSolution [] = False
+            isSolution (x:xs) = checkArrival goal x
 
+            -- the underlying auxilary function
+            bfs':: Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
+            bfs' _  _    _    []     _ = Nothing  -- if the agenda is empty, there is no path to the goal node
+            bfs' g  goal next agenda exploredList = 
+                let
+  
+                    -- extends the given search state given a child branch/node to be generated
+                    generateNode :: SearchState -> Branch -> SearchState
+                    generateNode (a,el,ms) [] = (a,el,ms)--empty branches are skipped
+                    generateNode (a,el,Just sol) _ = (a,el,Just sol) -- if a solution is already found, do nothing more
+                    generateNode (agenda,exploredList,maybeSol) branch@(currNode:xs)
+                        | elem currNode exploredList = (agenda,exploredList,maybeSol)`debugP` (show "in frontier or agenda: " ++ show branch) -- if node is in explored (or in frontier, so also in explored), ignore it 
+                        | checkArrival goal currNode = (agenda,exploredList,Just branch) `debugP`  (show "is goal : " ++ show branch)-- if 
+                        | otherwise = (agenda++[branch],exploredList,maybeSol) `debugP` (show "generating: " ++ show branch)
+
+                    -- extends the given search state given a new branch/node to be extended
+                    expandNode :: SearchState -> Branch -> SearchState
+                    expandNode (([]:xs),el,ms) _ = (xs,el,ms) `debugP`(show "empty agenda: ")
+                    expandNode (a,e,Just x) branch = (a,e,Just x) `debugP` (show "solution found: " ++ show branch)-- if we already found a solution, no need to expand this node 
+                    expandNode ((shallowestBranch:bs),exploredList,maybeSol) branch@(currNode:xs)
+                        = foldl (generateNode) (bs,currNode:exploredList,maybeSol) (next branch g)  `debugP` (show "expanding: " ++ show branch)
+
+                    -- we get either the first search state which has a solution found, or one generated by the last element in the agenda
+                    (newAgenda,newExploredList,newMaybeSolution) = takeFirstWithOrLastElem (\(_,_,ms) -> isJust ms) $ 
+                                                                    scanl expandNode (agenda,exploredList,Nothing) agenda
+                in 
+                    case newMaybeSolution of
+                        Nothing  -> bfs' g goal next newAgenda newExploredList
+                        Just sol -> Just sol 
 
 -- | Depth-Limited Search:
 -- The depthLimitedSearch function is similiar to the depthFirstSearch function,
 -- except its search is limited to a pre-determined depth, d, in the search tree.
 depthLimitedSearch::Graph ->Node->(Branch ->Graph-> [Branch])->[Branch]-> Int->[Node]-> Maybe Branch
-depthLimitedSearch [] _ _ _ _ _ = Nothing
-depthLimitedSearch _ _ _ [] _ _= Nothing                                      
-depthLimitedSearch graph goal next [branch] d exploredList 
-    | d == 0 = if checkArrival goal currNode then Just branch else Nothing
-    | checkArrival goal currNode = Just branch
-    | explored currNode exploredList = Nothing -- if we reach an explored node, we 'backtrack' the recursion
-    | otherwise = 
-        -- We lazilly evaluate the successor branches of the first branch, meaning we only evaluate one path at a time
-        firstResultOrNothing $ 
-        map (\succBranch -> depthLimitedSearch graph goal next [succBranch] (d-1) (currNode:exploredList) `debugP` ("recursing into:" ++ show succBranch)) expandedFrontier
-        where
-            -- The node at the head of the deepest branch in the search
-            currNode = head branch
-            -- The successive branches of the current Node (can be empty)
-            expandedFrontier = next branch graph
+depthLimitedSearch []   _    _                     _  _            _ = Nothing
+depthLimitedSearch _    _    _                     [] _            _ = Nothing                                  
+depthLimitedSearch g goal next agenda@(currBranch:bs) d exploredList = firstJustOrNothing $ map (\branch -> dfs' g goal next branch d exploredList) agenda -- we launch dfs on each branch in the agenda
+    where
+        -- performs depth first search with only one starting branch
+        dfs'::Graph ->Node->(Branch ->Graph-> [Branch])->Branch-> Int->[Node]-> Maybe Branch
+        dfs' _ _ _ [] _ _ = Nothing 
+        dfs' g goal next branch@(currNode:xs) d exploredList 
+            | d == 0                         = if checkArrival goal currNode 
+                                                then Just branch 
+                                                else Nothing -- on depth limit, forget about successors
+            | checkArrival goal currNode     = Just branch
+            | explored currNode exploredList = Nothing 
+            | otherwise                      = firstJustOrNothing $ 
+                                                map (\succBranch -> dfs' g goal next succBranch (d-1) (currNode:exploredList) `debugP` ("expanding:" ++ show succBranch)) (next branch g) 
+
+
 
 --HELPER
 debugP = flip trace 
@@ -176,20 +258,20 @@ getHr hrTable node = hrTable !! node
 aStarSearch::Graph->Node->(Branch->Graph -> [Branch])->([Int]->Node->Int)->[Int]->(Graph->Branch->Int)->[Branch]-> [Node]-> Maybe Branch
 aStarSearch _ _ _ _ _ _ [] _ = Nothing
 aStarSearch [] _ _ _ _ _ _ _ = Nothing
-aStarSearch graph goal next getHr hrTable cost ([]:bs) exploredList =
-    aStarSearch graph goal next getHr hrTable cost bs exploredList --we skip empty branches
-aStarSearch graph goal next getHr hrTable cost (firstBranch:bs) exploredList
-    | checkArrival goal currNode = Just firstBranch
-    | explored currNode exploredList = aStarSearch graph goal next getHr hrTable cost (bs) exploredList
+aStarSearch g goal next getHr hrTable cost ([]:bs) exploredList = aStarSearch g goal next getHr hrTable cost bs exploredList --we skip empty branches
+aStarSearch g goal next getHr hrTable cost (firstBranch:bs) exploredList
+    | checkArrival goal currNode     = Just firstBranch `debugP` ("goal: " ++ show firstBranch++ "frontier:" ++ show bs)
+    | explored currNode exploredList = aStarSearch g goal next getHr hrTable cost (bs) exploredList `debugP` ("explored: " ++ show firstBranch ++ "frontier:" ++ show bs)
     | otherwise = let 
-                    evaulationFunction branch = (getHr hrTable $ head branch) + cost graph branch -- we sort branches (without the one we just expanded) on evaluation function in ascending order  
+                    evaulationFunction branch = (getHr hrTable $ head branch) + cost g branch -- we sort branches (without the one we just expanded) on evaluation function in ascending order  
                     sortedBranches = sortOn evaulationFunction (expandedFrontier ++ bs)
-                    in aStarSearch graph goal next getHr hrTable cost (sortedBranches) (currNode:exploredList) `debugP` ("expanding: " ++ show firstBranch)
+                    in aStarSearch g goal next getHr hrTable cost (sortedBranches) (currNode:exploredList) `debugP` ("expanding: " ++ show firstBranch++ "frontier:" ++ show sortedBranches)
         where
             -- The node at the head of the deepest branch in the search
             currNode = head firstBranch
             -- The successive branches of the current Node (can be empty)
-            expandedFrontier = next firstBranch graph
+            expandedFrontier = next firstBranch g
+
 
 -- | Section 5: Games
 -- See ConnectFour.hs for more detail on  functions that might be helpful for your implementation. 
@@ -216,8 +298,8 @@ eval game  = -- I know you hint at using terminal, but you explicitly state that
 -- The eval function should be used to get the value of a terminal state. 
 alphabeta:: Role -> Game -> Int
 alphabeta player game
-    | player == maxPlayer = maxValue game (-2) 2 -- human player is max
-    | player == minPlayer = minValue game (-2) 2 -- comp player is min
+    | maxPlayer player = maxValue game (-2) 2 -- human player is max
+    | minPlayer player = minValue game (-2) 2 -- comp player is min
     where
         maxValue:: Game -> Int -> Int -> Int
         maxValue game a b
@@ -228,7 +310,7 @@ alphabeta player game
                             stopCondition (val,alpha) = val >= b -- we will use a scanl to traverse the options so we can halt early  
 
                             nextStates:: [Game]
-                            nextStates = moves game maxPlayer
+                            nextStates = moves game humanPlayer
 
                             newAlpha:: Int -> Int -> Int
                             newAlpha prevAlpha val = if val >= b then val else max prevAlpha val
@@ -239,7 +321,7 @@ alphabeta player game
                             
                             (lastVal,lastAlpha) = takeFirstWithOrLastElem stopCondition valsAndAlphas 
                             in lastVal 
-        
+
         minValue:: Game -> Int -> Int -> Int
         minValue game a b
             | terminal game = eval game
@@ -249,7 +331,7 @@ alphabeta player game
                             stopCondition (val,beta) = val <= a -- we will use a scanl to traverse the options so we can halt early  
 
                             nextStates:: [Game]
-                            nextStates = moves game minPlayer
+                            nextStates = moves game compPlayer
                             
                             newBeta:: Int -> Int -> Int
                             newBeta prevBeta val = if val <= a then val else min prevBeta val
@@ -269,18 +351,18 @@ alphabeta player game
 -- The eval function should be used to get the value of a terminal state.
 minimax:: Role -> Game -> Int
 minimax player game
-    | player == maxPlayer = maxMin game
+    | maxPlayer player = maxMin game
     | otherwise = minMax game
     where
         minMax game
             | terminal game = eval game
             | otherwise = let
-                            successors = moves game minPlayer
+                            successors = moves game compPlayer
                             in minimum (map maxMin successors)
         maxMin game
             | terminal game = eval game
             | otherwise = let
-                            successors = moves game maxPlayer
+                            successors = moves game humanPlayer
                             in maximum (map minMax successors)
 {- Auxiliary Functions
 -- Include any auxiliary functions you need for your algorithms below.
@@ -290,8 +372,8 @@ minimax player game
 
 -- given a list, will iterate through it and return the first Just value it finds, or a nothing if it doesn't
 -- when used on a map which maps depth first search to each branch, will cause the deepest branch to be evaluated first
-firstResultOrNothing:: [Maybe a] -> Maybe a
-firstResultOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
+firstJustOrNothing:: [Maybe a] -> Maybe a
+firstJustOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
 
 takeFirst::(a->Bool) -> [a] -> a
 takeFirst = undefined--takeFirst chooseCondition list = find(\)
@@ -302,4 +384,5 @@ takeFirstWithOrLastElem:: (a-> Bool) -> [a] -> a
 takeFirstWithOrLastElem cond [x] = x
 takeFirstWithOrLastElem cond (x:xs) = if cond x then x else takeFirstWithOrLastElem cond xs 
 
-main = do putStrLn $ show $minimax 0 [-1 | x <- [1..16]]
+main = do let sol =  map (next [0]) (take 99999999 $ permutations [0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0])
+            in sol `deepseq` putStrLn "completed profiling"

@@ -41,12 +41,12 @@ initGame::Game
 initGame = take (gridcol_game * gridrow_game) (cycle [emptyCell])
 
 -- maxPlayer function checks if the given player is max, and returns a Boolean.
-maxPlayer::Role
-maxPlayer = humanPlayer
+maxPlayer::Role -> Bool
+maxPlayer = (==) humanPlayer
 
 -- minPlayer function checks if the given player is min, and returns a Boolean.
-minPlayer :: Role
-minPlayer = compPlayer
+minPlayer :: Role -> Bool
+minPlayer = (==) compPlayer
 
 
 

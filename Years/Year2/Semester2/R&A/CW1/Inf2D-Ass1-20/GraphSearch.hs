@@ -20,7 +20,7 @@ depthLimit = 40
 
 -- you can change the graph, start- and endNode  and the heuristicTable variable to test out different graphs!
 graph::Graph
-graph=[0,1,2,0,0,0,0,1,0,0,0,0,0,0,0,0]
+graph=test_graph_1
 
 heuristicTable::[Int]
 heuristicTable=[30,9,4,0]
