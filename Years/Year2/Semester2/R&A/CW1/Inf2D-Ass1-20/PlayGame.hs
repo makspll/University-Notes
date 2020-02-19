@@ -35,7 +35,8 @@ getInt = getLine >>= (\str -> catch ((readIO str):: IO Int)
 
 playGame :: Game -> Role -> (Int,Int) ->  IO ()
 playGame game role (x,y)| terminal game = (drawGrid game) >> endGame game 
-                           | role == humanPlayer = (drawGrid game) >> do {mv <- getMove game; t <- getTurn; playGame (playTurn (playMove game humanPlayer mv) t) (switch humanPlayer) (x,y)}
+                           | role == humanPlayer = (drawGrid game) >> do 
+                             {mv <- getMove game; t <- getTurn; playGame (playTurn (playMove game humanPlayer mv) t) (switch humanPlayer) (x,y)}
                            
                                                     
                            
@@ -51,7 +52,7 @@ endGame game | checkWin game humanPlayer  = putStrLn "You have won."
 
 -- compMove generate the move of computer player, which should get the step that make the chance of human wining minimum
 compMove::(Role->Game->Int)->Game->Game
-compMove fn game | length (elemIndices emptyCell game) < searchSpace = snd $ head $ sortBy (compare `on` fst) $ map (\i-> (fn humanPlayer i, i)) (movesAndTurns game compPlayer)  -- looking for the minimum value for computer player
+compMove fn game | length (elemIndices emptyCell game) < searchSpace = snd $ head $ sortBy (compare `on` fst) $ map (\i-> (fn compPlayer i, i)) (movesAndTurns game compPlayer)  -- looking for the minimum value for computer player
                  | otherwise = generalMove game compPlayer
 
 

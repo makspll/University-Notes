@@ -34,7 +34,7 @@ compPlayer :: Role
 compPlayer = 0    --- the value of the human player's step in a cell indexed in Game is 0.
 
 searchSpace :: Int
-searchSpace =9
+searchSpace = 9
 
 -- Intialises the game board; -1 represents an emptyCell (unoccupied cell).
 initGame::Game
