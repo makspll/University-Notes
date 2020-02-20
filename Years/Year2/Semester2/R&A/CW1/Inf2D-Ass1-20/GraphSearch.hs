@@ -1,4 +1,4 @@
-module GraphSearch (graphSearchMain) where
+module GraphSearch (graphSearchMain,f) where
 
 import Data.Array
 import Data.Maybe (fromJust,isNothing)
@@ -20,10 +20,22 @@ depthLimit = 40
 
 -- you can change the graph, start- and endNode  and the heuristicTable variable to test out different graphs!
 graph::Graph
-graph=test_graph_4
+graph =  [0,118,75,0,140,0,0,0,0,0,0,0,0, --A
+                 118,0,0,0,0,111,0,0,0,0,0,0,0, --T
+                 75,0,0,71,0,0,0,0,0,0,0,0,0, --Z
+                 0,0,71,0,151,0,0,0,0,0,0,0,0, --O
+                 140,0,0,151,0,0,0,0,0,80,99,0,0, --S
+                 0,111,0,0,0,0,70,0,0,0,0,0,0, --L
+                 0,0,0,0,0,70,0,75,0,0,0,0,0, --M
+                 0,0,0,0,0,0,75,0,120,0,0,0,0, --D
+                 0,0,0,0,0,0,0,120,0,146,0,138,0, --C
+                 0,0,0,0,80,0,0,0,146,0,0,97,0, --R
+                 0,0,0,0,99,0,0,0,0,0,0,0,211, --F
+                 0,0,0,0,0,0,0,0,138,97,0,0,101, --P
+                 0,0,0,0,0,0,0,0,0,0,211,101,0] --B     
 
 heuristicTable::[Int]
-heuristicTable=test_graph_4_heuristic
+heuristicTable= [366,329,374,380,253,244,241,242,160,193,176,100,0]
 
 startNode::Node
 startNode =0
@@ -31,7 +43,7 @@ startNode =0
 endNode::Node
 endNode=12
 
-
+f branch = (cost graph branch) + (getHr heuristicTable $ head branch)
 
 graphSearchMain = do
 

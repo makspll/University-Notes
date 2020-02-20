@@ -60,7 +60,8 @@ numNodes::Int
 numNodes = 13
 
 
--- 
+
+
 
 
 -- The next function should return all the possible continuations of input search branch through the grid.
@@ -172,7 +173,7 @@ depthLimitedSearch g goal next agenda@(currBranch:bs) d exploredList = firstJust
         -- performs depth limited search with only one starting branch
         dls'::Branch -> Int -> [Node]-> Maybe Branch
         dls' [] _ _ = Nothing 
-        dls' branch@(currNode:xs) d _  -- on depth limit, forget about successors
+        dls' branch@(currNode:xs) d exploredList  -- on depth limit, forget about successors
             | d == 0                         = if checkArrival goal currNode 
                                                 then Just branch 
                                                 else Nothing 
@@ -218,15 +219,15 @@ aStarSearch [] _ _ _ _ _ _ _ = Nothing
 aStarSearch g goal next getHr hrTable cost agenda exploredList = ass' (validBranches agenda g) exploredList -- validate the input
     where 
         ass':: [Branch] -> [Node] -> Maybe Branch
-        ass' [] _  = Nothing                             -- empty agenda = no solution
+        ass' [] _  = Nothing -- empty agenda = no solution
         ass' ([]:bs) exploredList = ass' bs exploredList -- we skip empty branches
         ass' (bestBranch@(currNode:ns):bs) exploredList               
-            | checkArrival goal currNode     = Just bestBranch
+            | checkArrival goal currNode     = Just bestBranch  
             | explored currNode exploredList = ass' bs exploredList 
             | otherwise = 
                 let 
                     evaulationFunction branch = (getHr hrTable $ head branch) + cost g branch 
-                    sortedBranches = sortOn evaulationFunction $ (next bestBranch g) ++ bs
+                    sortedBranches = sortOn evaulationFunction ((next bestBranch g) ++ bs)
                 in 
                     -- we expand the node with smallest evaluation function first
                     ass' sortedBranches (currNode:exploredList)
@@ -342,10 +343,6 @@ propMini player game = (player == 1 || player == 0) && length game == 16 ==> o1 
 firstJustOrNothing:: [Maybe a] -> Maybe a
 firstJustOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
 
-takeFirst::(a->Bool) -> [a] -> a
-takeFirst = undefined--takeFirst chooseCondition list = find(\)
-
-
 -- will take the first element satisfying the condition, or the last element if none do (last wont be checked)
 takeFirstWithOrLastElem:: (a-> Bool) -> [a] -> a
 takeFirstWithOrLastElem cond [x] = x
@@ -416,3 +413,14 @@ test_graph_4 = --A,T,Z,O,S,L,M,D,C,R,F,P,B
                  0,0,0,0,0,0,0,0,0,0,211,101,0] --B                    
 test_graph_4_heuristic :: [Int]
 test_graph_4_heuristic = [366,329,374,380,253,244,241,242,160,193,176,100,0]
+
+graph1 :: Graph
+graph1 = [0,5,10,0,0,0,
+         5,0,0,5,0,0,
+         10,0,0,7,11,0,
+         0,5,7,0,15,7,
+         0,0,11,15,0,11,
+         0,0,0,7,11,0]
+heuristicTable1 :: [Node]
+heuristicTable1 = [14,11,10,6,11,0]
+
