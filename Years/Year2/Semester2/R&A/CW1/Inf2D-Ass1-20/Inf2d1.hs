@@ -10,7 +10,7 @@ import ConnectFourWithTwist
 -- for utilities
 import Data.List (sortOn,find)
 import Data.Maybe (isNothing,fromMaybe,isJust)
-
+import Control.Monad (msum)
 
 
 
@@ -62,14 +62,13 @@ numNodes = 13
 
 
 
-
-
 -- The next function should return all the possible continuations of input search branch through the grid.
 -- Remember that the robot can only move up, down, left and right, and can't move outside the grid.
 -- The current location of the robot is the head of the input branch.
 -- Your function should return an empty list if the input search branch is empty.
 -- This implementation of next function does not backtrace branches.
 
+-- since this function is used a  in all functions later on, I will focus on the speed, and even though i could do it in 3 lines, recursion will be the fastest approach here :C
 next::Branch -> Graph ->  [Branch]
 next [] _ = []
 next _ [] = []
@@ -83,9 +82,9 @@ next branch@(currNode:xs) graph =
         readSuccessorNodes [] _ list = list
         readSuccessorNodes graph@(val:xs) col list
             | col >= numNodes = list
-            | otherwise = case val of
-                            0 -> readSuccessorNodes xs (col+1) (list) 
-                            _ -> readSuccessorNodes xs (col+1) (col:list)
+            | otherwise       = case val of
+                                    0 -> readSuccessorNodes xs (col+1) (list) 
+                                    _ -> readSuccessorNodes xs (col+1) (col:list)
 
         -- Tail-recursively appends each of given succesors to the branch, and in doing so we get
         -- a list of successor branches in lexicographic order, and there is no need to call reverse!
@@ -114,91 +113,96 @@ explored point exploredList = elem point exploredList
 
 
 
--- the state of the search, its agenda, explored nodes and solution if it was found, used to fold over the nodes
-type SearchState = ([Branch],[Node],Maybe Branch)
 
+
+-- I am assuming that the initial call to BFS will have at most one branch in the list
 breadthFirstSearch::Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
-breadthFirstSearch [] _    _    _      _ = Nothing  -- we can't traverse an empty graph
-breadthFirstSearch _  _    _    []     _ = Nothing
-breadthFirstSearch g goal next ([]:xs) exploredList  = breadthFirstSearch g goal next (validBranches xs g) exploredList   -- if the agenda is empty, we don't know where to start
-breadthFirstSearch g goal next agenda@(fa:xs) exploredList 
-    | any (isSolution) agenda = find isSolution agenda -- if solution is in agenda already, return it
-    | otherwise = bfs' (validBranches agenda g) exploredList -- if it isn't we can continue as normal
+breadthFirstSearch [] _ _ _ _                           = Nothing                                          -- we can't traverse an empty graph
+breadthFirstSearch _ _ _ [] _                           = Nothing                                          -- if we're given an agenda without a start branch, there is nothing to search
+breadthFirstSearch g goal next ([]:xs) exploredList     = breadthFirstSearch g goal next xs exploredList   -- same thing if the given initial branch is empty 
+breadthFirstSearch g goal next [startBranch] exploredList 
+    | isSolution startBranch goal   = Just startBranch               -- if solution is in agenda already, return it
+    | otherwise                     = bfs' [startBranch] exploredList  -- if it isn't we can launch search as normal, with the assumption that the agenda is already generated but not explored yet
         where
-            -- checks if a branches' head is a goal node
-            isSolution [] = False
-            isSolution (x:xs) = checkArrival goal x
-
             -- the underlying auxilary function
-            -- since I am trying to stick to the pseudocode, and I cannot have side effects
-            -- I need searchState, to represent the parameters changing (without using recursion at each level)
+            -- I am representing the side effects of changing the agenda and explored list in the for loop with a tuple,
+            -- so that i can scan the agenda from the left and change those parameters for the items further in the agenda
             bfs'::[Branch]->[Node]->Maybe Branch
-            bfs' []     _            = Nothing  -- if the agenda is empty, there is no path to the goal node
-            bfs' agenda exploredList = 
+            bfs' [] _                   = Nothing  -- if the agenda is empty, there is no path to the goal node
+            bfs' agenda exploredList    = 
                 let
-  
-                    -- modifies the given search state given a child branch/node to be generated
-                    generateNode :: SearchState -> Branch -> SearchState
-                    generateNode (a,el,ms) [] = (a,el,ms)--empty branches are skipped
-                    generateNode (a,el,Just sol) _ = (a,el,Just sol) -- if a solution is already found, do nothing more
-                    generateNode (agenda,exploredList,maybeSol) branch@(currNode:xs)
-                        | elem currNode exploredList = (agenda,exploredList,maybeSol)-- if node is in explored (or in frontier, so also in explored), ignore it 
-                        | checkArrival goal currNode = (agenda,exploredList,Just branch) 
-                        | otherwise = (agenda++[branch],exploredList,maybeSol)
+                    -- generates the given branch with given context (agenda,exploredlist,current solution)
+                    -- will return a new context after the node is generated 
+                    -- we check if a branch is a solution when it's generated
+                    generateNode :: BfsContext -> Branch -> BfsContext
+                    generateNode (a,el,ms) []            = (a,el,ms)                    -- an empty branch doesnt affect the context
+                    generateNode (a,el,Just sol) _       = (a,el,Just sol)              -- if a solution is already found, do nothing more
+                    generateNode (agenda,exploredList,currSol) branch@(currNode:xs)
+                        | elem currNode exploredList    = (agenda,exploredList,currSol)     -- if node is in explored (or in frontier, so also in explored), ignore it 
+                        | checkArrival goal currNode    = (agenda,exploredList,Just branch) 
+                        | otherwise = (agenda++[branch],exploredList,currSol)               -- when generating a node we add it to the end of the agenda if its not explored or a solution
 
-                    -- modifies the given search state given a new branch/node to be extended
-                    expandNode :: SearchState -> Branch -> SearchState
-                    expandNode (([]:xs),el,ms) _ = (xs,el,ms) 
-                    expandNode (a,el,Just x) branch = (a,el,Just x) -- if we already found a solution, no need to expand this node 
-                    expandNode ((shallowestBranch:bs),exploredList,maybeSol) branch@(currNode:xs)
-                        = foldl (generateNode) (bs,currNode:exploredList,maybeSol) (next branch g)
+                    -- expands the given branch with given context (agenda,eploredlist,current solution)
+                    -- will retutn a new context after the node is expanded
+                    expandNode :: BfsContext -> Branch -> BfsContext
+                    expandNode (([]:xs),el,ms) _        = (xs,el,ms)                    -- skip empty branches in agenda
+                    expandNode (a,el,Just x) branch     = (a,el,Just x)                 -- if we already found a solution, no need to expand this node 
+                    expandNode ((shallowestBranch:bs),exploredList,currSol) branch@(currNode:xs) =
+                        foldl (generateNode) (bs,currNode:exploredList,currSol) (next branch g)  -- when we expand a branch, we generate its successors, and update the frontier and explored list 
 
-                    -- we drop the search states untill either we find one with a solution, or the last one
-                    (newAgenda,newExploredList,newMaybeSolution) = takeFirstWithOrLastElem (\(_,_,ms) -> isJust ms) $ 
+                    -- we expand the nodes and change the context as we go, capturing the side effects,
+                    -- we stop early if we find a solution due to the laziness of scanl
+                    (newAgenda,newExploredList,newSolution) = takeFirstWithOrLastElem (\(_,_,ms) -> isJust ms) $ 
                                                                     scanl expandNode (agenda,exploredList,Nothing) agenda
                 in 
-                    case newMaybeSolution of
+                    -- if we didn't find the solution we start the search on the next level, i.e. the new agenda
+                    case newSolution of
                         Nothing  -> bfs' newAgenda newExploredList
                         Just sol -> Just sol 
 
 -- | Depth-Limited Search:
 -- The depthLimitedSearch function is similiar to the depthFirstSearch function,
 -- except its search is limited to a pre-determined depth, d, in the search tree.
+
+-- I am assuming that the agenda will always have one branch the first time
 depthLimitedSearch::Graph ->Node->(Branch ->Graph-> [Branch])->[Branch]-> Int->[Node]-> Maybe Branch
-depthLimitedSearch []   _    _                     _  _            _ = Nothing
-depthLimitedSearch _    _    _                     [] _            _ = Nothing                                  
-depthLimitedSearch g goal next agenda@(currBranch:bs) d exploredList = firstJustOrNothing $  -- we launch dls on each valid branch in the agenda
-                                                                        map (\branch -> dls' branch d exploredList) (validBranches agenda g)
+depthLimitedSearch [] _ _ _ _ _ = Nothing
+depthLimitedSearch _ _ _ [] _ _ = Nothing                                  
+depthLimitedSearch g goal next [startBranch] d exploredList = dls' startBranch d exploredList 
     where
-        -- performs depth limited search with only one starting branch
+        -- performs depth limited search with less arguments
         dls'::Branch -> Int -> [Node]-> Maybe Branch
         dls' [] _ _ = Nothing 
         dls' branch@(currNode:xs) d exploredList  -- on depth limit, forget about successors
-            | d == 0                         = if checkArrival goal currNode 
-                                                then Just branch 
-                                                else Nothing 
+            | d == 0                         = if checkArrival goal currNode then Just branch else Nothing 
             | checkArrival goal currNode     = Just branch
             | explored currNode exploredList = Nothing 
-            | otherwise                      = firstJustOrNothing $ 
-                                                map (\succBranch -> dls' succBranch (d-1) (currNode:exploredList) ) (next branch g) 
+            | otherwise                      = 
+                msum $ 
+                    map (\succBranch -> dls' succBranch (d-1) (currNode:exploredList)) $
+                        (next branch g) 
 
 
 
 
  -- | Section 4: Informed search
 
-
--- | AStar Helper Functions
-
 -- | The cost function calculates the current cost of a trace. The cost for a single transition is given in the adjacency matrix.
 -- The cost of a whole trace is the sum of all relevant transition costs.
 cost :: Graph ->Branch  -> Int
 cost [] _ = 0
 cost _ [] = 0
-cost gr [initialNode] = 0
-cost gr (curNode:prevNode:ns) = prevToCur + cost gr (prevNode:ns)
-    where prevToCur = gr !! ((prevNode * numNodes) + curNode)
-          
+cost _ [initialNode]                = 0 
+cost graph (curNode:prevNode:ns)    = 
+    let
+        -- the address in the graph for the cost between prev and curr node
+        indexOfCost = ((prevNode * numNodes) + curNode)
+        -- the cost between prev and curr node
+        prevToCurrent = graph !! indexOfCost
+    in 
+        case prevToCurrent of
+            0 -> 9999    -- invalid branches, get astronomical costs, because why not
+            _ -> prevToCurrent + cost graph (prevNode:ns)
  
 
 
@@ -206,7 +210,7 @@ cost gr (curNode:prevNode:ns) = prevToCur + cost gr (prevNode:ns)
 -- | The getHr function reads the heuristic for a node from a given heuristic table.
 -- The heuristic table gives the heuristic (in this case straight line distance) and has one entry per node. It is ordered by node (e.g. the heuristic for node 0 can be found at index 0 ..)  
 getHr:: [Int]->Node->Int
-getHr hrTable node = hrTable !! node   
+getHr hrTable node = hrTable !! node   everywhere
 
 
 -- | A* Search
@@ -215,96 +219,99 @@ getHr hrTable node = hrTable !! node
 ---- Nodes with a lower heuristic value should be searched before nodes with a higher heuristic value.
 
 aStarSearch::Graph->Node->(Branch->Graph -> [Branch])->([Int]->Node->Int)->[Int]->(Graph->Branch->Int)->[Branch]-> [Node]-> Maybe Branch
-aStarSearch [] _ _ _ _ _ _ _ = Nothing 
-aStarSearch g goal next getHr hrTable cost agenda exploredList = ass' (validBranches agenda g) exploredList -- validate the input
+aStarSearch [] _ _ _ _ _ _ _                                   = Nothing 
+aStarSearch g goal next getHr hrTable cost agenda exploredList = ass' agenda exploredList
     where 
+        -- auxilary function with less arguments, assumes valid input, goal can be in input
         ass':: [Branch] -> [Node] -> Maybe Branch
-        ass' [] _  = Nothing -- empty agenda = no solution
-        ass' ([]:bs) exploredList = ass' bs exploredList -- we skip empty branches
-        ass' (bestBranch@(currNode:ns):bs) exploredList               
+        ass' [] _                   = Nothing              -- empty agenda = no solution
+        ass' ([]:bs) exploredList   = ass' bs exploredList -- we skip empty branches
+        ass' (bestBranch@( currNode:ns ):bs) exploredList               
             | checkArrival goal currNode     = Just bestBranch  
-            | explored currNode exploredList = ass' bs exploredList 
+            | explored currNode exploredList = ass' bs exploredList -- to avoid loops, we don't cover identical nodes twice (consistent heuristic means no repetition guaranteed)
             | otherwise = 
                 let 
-                    evaulationFunction branch = (getHr hrTable $ head branch) + cost g branch 
-                    sortedBranches = sortOn evaulationFunction ((next bestBranch g) ++ bs)
+                    evaulationFunction b = (getHr hrTable $ head b) + cost g b 
+                    newAgenda            = (next bestBranch g) ++ bs            -- we expand the bestBranch and add its children to the agenda
+                    sortedBranches       = sortOn evaulationFunction newAgenda  -- next bestBranch is now at head of sortedBranches
                 in 
-                    -- we expand the node with smallest evaluation function first
-                    ass' sortedBranches (currNode:exploredList)
+                    ass' sortedBranches (currNode:exploredList)                 -- repeat the process
 
 
 -- | Section 5: Games
 -- See ConnectFour.hs for more detail on  functions that might be helpful for your implementation. 
 
-
-
--- | Section 5.1 Connect Four with a Twist
-
- 
+-- | Section 5.1 Connect Four with a TwistnumNodes
 
 -- The function determines the score of a terminal state, assigning it a value of +1, -1 or 0:
 eval :: Game -> Int
-eval game  = -- I know you hint at using terminal, but you explicitly state that this function is used to classify a "terminal state" so I am assuming it's terminal
-                case checkWin game compPlayer of -- checking comp first, because lets not kid ourselves, it will probably win more
-                    True -> -1 
-                    False -> if checkWin game humanPlayer --if MIN didn't win, it's either a draw or a win for MIN
-                                then
-                                    1
-                                else 
-                                    0
-
+eval game  = case checkWin game compPlayer of 
+                True -> -1 
+                False -> --if MIN didn't win, it's either a draw or a win for MIN
+                    if checkWin game humanPlayer max
+                        then
+                            1
+                        else 
+                            0
 
 -- | The alphabeta function should return the minimax value using alphabeta pruning.
 -- The eval function should be used to get the value of a terminal state. 
+
+
+-- since I am trying to adhere to the pseudocode as closely as possible, I will be mimicking a for loop with a scanl, and will require a 'search state' which
+-- is a way of getting 'side effects' by making them planned effects, synnonymous to keeping parameters in a recursion.
 alphabeta:: Role -> Game -> Int
 alphabeta _ [] = 0 -- just in case
 alphabeta player game
-    | maxPlayer player = maxValue game (-2) 2 -- human player is max
-    | minPlayer player = minValue game (-2) 2 -- comp player is min
+    | maxPlayer == player = maxValue game (-2) 2 -- human player is max
+    | minPlayer == player = minValue game (-2) 2 -- comp player is min
     where
+        -- finds the minimax value of a given game on max players turn
         maxValue:: Game -> Int -> Int -> Int
         maxValue game a b
             | terminal game = eval game
-            | otherwise = let 
-                            -- we parse the successor states, in reverse order (turns first)
-                            nextStates:: [Game]
-                            nextStates = reverse $ movesAndTurns game humanPlayer 
+            | otherwise     = 
+                let 
+                    -- we find the successor/child games in reverse order (turns first)
+                    nextGames:: [Game]
+                    nextGames = reverse $ movesAndTurns game maxPlayer 
 
-                            -- given the current v,a and the next state, calculate the new value of v,a after exploring the state
-                            expandSearch :: (Int,Int) ->  Game -> (Int,Int)
-                            expandSearch (prevVal,prevAlpha) state
-                                | newVal <= prevAlpha = (newVal,prevAlpha)
-                                | otherwise = (newVal,max prevAlpha newVal)
-                                    where 
-                                        newVal = max (prevVal) (minValue state prevAlpha b)
+                    -- given the best minimax value so far and the current alpha value and some game we can reach, 
+                    -- explore the given game and return the new best minimax value and alpha value after we explore that game
+                    getMinimaxAndAlpha :: (Int,Int) ->  Game -> (Int,Int)
+                    getMinimaxAndAlpha (bestMinimaxVal,a) game = 
+                        let newMinimax = max (bestMinimaxVal) (minValue game a b) 
+                        in (newMinimax,max a newMinimax)
 
-                            -- we keep updating v,a with each successor state, untill we find a value better 
-                            -- than the current best choice for min, then we prune
-                            (lastVal,lastAlpha) = takeFirstWithOrLastElem (\(v,a)-> v >= b) $ 
-                                                    scanl expandSearch (-2,a) nextStates
-                            in lastVal 
-
+                    -- we keep updating v,a with each child game of the given game, if we find any with minimax value that is greater than the current beta (min has a better play)
+                    -- we stop looking and pick the last minimax value we accumulated (the maximum minimax value so far) 
+                    (bestMinimax,newAlpha) = takeFirstWithOrLastElem (\(v,a)-> v >= b) $ 
+                                            scanl getMinimaxAndAlpha (-2,a) nextGames
+                in bestMinimax 
+        
+        -- finds the minimax value of a given game on min players turn
         minValue:: Game -> Int -> Int -> Int
         minValue game a b
             | terminal game = eval game
-            | otherwise = let 
-                            -- we parse the successor states, in reverse order (turns first)
-                            nextStates:: [Game]
-                            nextStates = reverse $ movesAndTurns game compPlayer
+            | otherwise     = 
+                let 
+                    -- we parse the successor states, in reverse order (turns first)
+                    nextGames:: [Game]
+                    nextGames = reverse $ movesAndTurns game minPlayer
 
-                            -- given the current v,b and the next state, calculate the new value of v,b after exploring the state
-                            expandSearch:: (Int,Int) ->  Game -> (Int,Int)
-                            expandSearch (prevVal,prevBeta) state
-                                | newVal >= prevBeta = (newVal,prevBeta)
-                                | otherwise = (newVal,min prevBeta newVal)
-                                    where 
-                                        newVal = min (prevVal) (maxValue state a prevBeta)
+                    -- given the best minimax value so far and the current beta value and some game we can reach, 
+                    -- explore the given game and return the new best minimax value and alpha value after we explore that game
+                    expandSearch:: (Int,Int) ->  Game -> (Int,Int)
+                    expandSearch (bestMinimaxVal,b) game =  
+                        let newMinimax = min (bestMinimaxVal) (maxValue game a b) 
+                        in (newMinimax,min b newMinimax)
 
-                            -- we keep updating v,b with each successor state, untill we find a value better 
-                            -- than the current best choice for max, then we prune
-                            (lastVal,lastBeta) = takeFirstWithOrLastElem (\(v,b)-> v <= a) $ 
-                                                    scanl expandSearch (2,b) nextStates
-                            in lastVal 
+
+                    -- we keep updating v,b with each child game of the given game, if we find any with minimax value that is lesser than the current alpha (max has a better play)
+                    -- we stop looking and pick the last minimax value we accumulated (the maximum minimax value so far) 
+                    (bestMinimax,newBeta) = takeFirstWithOrLastElem (\(v,b)-> v <= a) $ 
+                                                scanl expandSearch (2,b) nextGames
+                in bestMinimax 
         
 -- | OPTIONAL!
 -- You can try implementing this as a test for yourself or if you find alphabeta pruning too hard.
@@ -314,31 +321,31 @@ alphabeta player game
 -- The eval function should be used to get the value of a terminal state.
 minimax:: Role -> Game -> Int
 minimax player game
-    | maxPlayer player = maxMin game
-    | otherwise = minMax game
+    | maxPlayer == player   = maxMin game
+    | otherwise             = minMax game
     where
         minMax game
             | terminal game = eval game
-            | otherwise = let
-                            successors = movesAndTurns game compPlayer
-                            in minimum (map maxMin successors)
+            | otherwise     = 
+                let
+                    successors = movesAndTurns game compPlayer
+                in 
+                    minimum (map maxMin successors)
+
         maxMin game
             | terminal game = eval game
-            | otherwise = let
-                            successors = movesAndTurns game humanPlayer
-                            in maximum (map minMax successors)
+            | otherwise     = 
+                let
+                    successors = movesAndTurns game humanPlayer
+                in 
+                    maximum (map minMax successors)
 {- Auxiliary Functions
 -- Include any auxiliary functions you need for your algorithms below.
 -- For each function, state its purpose and comment adequately.
 -- Functions which increase the complexity of the algorithm will not get additional scores
-
-propMini player game = (player == 1 || player == 0) && length game == 16 ==> o1 == o2
-    where
-        o1 = minimax player game
-        o2 = alphabeta player game
 -}
 
--- given a list, will iterate through it and return the first Just value it finds, or a nothing if it doesn't
+-- given a list, will iterate through it and return the first Just value it finds, or a nothing if it doesn'tvalidBranches
 -- when used on a map which maps depth first search to each branch, will cause the deepest branch to be evaluated first
 firstJustOrNothing:: [Maybe a] -> Maybe a
 firstJustOrNothing = (fromMaybe Nothing).(find (\result -> not $ isNothing result)) 
@@ -414,13 +421,10 @@ test_graph_4 = --A,T,Z,O,S,L,M,D,C,R,F,P,B
 test_graph_4_heuristic :: [Int]
 test_graph_4_heuristic = [366,329,374,380,253,244,241,242,160,193,176,100,0]
 
-graph1 :: Graph
-graph1 = [0,5,10,0,0,0,
-         5,0,0,5,0,0,
-         10,0,0,7,11,0,
-         0,5,7,0,15,7,
-         0,0,11,15,0,11,
-         0,0,0,7,11,0]
-heuristicTable1 :: [Node]
-heuristicTable1 = [14,11,10,6,11,0]
+-- type to represent the context of a bfs search
+type BfsContext = ([Branch],[Node],Maybe Branch)
+
+-- checks if a branches' head is a goal node
+isSolution [] _ = False
+isSolution (x:xs) goal = checkArrival goal x
 
