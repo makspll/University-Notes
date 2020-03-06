@@ -34,7 +34,7 @@ compPlayer :: Role
 compPlayer = 0    --- the value of the human player's step in a cell indexed in Game is 0.
 
 searchSpace :: Int
-searchSpace = 9
+searchSpace =9
 
 -- Intialises the game board; -1 represents an emptyCell (unoccupied cell).
 initGame::Game
@@ -42,11 +42,11 @@ initGame = take (gridcol_game * gridrow_game) (cycle [emptyCell])
 
 -- maxPlayer function checks if the given player is max, and returns a Boolean.
 maxPlayer::Role
-maxPlayer =  humanPlayer
+maxPlayer = humanPlayer
 
 -- minPlayer function checks if the given player is min, and returns a Boolean.
 minPlayer :: Role
-minPlayer =  compPlayer
+minPlayer = compPlayer
 
 
 

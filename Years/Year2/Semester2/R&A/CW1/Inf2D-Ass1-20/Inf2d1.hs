@@ -57,7 +57,7 @@ type Graph= [Node]
 
 
 numNodes::Int
-numNodes = 13
+numNodes = 4
 
 
 
@@ -69,12 +69,28 @@ numNodes = 13
 -- This implementation of next function does not backtrace branches.
 
 -- since this function is used a  in all functions later on, I will focus on the speed, and even though i could do it in 3 lines, recursion will be the fastest approach here, I am afraid :C
+-- NOTE: i know you asked for the auxilary functions to be put at the bottom of the file, however, 95% of mine use less arguments than the originals
+-- and so I have to keep them in the main bodies of the calling functions, I used let statements to make the functions read naturally
 next::Branch -> Graph ->  [Branch]
 next [] _ = []
 next _ [] = []
 next branch@(currNode:xs) graph = 
-    let 
-        numNodes = (ceiling . sqrt . fromIntegral . length $ graph)
+    let                 
+        -- Finds the successor nodes in reverse-lexicographic order (due to tail-recursion)
+        readSuccessorNodes :: Graph -> Int -> [Node] -> [Node]
+        readSuccessorNodes [] _ list = list
+        readSuccessorNodes graph@(val:xs) col list
+            | col >= numNodes = list
+            | otherwise       = case val of
+                                    0 -> readSuccessorNodes xs (col+1) (list) 
+                                    _ -> readSuccessorNodes xs (col+1) (col:list)
+
+        -- Tail-recursively appends each of given succesors to the branch, and in doing so we get
+        -- a list of successor branches in lexicographic order, and there is no need to call reverse! *stonks*
+        getSuccessorBranches :: [Node] -> [Branch] -> [Branch]
+        getSuccessorBranches [] list = list 
+        getSuccessorBranches (succNode:xs) list = (getSuccessorBranches xs ((succNode:branch):list))
+
         -- A subgraph of graph, starting at the row corresponding to currNode
         subGraph = drop (numNodes * currNode) graph 
 
@@ -176,7 +192,6 @@ cost _ [] = 0
 cost _ [initialNode]                = 0 
 cost graph (curNode:prevNode:ns)    = 
     let
-        numNodes = (ceiling . sqrt . fromIntegral . length $ graph)
         -- the address in the graph for the cost between prev and curr node
         indexOfCost = ((prevNode * numNodes) + curNode)
         -- the cost between prev and curr node
@@ -191,10 +206,9 @@ cost graph (curNode:prevNode:ns)    =
     
 -- | The getHr function reads the heuristic for a node from a given heuristic table.
 -- The heuristic table gives the heuristic (in this case straight line distance) and has one entry per node. It is ordered by node (e.g. the heuristic for node 0 can be found at index 0 ..)  
+
 getHr:: [Int]->Node->Int
-getHr hrTable node = hrTable !scanl uses the checkArrival function to check whether a node is a destination position,
----- and a combination of the cost and heuristic functions to determine the order in which nodes are searched.
----- Nodes with a lower heuristic value should be searched before nodes with a higher heuristic value.
+getHr hrTable node = hrTable !! node
 
 aStarSearch::Graph->Node->(Branch->Graph -> [Branch])->([Int]->Node->Int)->[Int]->(Graph->Branch->Int)->[Branch]-> [Node]-> Maybe Branch
 aStarSearch [] _ _ _ _ _ _ _                                   = Nothing 
@@ -209,7 +223,7 @@ aStarSearch g goal next getHr hrTable cost agenda exploredList = ass' agenda exp
             | explored currNode exploredList = ass' bs exploredList -- to avoid loops, we don't cover identical nodes twice (consistent heuristic means no repetition guaranteed)
             | otherwise = 
                 let 
-                    evaulationFunction b = (getHr hrTable $ head b) + cost g b 
+                    evaulationFunction b = (getHr hrTable $ head b) + cost g b
                     newAgenda            = (next bestBranch g) ++ bs            -- we expand the bestBranch and add its children to the agenda
                     sortedBranches       = sortOn evaulationFunction newAgenda  -- next bestBranch is now at head of sortedBranches
                 in 
@@ -325,27 +339,6 @@ minimax player game
 -- For each function, state its purpose and comment adequately.
 -- Functions which increase the complexity of the algorithm will not get additional scores
 -}
-
-
--- Next --
-
--- Finds the successor nodes in reverse-lexicographic order (due to tail-recursion)
-readSuccessorNodes :: Graph -> Int -> [Node] -> [Node]
-readSuccessorNodes [] _ list = list
-readSuccessorNodes graph@(val:xs) col list
-    | col >= numNodes = list
-    | otherwise       = case val of
-                            0 -> readSuccessorNodes xs (col+1) (list) 
-                            _ -> readSuccessorNodes xs (col+1) (col:list)
-
--- Tail-recursively appends each of given succesors to the branch, and in doing so we get
--- a list of successor branches in lexicographic order, and there is no need to call reverse! *stonks*
-getSuccessorBranches :: [Node] -> [Branch] -> [Branch]
-getSuccessorBranches [] list = list 
-getSuccessorBranches (succNode:xs) list = (getSuccessorBranches xs ((succNode:branch):list))
-
--- /Next --
-
 
 -- Utilities --
 

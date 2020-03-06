@@ -1,7 +1,7 @@
 module Main where
 
 import PlayGame (playGameMain)
-import GraphSearch (graphSearchMain,f)
+import GraphSearch (graphSearchMain)
 
 main :: IO ()
 main = do
