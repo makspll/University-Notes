@@ -29,7 +29,7 @@ of the functions which you are asked to implement.
 -- The deadline is the  10th March 2020 at 3pm.
 
 -- See the assignment sheet and document files for more information on the predefined game functions.
-
+top
 -- See the README for description of a user interface to test your code.
 
 -- See www.haskell.org for haskell revision.
@@ -68,42 +68,26 @@ numNodes = 13
 -- Your function should return an empty list if the input search branch is empty.
 -- This implementation of next function does not backtrace branches.
 
--- since this function is used a  in all functions later on, I will focus on the speed, and even though i could do it in 3 lines, recursion will be the fastest approach here :C
+-- since this function is used a  in all functions later on, I will focus on the speed, and even though i could do it in 3 lines, recursion will be the fastest approach here, I am afraid :C
 next::Branch -> Graph ->  [Branch]
 next [] _ = []
 next _ [] = []
 next branch@(currNode:xs) graph = 
     let 
+        numNodes = (ceiling . sqrt . fromIntegral . length $ graph)
         -- A subgraph of graph, starting at the row corresponding to currNode
         subGraph = drop (numNodes * currNode) graph 
-
-        -- Finds the successor nodes in reverse-lexicographic order (due to tail-recursion)
-        readSuccessorNodes :: Graph -> Int -> [Node] -> [Node]
-        readSuccessorNodes [] _ list = list
-        readSuccessorNodes graph@(val:xs) col list
-            | col >= numNodes = list
-            | otherwise       = case val of
-                                    0 -> readSuccessorNodes xs (col+1) (list) 
-                                    _ -> readSuccessorNodes xs (col+1) (col:list)
-
-        -- Tail-recursively appends each of given succesors to the branch, and in doing so we get
-        -- a list of successor branches in lexicographic order, and there is no need to call reverse!
-        getSuccessorBranches :: [Node] -> [Branch] -> [Branch]
-        getSuccessorBranches [] list = list 
-        getSuccessorBranches (succNode:xs) list = (getSuccessorBranches xs ((succNode:branch):list))
 
         in getSuccessorBranches (readSuccessorNodes subGraph 0 []) []
 
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
+
 checkArrival::Node -> Node -> Bool
 checkArrival destination curNode = destination == curNode
 
-
 explored::Node-> [Node] ->Bool
 explored point exploredList = elem point exploredList
-
-
 
 -- Section 3 Uniformed Search
 -- | Breadth-First Search
@@ -111,27 +95,26 @@ explored point exploredList = elem point exploredList
 -- and the checkArrival function to check whether a node is a destination position.
 -- The function should search nodes using a breadth first search order.
 
+-- type to represent the context of a bfs search
+type BfsContext = ([Branch],[Node],Maybe Branch)
 
-
-
-
--- I am assuming that the initial call to BFS will have at most one branch in the list
+-- BIG ASSUMPTION: I am assuming that the initial call to BFS will have at most one branch in the list, to avoid clutter!!
 breadthFirstSearch::Graph -> Node->(Branch ->Graph -> [Branch])->[Branch]->[Node]->Maybe Branch
-breadthFirstSearch [] _ _ _ _                           = Nothing                                          -- we can't traverse an empty graph
-breadthFirstSearch _ _ _ [] _                           = Nothing                                          -- if we're given an agenda without a start branch, there is nothing to search
-breadthFirstSearch g goal next ([]:xs) exploredList     = breadthFirstSearch g goal next xs exploredList   -- same thing if the given initial branch is empty 
+breadthFirstSearch [] _ _ _ _                           = Nothing                                         
+breadthFirstSearch _ _ _ [] _                           = Nothing                                          
+breadthFirstSearch g goal next ([]:xs) exploredList     = breadthFirstSearch g goal next xs exploredList   -- ignore empty branches, to be robust 
 breadthFirstSearch g goal next [startBranch] exploredList 
-    | isSolution startBranch goal   = Just startBranch               -- if solution is in agenda already, return it
-    | otherwise                     = bfs' [startBranch] exploredList  -- if it isn't we can launch search as normal, with the assumption that the agenda is already generated but not explored yet
+    | isSolution startBranch goal   = Just startBranch
+    | otherwise                     = bfs' [startBranch] exploredList  -- we launch search as normal, with the assumption that the agenda is already generated but not explored yet
         where
             -- the underlying auxilary function
             -- I am representing the side effects of changing the agenda and explored list in the for loop with a tuple,
-            -- so that i can scan the agenda from the left and change those parameters for the items further in the agenda
+            -- so that i can scan the agenda from the left and cause those 'intended side effects' for further items
             bfs'::[Branch]->[Node]->Maybe Branch
-            bfs' [] _                   = Nothing  -- if the agenda is empty, there is no path to the goal node
+            bfs' [] _                   = Nothing  -- if the agenda is empty, give up, no solution
             bfs' agenda exploredList    = 
                 let
-                    -- generates the given branch with given context (agenda,exploredlist,current solution)
+                    -- generates the given branch with given BFS context (agenda,exploredlist,current solution)
                     -- will return a new context after the node is generated 
                     -- we check if a branch is a solution when it's generated
                     generateNode :: BfsContext -> Branch -> BfsContext
@@ -142,7 +125,7 @@ breadthFirstSearch g goal next [startBranch] exploredList
                         | checkArrival goal currNode    = (agenda,exploredList,Just branch) 
                         | otherwise = (agenda++[branch],exploredList,currSol)               -- when generating a node we add it to the end of the agenda if its not explored or a solution
 
-                    -- expands the given branch with given context (agenda,eploredlist,current solution)
+                    -- expands the given branch with given context
                     -- will retutn a new context after the node is expanded
                     expandNode :: BfsContext -> Branch -> BfsContext
                     expandNode (([]:xs),el,ms) _        = (xs,el,ms)                    -- skip empty branches in agenda
@@ -150,10 +133,8 @@ breadthFirstSearch g goal next [startBranch] exploredList
                     expandNode ((shallowestBranch:bs),exploredList,currSol) branch@(currNode:xs) =
                         foldl (generateNode) (bs,currNode:exploredList,currSol) (next branch g)  -- when we expand a branch, we generate its successors, and update the frontier and explored list 
 
-                    -- we expand the nodes and change the context as we go, capturing the side effects,
-                    -- we stop early if we find a solution due to the laziness of scanl
-                    (newAgenda,newExploredList,newSolution) = takeFirstWithOrLastElem (\(_,_,ms) -> isJust ms) $ 
-                                                                    scanl expandNode (agenda,exploredList,Nothing) agenda
+                    -- we expand the nodes and change the context as we go, capturing the side effects, return the first context with solution or last context
+                    (newAgenda,newExploredList,newSolution) = foldl expandNode (agenda,exploredList,Nothing) agenda
                 in 
                     -- if we didn't find the solution we start the search on the next level, i.e. the new agenda
                     case newSolution of
@@ -195,6 +176,7 @@ cost _ [] = 0
 cost _ [initialNode]                = 0 
 cost graph (curNode:prevNode:ns)    = 
     let
+        numNodes = (ceiling . sqrt . fromIntegral . length $ graph)
         -- the address in the graph for the cost between prev and curr node
         indexOfCost = ((prevNode * numNodes) + curNode)
         -- the cost between prev and curr node
@@ -210,11 +192,7 @@ cost graph (curNode:prevNode:ns)    =
 -- | The getHr function reads the heuristic for a node from a given heuristic table.
 -- The heuristic table gives the heuristic (in this case straight line distance) and has one entry per node. It is ordered by node (e.g. the heuristic for node 0 can be found at index 0 ..)  
 getHr:: [Int]->Node->Int
-getHr hrTable node = hrTable !! node   everywhere
-
-
--- | A* Search
--- The aStarSearch function uses the checkArrival function to check whether a node is a destination position,
+getHr hrTable node = hrTable !scanl uses the checkArrival function to check whether a node is a destination position,
 ---- and a combination of the cost and heuristic functions to determine the order in which nodes are searched.
 ---- Nodes with a lower heuristic value should be searched before nodes with a higher heuristic value.
 
@@ -245,10 +223,10 @@ aStarSearch g goal next getHr hrTable cost agenda exploredList = ass' agenda exp
 
 -- The function determines the score of a terminal state, assigning it a value of +1, -1 or 0:
 eval :: Game -> Int
-eval game  = case checkWin game compPlayer of 
+eval game  = case checkWin game minPlayer of 
                 True -> -1 
                 False -> --if MIN didn't win, it's either a draw or a win for MIN
-                    if checkWin game humanPlayer max
+                    if checkWin game maxPlayer
                         then
                             1
                         else 
@@ -285,8 +263,10 @@ alphabeta player game
 
                     -- we keep updating v,a with each child game of the given game, if we find any with minimax value that is greater than the current beta (min has a better play)
                     -- we stop looking and pick the last minimax value we accumulated (the maximum minimax value so far) 
-                    (bestMinimax,newAlpha) = takeFirstWithOrLastElem (\(v,a)-> v >= b) $ 
-                                            scanl getMinimaxAndAlpha (-2,a) nextGames
+                    (bestMinimax,newAlpha) = 
+                        takeFirstWithOrLastElem (\(v,a)-> v >= b) $ 
+                            scanl getMinimaxAndAlpha (-2,a) nextGames
+                            
                 in bestMinimax 
         
         -- finds the minimax value of a given game on min players turn
@@ -301,16 +281,17 @@ alphabeta player game
 
                     -- given the best minimax value so far and the current beta value and some game we can reach, 
                     -- explore the given game and return the new best minimax value and alpha value after we explore that game
-                    expandSearch:: (Int,Int) ->  Game -> (Int,Int)
-                    expandSearch (bestMinimaxVal,b) game =  
+                    getMinimaxAndBeta:: (Int,Int) ->  Game -> (Int,Int)
+                    getMinimaxAndBeta (bestMinimaxVal,b) game =  
                         let newMinimax = min (bestMinimaxVal) (maxValue game a b) 
                         in (newMinimax,min b newMinimax)
 
-
                     -- we keep updating v,b with each child game of the given game, if we find any with minimax value that is lesser than the current alpha (max has a better play)
                     -- we stop looking and pick the last minimax value we accumulated (the maximum minimax value so far) 
-                    (bestMinimax,newBeta) = takeFirstWithOrLastElem (\(v,b)-> v <= a) $ 
-                                                scanl expandSearch (2,b) nextGames
+                    (bestMinimax,newBeta) = 
+                        takeFirstWithOrLastElem (\(v,b)-> v <= a) $ 
+                            scanl getMinimaxAndBeta (2,b) nextGames
+
                 in bestMinimax 
         
 -- | OPTIONAL!
@@ -345,6 +326,29 @@ minimax player game
 -- Functions which increase the complexity of the algorithm will not get additional scores
 -}
 
+
+-- Next --
+
+-- Finds the successor nodes in reverse-lexicographic order (due to tail-recursion)
+readSuccessorNodes :: Graph -> Int -> [Node] -> [Node]
+readSuccessorNodes [] _ list = list
+readSuccessorNodes graph@(val:xs) col list
+    | col >= numNodes = list
+    | otherwise       = case val of
+                            0 -> readSuccessorNodes xs (col+1) (list) 
+                            _ -> readSuccessorNodes xs (col+1) (col:list)
+
+-- Tail-recursively appends each of given succesors to the branch, and in doing so we get
+-- a list of successor branches in lexicographic order, and there is no need to call reverse! *stonks*
+getSuccessorBranches :: [Node] -> [Branch] -> [Branch]
+getSuccessorBranches [] list = list 
+getSuccessorBranches (succNode:xs) list = (getSuccessorBranches xs ((succNode:branch):list))
+
+-- /Next --
+
+
+-- Utilities --
+
 -- given a list, will iterate through it and return the first Just value it finds, or a nothing if it doesn'tvalidBranches
 -- when used on a map which maps depth first search to each branch, will cause the deepest branch to be evaluated first
 firstJustOrNothing:: [Maybe a] -> Maybe a
@@ -368,40 +372,12 @@ validBranches branches graph = filter (validBranch) branches
 
         validBranch branch = all (uncurry getsFromTo) (zip branch (tail branch))
 
-test_graph_1 :: Graph
-test_graph_1 = [0,1,1,1,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,1 ,0,0,0,0,0]
-{-|
-    0
-    |
-1   2   3
-        |
-        4
--}
-test_graph_2 :: Graph
-test_graph_2 = [0,1,1,1,0, 0,0,0,0,1, 0,0,0,0,0, 0,0,0,0,0 ,0,0,0,0,0]
-{-|
-    0
-    |
-1   2   3
-|
-4
--}
-test_graph_3 :: Graph
-test_graph_3 = [0,2,1,0,0 ,0,0,0,0,4, 0,0,0,1,0, 0,0,0,0,4 ,0,0,0,0,0]
-{-|
-    0
-    |
-  1   2   
-  |   |
-  |   3
-  |   |
-  |  /
-   4
--}
-test_graph_3_heuristic :: [Int]
-test_graph_3_heuristic = [4,4,3,4,0]
+-- checks if a branches' head is a goal node
+isSolution [] _ = False
+isSolution (x:xs) goal = checkArrival goal x
 
--- the legendary graph
+
+-- the legendary graph of bucharest
 test_graph_4 :: Graph
                --0,1,2,3,4,5,6,7,8,9,10,11,12
 test_graph_4 = --A,T,Z,O,S,L,M,D,C,R,F,P,B
@@ -421,10 +397,6 @@ test_graph_4 = --A,T,Z,O,S,L,M,D,C,R,F,P,B
 test_graph_4_heuristic :: [Int]
 test_graph_4_heuristic = [366,329,374,380,253,244,241,242,160,193,176,100,0]
 
--- type to represent the context of a bfs search
-type BfsContext = ([Branch],[Node],Maybe Branch)
+-- /Utilities --
 
--- checks if a branches' head is a goal node
-isSolution [] _ = False
-isSolution (x:xs) goal = checkArrival goal x
 
