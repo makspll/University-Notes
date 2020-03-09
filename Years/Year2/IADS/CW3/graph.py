@@ -73,7 +73,6 @@ class Graph:
 
         # identity permutation perm[i] = i
         self.perm = [x for x in range(self.n)]
-        print(self.perm)
     # Complete as described in the spec, to calculate the cost of the
     # current tour (as represented by self.perm).
     def tourValue(self):
@@ -120,7 +119,7 @@ class Graph:
             return True
         else:
             return False
- 
+    
     def swapHeuristic(self):
         better = True
         while better:
@@ -131,6 +130,7 @@ class Graph:
 
     def TwoOptHeuristic(self):
         better = True
+        totalDiff = 0
         while better:
             better = False
             for j in range(self.n-1):
@@ -142,5 +142,19 @@ class Graph:
     # Implement the Greedy heuristic which builds a tour starting
     # from node 0, taking the closest (unused) node as 'next'
     # each time.
-    #def Greedy(self):
+    def Greedy(self):
 
+        # we always start at 0 
+        startIdx = self.perm[0]
+        nextIdx = startIdx
+        visited = {startIdx}
+
+        for i in range(1,self.n):
+            
+            neighbours = [(val,idx) for (idx,val) in enumerate(self.dists[nextIdx]) if idx not in visited ]
+            minDist,nextIdx = min(neighbours)
+
+            self.perm[i] = nextIdx
+            visited.add(nextIdx)
+
+    # def Custom(self):
