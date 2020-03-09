@@ -1,4 +1,5 @@
 import math
+import random
 
 def euclid(p,q):
     x = p[0]-q[0]
@@ -145,7 +146,8 @@ class Graph:
     def Greedy(self):
 
         # we always start at 0 
-        startIdx = self.perm[0]
+        self.perm[0] = 0
+        startIdx = 0
         nextIdx = startIdx
         visited = {startIdx}
 
@@ -157,4 +159,53 @@ class Graph:
             self.perm[i] = nextIdx
             visited.add(nextIdx)
 
-    # def Custom(self):
+    # generate initial population
+    # we get the first chromosome using our greedy heuristic, and mutate it untill we fill the entire population
+    def initialPop(size):
+        self.Greedy()
+        pop = [self.perm]
+
+        # fill pop with mutations of a "good" permutation
+        while (len(pop) < size):
+            pop.append(self.Mutate(pop[0]))
+        return pop
+    # given two solution chromosomes, performs a crossover operation and yields a new chromosome of the same length
+    def Crossover(x,y):
+
+    # given a chromosome, mutates it and returns a new one
+    # uses HPRM mutation operator 
+    # (Abdoun & Chakir 2012 - A New Mutation Operator for Solving an NP-Complete Problem: Travelling Salesman Problem)
+    # https://www.researchgate.net/publication/282732991_A_New_Mutation_Operator_for_Solving_an_NP-Complete_Problem_Travelling_Salesman_Problem
+    def Mutate(x,mutationChance):
+        nX = x[:]
+        
+        n = len(x)
+
+        # pick 2 mutation points s.t. 0 <= a <= b <= n
+        a = random.randint(0,n)
+        b = random.randint(a,n)
+
+        while a >= b:
+            # swap bits at mutation points
+            nX[a],nX[b] = nX[b],nX[a]
+
+            # chance to mutate 
+            p = random.uniform(0,1)
+            if p < mutationChance:
+                # choose random index
+                j = random.randint(0,n)
+                # permute elements at a and j
+                nX[a],nX[j] = nXx[j],nX[a]
+                a += 1
+                b -= 1
+        return nX
+    # returns the fitness value of a given chromosome
+    def Evaluate(x):
+
+    # given a list of chromosome selects a portion of them according to evolutionary heuristics
+    def Select(xs):
+
+    # I will use genetic algorithms, since they're amazing, fun and good
+    # I will represent the problem using the path representation method
+    def Custom(self,popSize,crossoverChance,mutationChance):
+
