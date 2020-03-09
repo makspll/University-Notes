@@ -105,7 +105,22 @@ class Graph:
     # self.perm[i] and self.perm[j], and commit to the reversal
     # if it improves the tour value.
     # Return True/False depending on success.              
-    #def tryReverse(self,i,j):
+    def tryReverse(self,i,j):
+        #the effect of reversing will only change the costs around the edges of the reversed permutation segment
+        preInode = self.perm[(i-1) % self.n]
+        iNode = self.perm[i]
+        jNode = self.perm[j]
+        postJnode = self.perm[(j + 1) % self.n]
+
+        costInitial = self.dists[preInode][iNode]  + self.dists[jNode][postJnode]
+        costAfter = self.dists[preInode][jNode] + self.dists[iNode][postJnode]
+        
+        if(costAfter < costInitial):
+            self.perm[i:j+1] = self.perm[i:j+1][::-1]
+            return True
+        else:
+            return False
+ 
     def swapHeuristic(self):
         better = True
         while better:
@@ -114,14 +129,14 @@ class Graph:
                 if self.trySwap(i):
                     better = True
 
-    # def TwoOptHeuristic(self):
-    #     better = True
-    #     while better:
-    #         better = False
-    #         for j in range(self.n-1):
-    #             for i in range(j):
-    #                 if self.tryReverse(i,j):
-    #                     better = True
+    def TwoOptHeuristic(self):
+        better = True
+        while better:
+            better = False
+            for j in range(self.n-1):
+                for i in range(j):
+                    if self.tryReverse(i,j):
+                        better = True
                 
 
     # Implement the Greedy heuristic which builds a tour starting
