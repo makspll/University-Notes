@@ -1,5 +1,6 @@
 import math
 import random
+import sys
 
 def euclid(p,q):
     x = p[0]-q[0]
@@ -159,53 +160,136 @@ class Graph:
             self.perm[i] = nextIdx
             visited.add(nextIdx)
 
-    # generate initial population
-    # we get the first chromosome using our greedy heuristic, and mutate it untill we fill the entire population
-    def initialPop(size):
-        self.Greedy()
-        pop = [self.perm]
 
-        # fill pop with mutations of a "good" permutation
-        while (len(pop) < size):
-            pop.append(self.Mutate(pop[0]))
-        return pop
-    # given two solution chromosomes, performs a crossover operation and yields a new chromosome of the same length
-    def Crossover(x,y):
+    # ( O(n-1) *  ) )
+    def shortestPathFromNeighbours(self,n,l,visited):
+        neighbours = [idx for (idx,val) in enumerate(self.dists[n]) if idx not in visited]
 
-    # given a chromosome, mutates it and returns a new one
-    # uses HPRM mutation operator 
-    # (Abdoun & Chakir 2012 - A New Mutation Operator for Solving an NP-Complete Problem: Travelling Salesman Problem)
-    # https://www.researchgate.net/publication/282732991_A_New_Mutation_Operator_for_Solving_an_NP-Complete_Problem_Travelling_Salesman_Problem
-    def Mutate(x,mutationChance):
-        nX = x[:]
+        leastCost = sys.float_info.max
+        leastSubPath = []
+        for nei in neighbours: 
+            (cost,subPath) = self.shortestPathFrom(nei,l-1,visited)
+    
+            cost += self.dists[n][subPath[0]]
+ 
+            if cost < leastCost:
+                leastCost = cost
+                leastSubPath = subPath
+        return (leastCost,leastSubPath)
         
-        n = len(x)
+    # returns shortest path starting on any of the nodes with length l
+    def shortestPathFrom(self,n,l,visited):
+        if l == 0:
+            return (0,[n])
+        else:
+            explored = visited.copy()
+            explored.add(n)
+            # find the shortest path with length l -1 starting at any of the nodes
+            shortestSubPath = (sys.float_info.max,[])
+            
+            neighbours = [idx for (idx,val) in enumerate(self.dists[n]) if idx not in explored]
 
-        # pick 2 mutation points s.t. 0 <= a <= b <= n
-        a = random.randint(0,n)
-        b = random.randint(a,n)
+            for idx in neighbours:
+                # subpath with l-1 lookahead from neighbour
+                (cost,path) = self.shortestPathFrom(idx,l-1,explored)
+                cost += self.dists[n][idx]  
+        
+                if cost < shortestSubPath[0]:
+                    path.insert(0,n) 
+                    shortestSubPath = (cost,path)
+            
+            return shortestSubPath
 
-        while a >= b:
-            # swap bits at mutation points
-            nX[a],nX[b] = nX[b],nX[a]
+    def Custom(self,l):
+        # we always start at 0 
+        perm = [0]
+        startIdx = 0
+        nextIdx = startIdx
+        visited = {startIdx}
 
-            # chance to mutate 
-            p = random.uniform(0,1)
-            if p < mutationChance:
-                # choose random index
-                j = random.randint(0,n)
-                # permute elements at a and j
-                nX[a],nX[j] = nXx[j],nX[a]
-                a += 1
-                b -= 1
-        return nX
-    # returns the fitness value of a given chromosome
-    def Evaluate(x):
+        for i in range((self.n-1)//l):
+            # find the shortest subpath of length l
 
-    # given a list of chromosome selects a portion of them according to evolutionary heuristics
-    def Select(xs):
+            (cost,path) = self.shortestPathFromNeighbours(nextIdx,l,visited)
+    
+            perm.extend(path)
+            nextIdx = perm[-1]
 
-    # I will use genetic algorithms, since they're amazing, fun and good
-    # I will represent the problem using the path representation method
-    def Custom(self,popSize,crossoverChance,mutationChance):
+            visited.update(path)
+            
+
+        # find the leftover shortest subpath
+        print(len(perm),perm)
+        if self.n - len(perm) != 0:
+            (cost,path) = self.shortestPathFromNeighbours(perm[-1],self.n - len(perm),visited)
+            perm.extend(path)
+
+        print(len(perm),perm)
+        self.perm = perm
+
+    # # I will use genetic algorithms, since they're amazing, fun and good
+    # # I will represent the problem using the path representation method
+    # def Custom(self):
+    #     # assign placeholders to subtour (so we can slice replace later)
+    #     subtour = [0,0]
+    #     visited = set()
+
+    #     # select shortest edge in graph
+    #     shortestEdge = (-1,-1) 
+    #     currMin = sys.float_info.max
+    #     for i in range(self.n):
+    #         # consider only entries up to the diagonal
+    #         for j in range(i):
+    #             dist = self.dists[i][j]
+    #             if dist < currMin:
+    #                 currMin = dist
+    #                 shortestEdge = (i,j)
+
+    #     # make the endpoints in the shortest edge into a subtour
+
+    #     subtour[0:1] = shortestEdge 
+    #     visited.update(subtour)
+
+    #     while len(subtour) < self.n:
+    #         # select a city not in the subtour (not visited) which is closest to any of the cities in the subtour
+
+    #         closestCity = -1
+    #         currMin = 0 #sys.float_info.max
+    #         for i in range(self.n):
+    #             if i in visited:
+    #                 continue
+    #             else:
+    #                 for j in range(len(subtour)):
+    #                     if i == j:
+    #                         continue
+
+    #                     dist = self.dists[i][subtour[j]]
+    #                     if dist > currMin:
+    #                         currMin = dist
+    #                         closestCity = i
+
+    #         # find edge in subtour, which minimizes the cost increase when inserting into that edge (between its endpoints)
+
+    #         insertionIdx = -1
+    #         bestCostDelta = sys.float_info.max  # the afterCost - beforeCost,s at the current insertion edge  
+    #         for i in range(0,len(subtour)):
+                
+    #             a = subtour[i]
+    #             b = closestCity
+    #             c = subtour[(i+1)% len(subtour)]
+
+    #             costBefore = self.dists[a][c]
+    #             costAfter = self.dists[a][b] + self.dists[b][c]
+    #             costDelta = costAfter - costBefore
+
+    #             if costDelta < bestCostDelta:
+    #                 bestcostDelta = costDelta
+    #                 insertionIdx = c
+            
+    #         # we update our subtour and visited
+    #         subtour.insert(insertionIdx,closestCity)
+    #         visited.add(closestCity)
+        
+    #     self.perm = subtour
+
 

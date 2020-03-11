@@ -18,4 +18,7 @@ if __name__ == "__main__":
     print("greedy:" + str(g.tourValue()))
     print(g.perm)
 
+    g.Custom(4)
+    print("custom:" + str(g.tourValue()))
+    print(g.perm)
 
