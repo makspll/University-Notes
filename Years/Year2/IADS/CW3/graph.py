@@ -2,6 +2,7 @@ import math
 import random
 import sys
 
+
 def euclid(p,q):
     x = p[0]-q[0]
     y = p[1]-q[1]
@@ -169,7 +170,8 @@ class Graph:
         leastSubPath = []
         for nei in neighbours: 
             (cost,subPath) = self.shortestPathFrom(nei,l-1,visited)
-    
+            if(subPath == []):
+                continue
             cost += self.dists[n][subPath[0]]
  
             if cost < leastCost:
@@ -200,7 +202,39 @@ class Graph:
             
             return shortestSubPath
 
-    def Custom(self,l):
+    # a heuristic which either tries a 2-opt improvmenet with probability p or the best between greedy, and greedy with lookahead
+    def EPICHeuristic(self,p):
+
+        perm = [0]
+        startIdx = 0
+        nextIdx = startIdx
+        visited = {startIdx}
+
+        while len(perm) < self.n:
+            
+      
+            # try different lookaheads and pick one which minimies distance per edge
+            
+            (cost2,path2) = self.shortestPathFromNeighbours(nextIdx,2,visited)
+            (cost3,path3) = self.shortestPathFromNeighbours(nextIdx,1,visited)
+
+            (_,path) = min([(c,p) for (c,p) in [(cost2/2,path2),(cost3/1,path3)]])
+            perm.extend(path)
+            nextIdx = perm[-1]
+            visited.update(path)
+
+            failed = False
+            while failed == False:
+                if random.random() < p:
+                    # do a round of 2-opt
+                    for i in range(len(perm)):
+                        for j in range(len(perm)):
+                            self.tryReverse(i,j)
+                else:
+                    failed = True
+        self.perm = perm[:self.n]
+    
+    def GreedyLookahead(self,l):
         # we always start at 0 
         perm = [0]
         startIdx = 0
@@ -219,77 +253,13 @@ class Graph:
             
 
         # find the leftover shortest subpath
-        print(len(perm),perm)
         if self.n - len(perm) != 0:
             (cost,path) = self.shortestPathFromNeighbours(perm[-1],self.n - len(perm),visited)
             perm.extend(path)
 
-        print(len(perm),perm)
         self.perm = perm
+   
+    def resetPerm(self):
+        self.perm = [x for x in range(self.n)]
 
-    # # I will use genetic algorithms, since they're amazing, fun and good
-    # # I will represent the problem using the path representation method
-    # def Custom(self):
-    #     # assign placeholders to subtour (so we can slice replace later)
-    #     subtour = [0,0]
-    #     visited = set()
-
-    #     # select shortest edge in graph
-    #     shortestEdge = (-1,-1) 
-    #     currMin = sys.float_info.max
-    #     for i in range(self.n):
-    #         # consider only entries up to the diagonal
-    #         for j in range(i):
-    #             dist = self.dists[i][j]
-    #             if dist < currMin:
-    #                 currMin = dist
-    #                 shortestEdge = (i,j)
-
-    #     # make the endpoints in the shortest edge into a subtour
-
-    #     subtour[0:1] = shortestEdge 
-    #     visited.update(subtour)
-
-    #     while len(subtour) < self.n:
-    #         # select a city not in the subtour (not visited) which is closest to any of the cities in the subtour
-
-    #         closestCity = -1
-    #         currMin = 0 #sys.float_info.max
-    #         for i in range(self.n):
-    #             if i in visited:
-    #                 continue
-    #             else:
-    #                 for j in range(len(subtour)):
-    #                     if i == j:
-    #                         continue
-
-    #                     dist = self.dists[i][subtour[j]]
-    #                     if dist > currMin:
-    #                         currMin = dist
-    #                         closestCity = i
-
-    #         # find edge in subtour, which minimizes the cost increase when inserting into that edge (between its endpoints)
-
-    #         insertionIdx = -1
-    #         bestCostDelta = sys.float_info.max  # the afterCost - beforeCost,s at the current insertion edge  
-    #         for i in range(0,len(subtour)):
-                
-    #             a = subtour[i]
-    #             b = closestCity
-    #             c = subtour[(i+1)% len(subtour)]
-
-    #             costBefore = self.dists[a][c]
-    #             costAfter = self.dists[a][b] + self.dists[b][c]
-    #             costDelta = costAfter - costBefore
-
-    #             if costDelta < bestCostDelta:
-    #                 bestcostDelta = costDelta
-    #                 insertionIdx = c
-            
-    #         # we update our subtour and visited
-    #         subtour.insert(insertionIdx,closestCity)
-    #         visited.add(closestCity)
-        
-    #     self.perm = subtour
-
-
+   
