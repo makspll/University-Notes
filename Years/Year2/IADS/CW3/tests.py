@@ -12,7 +12,7 @@ def testHeuristics(n):
     for i in range(n):
         print("Iteration: " + str(i))
         print(averages)
-        filename  = "graphs/test_"+str(n)
+        filename  = "graphs/test_"+str(i)
         g = graph.Graph(-1,filename)
         
         # swap
@@ -31,7 +31,7 @@ def testHeuristics(n):
         g.resetPerm() 
 
         # EPIC
-        g.EPICHeuristic(0.8)
+        g.EPICHeuristic(10,1)
         averages[3] += (g.tourValue())
         
     averages = [x/n for x in averages] 
@@ -65,4 +65,4 @@ def randomUniformGraph(filename,n,width):
     return points
 
 if __name__ == "__main__":
-    testHeuristics(49)
+    testHeuristics(99)

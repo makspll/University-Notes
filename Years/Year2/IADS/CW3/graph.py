@@ -122,6 +122,22 @@ class Graph:
             return True
         else:
             return False
+    # try reverse but on a given perm
+    def tryReverseGiven(self,perm,i,j):
+        #the effect of reversing will only change the costs around the edges of the reversed permutation segment
+        preInode = perm[(i-1) % len(perm)]
+        iNode = perm[i]
+        jNode = perm[j]
+        postJnode = perm[(j + 1) % len(perm)]
+
+        costInitial = self.dists[preInode][iNode]  + self.dists[jNode][postJnode]
+        costAfter = self.dists[preInode][jNode] + self.dists[iNode][postJnode]
+        
+        if(costAfter < costInitial):
+            perm[i:j+1] = perm[i:j+1][::-1]
+            return True
+        else:
+            return False
     
     def swapHeuristic(self):
         better = True
@@ -163,7 +179,7 @@ class Graph:
 
 
     # ( O(n-1) *  ) )
-    def shortestPathFromNeighbours(self,n,l,visited):
+    def shortestPathFromNeighbours(self,n,l,visited,relaxationFactor):
         neighbours = [idx for (idx,val) in enumerate(self.dists[n]) if idx not in visited]
 
         leastCost = sys.float_info.max
@@ -174,7 +190,7 @@ class Graph:
                 continue
             cost += self.dists[n][subPath[0]]
  
-            if cost < leastCost:
+            if cost < leastCost*(1/relaxationFactor):
                 leastCost = cost
                 leastSubPath = subPath
         return (leastCost,leastSubPath)
@@ -203,63 +219,106 @@ class Graph:
             return shortestSubPath
 
     # a heuristic which either tries a 2-opt improvmenet with probability p or the best between greedy, and greedy with lookahead
-    def EPICHeuristic(self,p):
+    def EPICHeuristic(self,maxOpts,relaxation):
 
         perm = [0]
         startIdx = 0
         nextIdx = startIdx
         visited = {startIdx}
+        currentCost = 0
 
-        while len(perm) < self.n:
-            
-      
+        while len(perm) < self.n:      
             # try different lookaheads and pick one which minimies distance per edge
             
-            (cost2,path2) = self.shortestPathFromNeighbours(nextIdx,2,visited)
-            (cost3,path3) = self.shortestPathFromNeighbours(nextIdx,1,visited)
+            (cost2,subPath2) = self.shortestPathFromNeighbours(nextIdx,1,visited,relaxation)
+            (cost1,path1) = self.insertNearest(perm,currentCost,visited)
 
-            (_,path) = min([(c,p) for (c,p) in [(cost2/2,path2),(cost3/1,path3)]])
-            perm.extend(path)
+            # (cost,subpath) = min([(c,p) for (c,p) in [(cost1,subPath1),(cost2,subPath2)]])
+            if cost1 < cost2:
+                perm = path1
+                visited.update(perm)
+                currentCost = cost1
+            else:
+                perm.extend(subPath2)
+                visited.update(subPath2)
+                currentCost = cost2
             nextIdx = perm[-1]
-            visited.update(path)
 
-            failed = False
-            while failed == False:
-                if random.random() < p:
-                    # do a round of 2-opt
-                    for i in range(len(perm)):
-                        for j in range(len(perm)):
-                            self.tryReverse(i,j)
-                else:
-                    failed = True
+            opts = 0
+            while opts < maxOpts:
+                # do a round of 2-opt
+                for i in range(len(perm)):
+                    for j in range(len(perm)):
+                        self.tryReverseGiven(perm,i,j)
+                opts += 1
+               
         self.perm = perm[:self.n]
     
-    def GreedyLookahead(self,l):
-        # we always start at 0 
-        perm = [0]
-        startIdx = 0
-        nextIdx = startIdx
-        visited = {startIdx}
-
-        for i in range((self.n-1)//l):
-            # find the shortest subpath of length l
-
-            (cost,path) = self.shortestPathFromNeighbours(nextIdx,l,visited)
-    
-            perm.extend(path)
-            nextIdx = perm[-1]
-
-            visited.update(path)
-            
-
-        # find the leftover shortest subpath
-        if self.n - len(perm) != 0:
-            (cost,path) = self.shortestPathFromNeighbours(perm[-1],self.n - len(perm),visited)
-            perm.extend(path)
-
-        self.perm = perm
    
     def resetPerm(self):
         self.perm = [x for x in range(self.n)]
 
-   
+    def insertNearest(self,tour,currentPermCost,visited):
+        subtour = tour[:]
+        explored = visited.copy()
+        if subtour == []:
+            # assign placeholders to subtour (so we can slice replace later)
+            subtour = [0,0]
+
+            # select shortest edge in graph
+            shortestEdge = (-1,-1) 
+            currMin = sys.float_info.max
+            for i in range(self.n):
+                # consider only entries up to the diagonal
+                for j in range(i):
+                    dist = self.dists[i][j]
+                    if dist < currMin:
+                        currMin = dist
+                        shortestEdge = (i,j)
+
+            # make the endpoints in the shortest edge into a subtour
+
+            subtour[0:1] = shortestEdge 
+            explored.update(subtour)
+
+        # select a city not in the subtour (not visited) which is closest to any of the cities in the subtour
+
+        closestCity = -1
+        currMin = sys.float_info.max
+        for i in range(self.n):
+            if i in explored:
+                continue
+            else:
+                for j in range(len(subtour)):
+                    if i == j:
+                        continue
+
+                    dist = self.dists[i][subtour[j]]
+                    if dist < currMin:
+                        currMin = dist
+                        closestCity = i
+
+        # find edge in subtour, which minimizes the cost increase when inserting into that edge (between its endpoints)
+
+        #Maybe i misunderstood, and need to check actual edges ?
+        insertionIdx = -1
+        bestCostDelta = sys.float_info.max  # the afterCost - beforeCost,s at the current insertion edge  
+        for i in range(0,len(subtour)):
+
+            a = subtour[i]
+            b = closestCity
+            c = subtour[(i+1)% len(subtour)]
+
+            costBefore = self.dists[a][c]
+            costAfter = self.dists[a][b] + self.dists[b][c]
+            costDelta = costAfter - costBefore
+
+            if costDelta < bestCostDelta:
+                bestcostDelta = costDelta
+                insertionIdx = c
+
+        # we update our subtour and visited
+        subtour.insert(insertionIdx,closestCity)
+        return (currentPermCost + bestCostDelta,subtour)
+        
+
