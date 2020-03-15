@@ -174,6 +174,99 @@ For a random variable $X : \Omega \rightarrow \mathbb{R}$
     E(X) = \sum_{r\in range(X)}P(X = r)\cdot r
 \end{align*}}
 
-% TUESDAY %
+\section{Continous Random Variables}
+\nDefinition{Definition}{
+$X \in \mathbb{R}$ is a continous random variable if:
+\begin{equation*}
+    F_{x}(x):= \mathbb{P}(X \leq x) \textit{is a continuous function}    
+\end{equation*}
+($F_{x}$ is the \bd{distribution function}/\bd{cumulative probability distribution function} of X) OR, equivalently:
+\begin{equation*}
+    \mathbb{P}(X = x) = 0 \quad \forall x \in \mathbb{R}
+\end{equation*}
+}
+\subsection{Properties}
+\nTheorem{Properties}{
+\begin{flalign*}
+    &F_{x} \quad \textit{is increasing}&\\
+    &F_{x}(\infty) := \lim_{x \rightarrow \infty} \mathbb{P}(X \leq x) = 1&\\ 
+    &F_{x}(-\infty) := \lim_{x \rightarrow -\infty} \mathbb{P}(X \leq x) = 0&\\ 
+\end{flalign*}
+}
+\nTheorem{Theorem}{
+\begin{equation*}
+    F_{x} = \int_{-\infty}^{x}\mathcak{f}_{x}(s)ds
+\end{equation*}}
 
+\nTheorem{Theorem}{
+\begin{equation*}
+    \mathbb{P}(a \leq X \leq b) = \int_{a}^{b}\mathcak{f}_{X}(s)ds
+\end{equation*}}
+
+\subsection{Independence}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathbb{P}(X \in A, Y \in B) = \mathbb{P}(X \in A)\mathbb{P}(Y \in B) \quad \forall A,B\subseteq \mathbb{R} 
+\end{equation*}}
+
+\subsection{Probability density function}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathcak{f}x= F^{'}_{X}
+\end{equation*}
+}
+\subsection{Expectation}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathbb{E}[X] := \int_{-\infty}^{\infty}s\mathcak{f}_{X}(s)ds
+\end{equation*}}
+\nTheorem{Theorem}{
+\begin{equation*}
+    \mathbb{E}[g(X)] = \int_{-\infty}^{\infty}g(t)\mathcak{f}_{X}(t)dt
+\end{equation*}}
+\subsection{Variance}
+\nDefinition{Definition}{
+\begin{equation*}
+    Var[X] := \mathbb{E}[(X - \mathbb{E}[X])^{2}] = \mathbb{E}[X^{2}] - \mathbb{E}[X]^{2}
+\end{equation*}}
+\subsection{N-th Moment}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathbb{E}[X^{n}] = \int_{-\infty}^{\infty}s^{n}\mathcak{f}_{X}(s)ds
+\end{equation*}}
+
+\subsection{Distributions}
+
+\subsubsection{Uniform}
+\nDefinition{Definition}{
+
+\begin{center}
+    $\mathcak{f}_{X}(x)=$
+    \begin{cases}
+        \frac{1}{b-1}, & a < x < b\\
+        0, & otherwise
+    \end{cases}
+\end{center}
+
+\begin{flalign*}
+    &E[X] = \frac{a+b}{2}&\\
+    &Var[X] = \frac{(b-a)^{2}}{12}&
+\end{flalign*}
+}
+\subsubsection{Exponentially distributed}
+\nDefinition{}{
+parameter $\lambda > 0$, which represents a rate of a poisson process, X would represent time between events
+\begin{center}
+    $\mathcak{f}_{X}(x)=$
+    \begin{cases}
+        \lambda e^{-\lambda x}, & x > 0\\
+        0, & otherwise
+    \end{cases}
+\end{center}
+\begin{flalign}
+    &\mathbb{E}[X] = \frac{1}{\lambda}&\\
+    &Var[X] = \frac{1}{\lambda^{2}}&\\
+    &\mathbb{P}(X > s + t | X > t) = P (X > s)& \quad \text{i.e., the probability depends on the length of the interval but not on when you started counting}
+\end{flalign}
+}
 \end{document}
