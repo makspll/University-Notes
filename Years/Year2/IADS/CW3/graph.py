@@ -122,22 +122,6 @@ class Graph:
             return True
         else:
             return False
-    # try reverse but on a given perm
-    def tryReverseGiven(self,perm,i,j):
-        #the effect of reversing will only change the costs around the edges of the reversed permutation segment
-        preInode = perm[(i-1) % len(perm)]
-        iNode = perm[i]
-        jNode = perm[j]
-        postJnode = perm[(j + 1) % len(perm)]
-
-        costInitial = self.dists[preInode][iNode]  + self.dists[jNode][postJnode]
-        costAfter = self.dists[preInode][jNode] + self.dists[iNode][postJnode]
-        
-        if(costAfter < costInitial):
-            perm[i:j+1] = perm[i:j+1][::-1]
-            return True
-        else:
-            return False
     
     def swapHeuristic(self):
         better = True
@@ -149,7 +133,6 @@ class Graph:
 
     def TwoOptHeuristic(self):
         better = True
-        totalDiff = 0
         while better:
             better = False
             for j in range(self.n-1):
@@ -177,110 +160,91 @@ class Graph:
             self.perm[i] = nextIdx
             visited.add(nextIdx)
 
-
-    # ( O(n-1) *  ) )
-    def shortestPathFromNeighbours(self,n,l,visited,relaxationFactor):
-        neighbours = [idx for (idx,val) in enumerate(self.dists[n]) if idx not in visited]
-
-        leastCost = sys.float_info.max
-        leastSubPath = []
-        for nei in neighbours: 
-            (cost,subPath) = self.shortestPathFrom(nei,l-1,visited)
-            if(subPath == []):
-                continue
-            cost += self.dists[n][subPath[0]]
- 
-            if cost < leastCost*(1/relaxationFactor):
-                leastCost = cost
-                leastSubPath = subPath
-        return (leastCost,leastSubPath)
-        
-    # returns shortest path starting on any of the nodes with length l
+    # returns shortest path starting on node n with length l and the cost of it
+    # r is the distance from minimum if you want a non-shortest path
+    # visited is the set of nodes you don't want to explore
     def shortestPathFrom(self,n,l,visited):
         if l == 0:
             return (0,[n])
         else:
             explored = visited.copy()
             explored.add(n)
-            # find the shortest path with length l -1 starting at any of the nodes
-            shortestSubPath = (sys.float_info.max,[])
-            
-            neighbours = [idx for (idx,val) in enumerate(self.dists[n]) if idx not in explored]
 
-            for idx in neighbours:
-                # subpath with l-1 lookahead from neighbour
-                (cost,path) = self.shortestPathFrom(idx,l-1,explored)
-                cost += self.dists[n][idx]  
-        
-                if cost < shortestSubPath[0]:
-                    path.insert(0,n) 
-                    shortestSubPath = (cost,path)
+            # we find all subpaths from each neigbhour with length l-1, and find the one which minimizes cost + transitionCost
+            neighbours = [idx for (idx,val) in enumerate(self.dists[n]) if idx not in explored]
             
-            return shortestSubPath
+            # in case there are no more visitable nodes, return
+            if len(neighbours) == 0:
+                return (0,[n])
+            else:
+                # find shortest subpath with l -1
+
+                smallestCost = sys.float_info.max
+                bestPath = None
+                for i in neighbours:
+                    (c,p) = self.shortestPathFrom(i,l-1,explored)
+                    c +=self.dists[n][i]
+
+                    if c < smallestCost:
+                        p.insert(0,n)
+                        bestPath = p
+                        smallestCost = c 
+
+                return (smallestCost,bestPath)
 
     # a heuristic which either tries a 2-opt improvmenet with probability p or the best between greedy, and greedy with lookahead
-    def EPICHeuristic(self,maxOpts,relaxation):
+    # method factor biases the heuristic towards one of the methods (0.5 = equal, 1 = greedy, 0 = nearest insertion)
+    def EPICHeuristic(self,totOpts,lookahead,methodFactor):
 
-        perm = [0]
+        perm = [0]    
         startIdx = 0
         nextIdx = startIdx
-        visited = {startIdx}
+        visited = set(perm)
         currentCost = 0
 
         while len(perm) < self.n:      
             # try different lookaheads and pick one which minimies distance per edge
             
-            (cost2,subPath2) = self.shortestPathFromNeighbours(nextIdx,1,visited,relaxation)
-            (cost1,path1) = self.insertNearest(perm,currentCost,visited)
-
+            (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
+            (delta2,pathNew2) = self.insertNearest(perm,visited)
             # (cost,subpath) = min([(c,p) for (c,p) in [(cost1,subPath1),(cost2,subPath2)]])
-            if cost1 < cost2:
-                perm = path1
-                visited.update(perm)
-                currentCost = cost1
+            # pick the method which minimizes the Cost weighted by amount of nodes it just added
+            # compare on the "cost/nodes"
+
+            if  delta1*methodFactor < delta2*(1-methodFactor):
+                perm.extend(subPathNew1[1:])
+                visited.update(subPathNew1)
+                currentCost += delta1
             else:
-                perm.extend(subPath2)
-                visited.update(subPath2)
-                currentCost = cost2
-            nextIdx = perm[-1]
+                
+                perm = pathNew2
+                visited.update(perm)
+                currentCost += delta2
+               
 
             opts = 0
-            while opts < maxOpts:
-                # do a round of 2-opt
-                for i in range(len(perm)):
-                    for j in range(len(perm)):
-                        self.tryReverseGiven(perm,i,j)
+            better = True
+            while better and opts < totOpts:
+                # do a round of 2-opt untill totOpts or untill it makes no changes
+                better = False 
+                for j in range(len(perm)-1):
+                    for i in range(j):
+                        better = self.tryReverseGiven(perm,i,j)
                 opts += 1
+                
+            nextIdx = perm[-1]
                
-        self.perm = perm[:self.n]
+        self.perm = perm[:]
     
    
     def resetPerm(self):
         self.perm = [x for x in range(self.n)]
 
-    def insertNearest(self,tour,currentPermCost,visited):
+    # an insertion heuristic which looks for a point to insert into an existing tours edge
+    def insertNearest(self,tour,visited):
         subtour = tour[:]
         explored = visited.copy()
-        if subtour == []:
-            # assign placeholders to subtour (so we can slice replace later)
-            subtour = [0,0]
-
-            # select shortest edge in graph
-            shortestEdge = (-1,-1) 
-            currMin = sys.float_info.max
-            for i in range(self.n):
-                # consider only entries up to the diagonal
-                for j in range(i):
-                    dist = self.dists[i][j]
-                    if dist < currMin:
-                        currMin = dist
-                        shortestEdge = (i,j)
-
-            # make the endpoints in the shortest edge into a subtour
-
-            subtour[0:1] = shortestEdge 
-            explored.update(subtour)
-
+    
         # select a city not in the subtour (not visited) which is closest to any of the cities in the subtour
 
         closestCity = -1
@@ -300,25 +264,58 @@ class Graph:
 
         # find edge in subtour, which minimizes the cost increase when inserting into that edge (between its endpoints)
 
-        #Maybe i misunderstood, and need to check actual edges ?
+        # Maybe i misunderstood, and need to check actual edges ?
         insertionIdx = -1
-        bestCostDelta = sys.float_info.max  # the afterCost - beforeCost,s at the current insertion edge  
+        bestCostIncrease = sys.float_info.max  # the afterCost - beforeCost,s at the current insertion edge  
         for i in range(0,len(subtour)):
 
             a = subtour[i]
             b = closestCity
             c = subtour[(i+1)% len(subtour)]
 
-            costBefore = self.dists[a][c]
-            costAfter = self.dists[a][b] + self.dists[b][c]
-            costDelta = costAfter - costBefore
+            
+            costDelta = (self.dists[a][b] + self.dists[b][c]) - (self.dists[a][c])
 
-            if costDelta < bestCostDelta:
-                bestcostDelta = costDelta
+            if costDelta < bestCostIncrease:
+                bestCostIncrease = costDelta
                 insertionIdx = c
 
         # we update our subtour and visited
         subtour.insert(insertionIdx,closestCity)
-        return (currentPermCost + bestCostDelta,subtour)
+        return (bestCostIncrease,subtour)
+            
+    # try reverse but on a given perm
+    def tryReverseGiven(self,perm,i,j):
+        #the effect of reversing will only change the costs around the edges of the reversed permutation segment
+        preInode = perm[(i-1) % len(perm)]
+        iNode = perm[i]
+        jNode = perm[j]
+        postJnode = perm[(j + 1) % len(perm)]
+
+        costInitial = self.dists[preInode][iNode]  + self.dists[jNode][postJnode]
+        costAfter = self.dists[preInode][jNode] + self.dists[iNode][postJnode]
+        
+        if(costAfter < costInitial):
+            perm[i:j+1] = perm[i:j+1][::-1]
+            return True
+        else:
+            return False
         
 
+#finds the value which is closest to minimum + r of the minimum
+# works on tuples of values of the type: (value,item)
+# assumes the minimum is not 0
+
+# def relaxedMinimum(r,l):
+#     # first find the minimum
+#     (minimum,minItem) = min(l)
+#     # then find the value which is closest to r + minimum
+#     bestDist = sys.float_info.max
+#     bestTuple = (None,None)
+#     for (v,i) in l:
+#         dist = abs(v-(minimum + r)) 
+#         if dist < bestDist:
+#             bestDist = dist
+#             bestTuple = (v,i)
+
+#     return bestTuple

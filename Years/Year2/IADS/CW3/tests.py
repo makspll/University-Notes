@@ -4,44 +4,90 @@ import random
 import sys
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
-# tests the heuristics on metric graphs
-def testHeuristics(n):
-    averages = [0,0,0,0]
-    names = ["swap","twoopt","greedy","EPICHeuristic"]
-    for i in range(n):
+
+
+# tests the heuristics on the graphs in the graphs older given by the indices 
+def testHeuristics(indices,p1,p2,p3):
+    heuristics = ["swap","twoopt","greedy","custom"]
+    results = np.zeros((len(indices),len(heuristics)))
+    tours = [[[]]]
+    for i in range(len(indices)):
         print("Iteration: " + str(i))
-        print(averages)
-        filename  = "graphs/test_"+str(i)
+        filename  = "graphs/test_"+str(indices[i])
         g = graph.Graph(-1,filename)
         
+
+        currTours = []
         # swap
         g.swapHeuristic()
-        averages[0] += (g.tourValue())
+        results[i,0] = (g.tourValue())
+        currTours.append(g.perm)
         g.resetPerm()
 
         # two-opt
         g.TwoOptHeuristic()
-        averages[1] += (g.tourValue())
+        results[i,1] = (g.tourValue())
+        currTours.append(g.perm)
         g.resetPerm()  
 
         # greedy
         g.Greedy()
-        averages[2] += (g.tourValue())
+        results[i,2] = (g.tourValue())
+        currTours.append(g.perm)
         g.resetPerm() 
 
         # EPIC
-        g.EPICHeuristic(10,1)
-        averages[3] += (g.tourValue())
-        
-    averages = [x/n for x in averages] 
-    print([names[i] + ":" + str(x) for (i,x) in enumerate(averages)])
-    return averages
+        g.EPICHeuristic(p1,p2,p3)
+        results[i,3] = (g.tourValue())
+        currTours.append(g.perm)
 
-# writes n files with random graphs with random sizes,and widths (test_1,test_2,test_3.. etc)
+        tours.append(currTours)
+    return (results,tours)
+def loadEuclidianGraph(filename):
+    f = open(filename,'r')
+
+    X = []
+    Y = []
+    point = f.readline().strip().split()
+    while point != []:
+        x,y = point
+        X.append(float(x))
+        Y.append(float(y))
+        point = f.readline().strip().split()
+    return (X,Y)
+
+def plotTSP(X,Y,permutation=[],color='b',drawPoints=True):
+    # we make sure we, loop around
+
+    ordX = [None] * (len(X) + 1)
+    ordY = [None] * (len(Y) + 1)
+    if permutation == []:
+        ordX = X
+        ordY = Y
+    else: 
+        permutation.append(permutation[0])
+
+        for i,p in enumerate(permutation):
+            ordX[i] = X[p]
+            ordY[i] = Y[p]
+            plt.annotate(str(p),(X[p]-0.5,Y[p]-0.5))
+
+    sequenceColors = ['k' for x in range(len(X))]
+    sequenceColors[0] = 'r'
+    sequenceColors[1] = 'y'
+    sequenceColors[-1] = 'b'
+    if drawPoints:
+        plt.scatter(ordX[0:-1],ordY[0:-1],c=sequenceColors, zorder=1)
+        
+    if permutation != []:
+        plt.plot(ordX,ordY,color,zorder=0)
+
+# writes files with random graphs with random sizes,and widths (test_n[0],test_n[2],test_n[3].. etc)
 # -1 on argument indicates random
 def generateTestGraphs(n,sizes):
-    for i in range(n):
+    for i in n:
         nodes = sizes[i]
         width = nodes * 2
         try:
@@ -65,4 +111,18 @@ def randomUniformGraph(filename,n,width):
     return points
 
 if __name__ == "__main__":
-    testHeuristics(99)
+    g = graph.Graph(-1,"graphs/test_1")
+    g.EPICHeuristic(1000,1,0.5)
+    p = g.perm
+
+    X,Y = loadEuclidianGraph("graphs/test_1")
+    
+    plotTSP(X,Y,p,'k')
+    print(g.tourValue())
+    g.resetPerm()
+    g.TwoOptHeuristic()
+    print("TwoOpt:",g.tourValue())
+    #plotTSP(X,Y,g.perm,'b--',False)
+    plt.show()
+def randomUniformGraphKnownOptimal(filename,n,width,optimal):
+    return null
