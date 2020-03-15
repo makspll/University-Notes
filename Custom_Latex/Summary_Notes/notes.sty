@@ -10,15 +10,19 @@
 \usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage{amssymb}
-
+\usepackage{forest}
+\usepackage{algpseudocode}
+\usepackage{listings}
 \usepackage{tabularx}
 \usepackage{algpseudocode}
+
 \graphicspath{{./Images/}}
 
 \MakeRobust{\Call}
 
 \everymath{\displaystyle}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \definecolor{titleColor}{RGB}{0,0,0}
 
 \newtcolorbox{theoremBox}[1]{colback=red!5!white,colframe=red!75!black,fonttitle=\bfseries,title=#1}

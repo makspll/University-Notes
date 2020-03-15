@@ -496,16 +496,147 @@ variable assignments are \bd{commutative} e.g. it doesn't matter in which order 
 we only need to consider assignments to a single variable at each node. Thus b = d and there are $d^{n}$ leaves\par
 Depth-first search for CSP's with single-variable assignments is called backtracking search\par
 Backtracking search: the basic uninformed algorithm for CSP\par
-can solve the n-queens problem for $n \approx 25$}
+can solve the n-queens problem for $n \approx 25$\\
+Backtracking search can be modified by: 
+\begin{itemize}
+    \item changing the order in which we check the assignments of values to the current variable
+    \item changing the order in which we pick the variables to be assigned
+\end{itemize}}
 \subsection{Efficiency}
-\nDefinition{Improving Efficiency}{
+\nDefinition{Improving Efficiency with variable ordering}{
+When picking which node to expand, we can use the following heuristics:\par
 \bd{most constrained variable} first (minimum-remaining-values (MRV) heuristic)\par
 \bd{constraining variable} first - the variable with the most constraints on remaining variables, thus reducing branching factor\par 
 \bd{Least constraining value} - given a variable, choose the least constraining value - the one that rules out the fewest values in the remaining variables. (not helpful if you need all solutions)\par
+}
+\nDefinition{Improving Efficiency with value ordering}{
+After choosing the variable, we also have the opportunity to prune its domain along with its neighbours domain, as well as to pick the order in which we assign the values to that variable
 \bd{inference - forward checking} - keep track of remaining legal values for unassigned variables. Terminate the search when a variable has no more legal values\par
 \bd{arc consistency} - simplest form of propagation makes each arc \bd{consistent}\par
 $X \rightarrow Y$ is consistent iff\par
 for every value x in the domain of X, there is some allowed value y in the domain of y. e.g. an edge will be inconsistent if there is a value for one of its nodes that has no allowed counterpart in the other node that doesn't violate a constraint
 }
 \section{Coursework}
+\section{First Order Logic}
+\subsection{propositional logic as a language}
+\nDefinition{}{\bd{Compared to languages in computer science:}\par
+serves as a basis for declarative languages, allows partial/disjunctive/negated information, is compositional(the meaning of a sentence is derived from that of its axioms, unlike some instances of concurrent programming)\par
+\bd{Compared to natural languages}\par
+meaning is context-dependent, propositional logic has a very limited expressive power (some things require very many sentences to be described)}
+\subsection{First Order logic}
+\nDefinition{}{propositional logic deals with atomic facts, while FOL brings structure to facts, which can be built from:\par
+\begin{itemize}
+    \item Objects: people, houses, numbers, colours, football games
+    \item Functions: father of, best friend, one more than, plus
+    \item Relations: red, round, prime, brother of, bigger than, part of
+\end{itemize}}
+\subsection{Syntax}
+\nDefinition{Signatures}{A first-order \bd{signature} is a pair (F,P)
+\begin{itemize}
+    \item F - indexed family $(F_{n})_{n\in\mathbb{N}}$ of sets of \bd{function} symbols(operations)
+    \item P - indexed family $(P_{n})_{n\in\mathbb{N}}$ of sets of \bd{relation} symbols(predicates)
+\end{itemize}
+For $\sigma \in F_{n}$ and $\pi \in P_{n},n$ is called \bd{arity}\\
+\bd{Constant} symbols are function symbols with arity zero\\
+Example:
+\begin{itemize}
+    \item $F_{0} = \{Richard,John\}, F_{1} =\{LeftLegOf\}$
+    \item $P_{1} = \{Crown, King,Person\}$
+    \item $P_{2} = \{Brother, OnHead\}$
+\end{itemize}
+}
+\nDefinition{Sentences}{
+    sentences are made up of \bd{term}s, \bd{functions} on terms and other sentences connected with logical connectives
+}
+\nDefinition{Models}{Models are composed of a set of objects: the domain M\par 
+the set of functions from each function symbol to the objects: $M_{n}$\par
+the set of tuples on the domain for each relation symbol:$ M^{\pi}$.\par
+The models decide how the objects are connected to the terms and predicates}
+\nDefinition{Satisfaction relation}{links the syntax and the semantics}
+\section{Unification}
+\nDefinition{Definition}{
+A unification of two sentences is the application of substitution in such a way that they become identical}
+\nDefinition{Terms over X}{
+The function $T_{F}$(X) are the terms from the signature $(F \cap X,P)$}
+\nDefinition{Problem}{
+An equation is a pair of terms $(t,t^{'})$ with $t,t^{'} \in T_{f}(X)$. we denote the equation $(t,t^{'})$ as $t \stackrel{?}{=} t^{'}$\par\medskip
+A unification problem is a set of equations, and a Unifier is a substitution which unifies all of them\\
+A unifier $\theta$ is more general than another unifier $\sigma$, if there exists a substitution $\mu$ such that $\sigma = \theta ; \mu$\\
+and the most general unifier is one that is more general than any other unifier in Unify(t)}
+\nDefinition{Unification Algorithm}{}
+\subsection{Modus Ponens}
+\nDefinition{Forward Chaining Algorithm}{
+find substitutions that match premises with conclusions in your KB and apply generalised modus ponens\\}
+\nDefinition{Improving efficiency}{
+Incremental search, Database indexing - constant time for retrieving known facts (used in Deductive databases)}
+\nDefinition{Backward Chaining Algorithm}{
+start with the goal, and prove its premises recursively and collect the substituted terms values as you go}
+\section{Planning}
+\nDefinition{}{
+Planning is the task of coming up with a sequence of actions that will achieve a goal,
+\\\\
+we are only considering classical planning, in which environments are:
+\begin{itemize}
+    \item fully observable
+    \item deterministic
+    \item finite,
+    \item static,
+    \item discrete
+\end{itemize}
+\\\\
+lifting some of these assumptions will be the subject of the uncertainty part of the course
+\\
+}
+\nDefinition{why planning}{
+Consider a serach-based problem-solving agent in a robot shopping world\\\\
+task: Go to the supermarket and get milk, bananas and a cordless drill,\\\\
+what would a search based agent do ?\\\\
+Search is not goal-directed, and it's hard to quantify the complexity of the search space and costs\\\\
+logic is good only if the goals are independent of each other, what if there are states which let you achieve only some of the goals and stop you from achieving the others ? (non-linear planning problem), undecidability/semi-decidability problems, cannot tell which solution is better: $A\rightarrow B$ or$ A\rightarrow B\rightarrow A \rightarrow B $?
+\\\\
+we need to reduce complexity, to allow scaling, and allow reasoning to be guided by efficiency or quality
+}
+\nDefinition{PDDL}{
+\bd{Planning Domain Definition Language}\\
+\bd{States} - States represented as conjunctions of propositional function-free first order positive literals (Closed world assumption!)\\
+\bd{goal} - partial description of atomic states, allows variables, negations etc\\
+\bd{actions} - schemata, containing an action name and parameter list, precondition(defines states in which an action is executable, conjunction of positive and negative literals, where all variables must occur in action name) and effect(defines how literals in the input state get changed, anything not mentioned stays the same, Conjunction of positive and negative literals, with all its variables
+also in the preconditions, sometimes divided into an ADD list and REMOVE list), an action is applicatble if you can find a state which satisfies its preconditions with an appropriate substitution (state in which you are at the airport, lets you take the flight action)
+}
+\section{planning with state-space search}
+\nDefinition{}{most straightforward way to think of planning process: search the space of states using action schemata\\\\
+since actions are defined both in terms of preconditions and effects we can search in both directions: forward and backwards\\\\
+forward- search space is finite in the absence of funtion symbols, any complete graph search algorithm, will be a complete graph planning algorithm. Forward search does not solve problem of irrelevant actions\\\\
+backward- excludes irellevant actions, lower branching factor
+}
+\nDefinition{heuristics for state-space search}{
+two possibilities: Divide and Conquer- subgoal decomposition\\
+Deriv a relaxed problem\\
+\\
+subgoal decomposition can be- optimistic (admissible) - if negative interactions exists (if subplan deletes goal achieved by other subplan)\\
+pessimistic (inadmissible) if positive interactions exist (e.g. subplans contain redundant actions)\\\\
+relaxations:\\
+drop all preconditions (all actions, always applicable)\\
+remove all negative effects (and count minimum number of actions so that union satisfies goals)\\
+empty delete lists approach (involves running a simple planning problem to compute heuristic value)
+}
+\nDefinition{Partial-order planning}{
+some actions can be done in either order, why specify which ? i.e. laziness in chosing between chronologally un-ordered actions,
+don't specify which one comes first. Partial-order solution will then correspond to one or several \bd{linearisations} of partial-order plan\\\\
+define POP as search problem over plans consisting of: Actions - initial plan contains dummy actions (Start no preconditions, effect = initial state), Finish (no effects, precondition = goal literals)\\
+Ordering constraints - on actions A B (A must occur before B)\\
+Causal links, between actions A B , express A achieves p for B \\
+Open preconditions: set of conditions not yet achieved by the plan\\
+consistent plan = plan without cycles in orderings and conflicts with links\\
+soution = consistent plan without open preconditions\\
+Dealing with unbound variables - don't bind variables untill you have to 
+}
+\nDefinition{}{
+dealing with cycles and non-determinism - Label bit of plan, attempt more than once}
+\section{Non-determinism with infinite belief states}
+\nDefinition{}{
+if you cannot list all possible effects of an action, you cannot perform contingency planning (have a plan for every possible outcome), you have to replan\\\\
+execution monitoring - checking whether things are going according to plan: action monitoring - checking weather next action is feasible, plan monitoring - checking whether remainder of plan is feasible\\\\
+replannning - ability to find new plan when first one goes wrong (not waiting for future actions)}
+
 \end{document}
