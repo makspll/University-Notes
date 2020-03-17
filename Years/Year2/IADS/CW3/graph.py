@@ -87,14 +87,17 @@ class Graph:
     def trySwap(self,i):
         # we only need to consider the impact on the "sub-tour" between i-1 and i+2
         # effectively only the cost between i-1 and i, i and i+1, i+1 and i+2 changes
-        
-        prevN = self.perm[(i-1) % self.n]
-        currN = self.perm[i]
-        nextN = self.perm[(i + 1) % self.n]
-        sndNextN = self.perm[(i + 2) % self.n]
+        # will not work when the graph has only 2 nodes, where swapping doesn't affect the cost
+        if self.n == 2:
+            return False
 
-        costInitial = self.dists[prevN][currN]  + self.dists[nextN][sndNextN]
-        costAfter = self.dists[prevN][nextN] + self.dists[currN][sndNextN]
+        A = self.perm[(i-1) % self.n]
+        B = self.perm[i]
+        C = self.perm[(i + 1) % self.n]
+        D = self.perm[(i + 2) % self.n]
+
+        costInitial = self.dists[A][B]  + self.dists[C][D]
+        costAfter = self.dists[A][C] + self.dists[B][D]
 
         if(costAfter < costInitial):
             nxtIdx = (i+1) % self.n
@@ -201,24 +204,25 @@ class Graph:
         nextIdx = startIdx
         visited = set(perm)
         currentCost = 0
-
+        
         while len(perm) < self.n:      
             # try different lookaheads and pick one which minimies distance per edge
             
             (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
-            (delta2,pathNew2) = self.insertNearest(perm,visited)
+            (delta2,insertIdx,cityToInsert) = self.insertNearest(perm,visited)
             # (cost,subpath) = min([(c,p) for (c,p) in [(cost1,subPath1),(cost2,subPath2)]])
             # pick the method which minimizes the Cost weighted by amount of nodes it just added
             # compare on the "cost/nodes"
 
             if  delta1*methodFactor < delta2*(1-methodFactor):
-                perm.extend(subPathNew1[1:])
-                visited.update(subPathNew1)
+                newSegment = subPathNew1[1:]
+                perm.extend(newSegment)
+                visited.update(newSegment)
                 currentCost += delta1
             else:
                 
-                perm = pathNew2
-                visited.update(perm)
+                perm.insert(insertIdx,cityToInsert)
+                visited.add(cityToInsert)
                 currentCost += delta2
                
 
@@ -241,23 +245,20 @@ class Graph:
         self.perm = [x for x in range(self.n)]
 
     # an insertion heuristic which looks for a point to insert into an existing tours edge
-    def insertNearest(self,tour,visited):
-        subtour = tour[:]
-        explored = visited.copy()
-    
+    def insertNearest(self,tour,visited):    
         # select a city not in the subtour (not visited) which is closest to any of the cities in the subtour
 
         closestCity = -1
         currMin = sys.float_info.max
         for i in range(self.n):
-            if i in explored:
+            if i in visited:
                 continue
             else:
-                for j in range(len(subtour)):
+                for j in range(len(tour)):
                     if i == j:
                         continue
 
-                    dist = self.dists[i][subtour[j]]
+                    dist = self.dists[i][tour[j]]
                     if dist < currMin:
                         currMin = dist
                         closestCity = i
@@ -267,11 +268,11 @@ class Graph:
         # Maybe i misunderstood, and need to check actual edges ?
         insertionIdx = -1
         bestCostIncrease = sys.float_info.max  # the afterCost - beforeCost,s at the current insertion edge  
-        for i in range(0,len(subtour)):
+        for i in range(0,len(tour)):
 
-            a = subtour[i]
+            a = tour[i]
             b = closestCity
-            c = subtour[(i+1)% len(subtour)]
+            c = tour[(i+1)% len(tour)]
 
             
             costDelta = (self.dists[a][b] + self.dists[b][c]) - (self.dists[a][c])
@@ -280,9 +281,7 @@ class Graph:
                 bestCostIncrease = costDelta
                 insertionIdx = c
 
-        # we update our subtour and visited
-        subtour.insert(insertionIdx,closestCity)
-        return (bestCostIncrease,subtour)
+        return (bestCostIncrease,insertionIdx,closestCity)
             
     # try reverse but on a given perm
     def tryReverseGiven(self,perm,i,j):
