@@ -75,7 +75,7 @@ class Graph:
                     self.dists[i][j] = self.dists[j][i] = dist
 
         # identity permutation perm[i] = i
-        self.perm = [x for x in range(self.n)]
+        self.perm = [x for x in range(self.n)] if self.n > 0 else []
     # Complete as described in the spec, to calculate the cost of the
     # current tour (as represented by self.perm).
     def tourValue(self):
@@ -148,6 +148,8 @@ class Graph:
     # from node 0, taking the closest (unused) node as 'next'
     # each time.
     def Greedy(self):
+        if self.n == 0:
+            return
 
         # we always start at 0 
         self.perm[0] = 0
@@ -162,6 +164,60 @@ class Graph:
 
             self.perm[i] = nextIdx
             visited.add(nextIdx)
+
+    # a heuristic which chooses the best option between greedy with lookahead and nearest insertion, then tries a 2-opt improvement up to totOpts times
+    # method factor biases the heuristic towards one of the methods (0.5 = equal, 0 = greedy, 1 = nearest insertion)
+    def EPICHeuristic(self,totOpts,lookahead,bias):
+
+        perm = [0]    
+        startIdx = 0
+        nextIdx = startIdx
+        visited = set(perm)
+        
+        while len(perm) < self.n:      
+            # try different lookaheads and pick one which minimies distance per edge
+            
+            #if bias is 0 or 1, we dont need to try both methods
+            
+            delta1,delta2,subPathNew1,insertIdx,cityToInsert = sys.float_info.max,sys.float_info.max,[],0,0
+
+            if bias == 0:
+                (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
+            elif bias == 1:
+                (delta2,insertIdx,cityToInsert) = self.insertNearest(perm,visited)
+            else:
+                (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
+                (delta2,insertIdx,cityToInsert) = self.insertNearest(perm,visited)
+
+            # (cost,subpath) = min([(c,p) for (c,p) in [(cost1,subPath1),(cost2,subPath2)]])
+            # pick the method which minimizes the cost increase
+            
+            if  delta1*bias < delta2*(1-bias):
+                newSegment = subPathNew1[1:]
+                perm.extend(newSegment)
+                visited.update(newSegment)
+            else:
+                perm.insert(insertIdx,cityToInsert)
+                visited.add(cityToInsert)               
+
+            opts = 0
+            better = True
+            while better and opts < totOpts:
+                # do a round of 2-opt untill totOpts or untill it makes no changes
+                better = False 
+                for j in range(len(perm)):
+                    for i in range(j):
+                        better = self.tryReverseGiven(perm,i,j)
+                opts += 1
+                
+            nextIdx = perm[-1]
+               
+        self.perm = perm
+    
+   
+    def resetPerm(self):
+        self.perm = [x for x in range(self.n)]
+
 
     # returns shortest path starting on node n with length l and the cost of it
     # r is the distance from minimum if you want a non-shortest path
@@ -195,54 +251,6 @@ class Graph:
 
                 return (smallestCost,bestPath)
 
-    # a heuristic which either tries a 2-opt improvmenet with probability p or the best between greedy, and greedy with lookahead
-    # method factor biases the heuristic towards one of the methods (0.5 = equal, 1 = greedy, 0 = nearest insertion)
-    def EPICHeuristic(self,totOpts,lookahead,methodFactor):
-
-        perm = [0]    
-        startIdx = 0
-        nextIdx = startIdx
-        visited = set(perm)
-        currentCost = 0
-        
-        while len(perm) < self.n:      
-            # try different lookaheads and pick one which minimies distance per edge
-            
-            (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
-            (delta2,insertIdx,cityToInsert) = self.insertNearest(perm,visited)
-            # (cost,subpath) = min([(c,p) for (c,p) in [(cost1,subPath1),(cost2,subPath2)]])
-            # pick the method which minimizes the Cost weighted by amount of nodes it just added
-            # compare on the "cost/nodes"
-
-            if  delta1*methodFactor < delta2*(1-methodFactor):
-                newSegment = subPathNew1[1:]
-                perm.extend(newSegment)
-                visited.update(newSegment)
-                currentCost += delta1
-            else:
-                
-                perm.insert(insertIdx,cityToInsert)
-                visited.add(cityToInsert)
-                currentCost += delta2
-               
-
-            opts = 0
-            better = True
-            while better and opts < totOpts:
-                # do a round of 2-opt untill totOpts or untill it makes no changes
-                better = False 
-                for j in range(len(perm)-1):
-                    for i in range(j):
-                        better = self.tryReverseGiven(perm,i,j)
-                opts += 1
-                
-            nextIdx = perm[-1]
-               
-        self.perm = perm[:]
-    
-   
-    def resetPerm(self):
-        self.perm = [x for x in range(self.n)]
 
     # an insertion heuristic which looks for a point to insert into an existing tours edge
     def insertNearest(self,tour,visited):    

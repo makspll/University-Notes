@@ -6,14 +6,14 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-
+import subprocess;
 def timeFunction(func):
     start_time = time.time()
     func()
     return time.time() - start_time
 
 # tests the heuristics on the graphs in the graphs older given by the indices 
-def testHeuristics(indices,p1,p2,p3):
+def testHeuristics(indices,p1,p2,p3,modes):
     heuristics = ["swap","twoopt","greedy","custom"]
     results = np.zeros((len(indices),len(heuristics)))
     tours = []
@@ -22,7 +22,8 @@ def testHeuristics(indices,p1,p2,p3):
     for i in range(len(indices)):
         print("Iteration: " + str(i))
         filename  = "graphs/test_"+str(indices[i])
-        g = graph.Graph(-1,filename)
+        print(i,)
+        g = graph.Graph(modes[i],filename)
 
         currTours = []
         # swap
@@ -93,15 +94,25 @@ def plotTSP(X,Y,permutation=[],color='b',drawPoints=True):
 
 # writes files with random graphs with random sizes,and widths (test_n[0],test_n[2],test_n[3].. etc)
 # -1 on argument indicates random
-def generateTestGraphs(n,sizes):
+def generateTestGraphs(n,sizes,type=-1):
     for i in range(len(n)):
         nodes = sizes[i]
         width = nodes * 2
-        try:
-            randomUniformGraph("graphs/test_" + str(n[i]),nodes,width)
-        except:
-            continue        
-
+        if type == -1:
+            try:
+                randomUniformGraph("graphs/test_" + str(n[i]),nodes,width)
+            except:
+                continue    
+        elif type == 0:
+            try:
+                randomMetricGraph("graphs/test_" + str(n[i]),nodes,width)
+            except:
+                continue    
+        else:
+            try:
+                randomGraph("graphs/test_" + str(n[i]),nodes,width)
+            except:
+                continue 
 # generates random square metric TSP graph, writes it to filename and returns the points
 def randomUniformGraph(filename,n,width):
     
@@ -117,6 +128,64 @@ def randomUniformGraph(filename,n,width):
         f.write(str(x) + " " + str(y) + os.linesep)
     return points
 
+# generates random metric not necessarily euclidian graph, writes it to filename in the non-euclidian format
+def randomMetricGraph(filename,n,width):
+    f = open(filename,'x')
+    # to generate metrics satisfying the inequality we chose a value x 
+    # and give each edge any value in the range [x,2x], meaning that all possible triangles
+    # will follow the triangle inequality, since the long edge will be at most the same length as its other edges
+
+    # we choose x so that 2x == width, 
+    x = width/2
+
+    for i in range(n):
+        for j in range(i):
+            dist = random.randint(x,2*x)
+            f.write(str(i) + ' ' + str(j) + ' ' + str(dist) + os.linesep)
+# Generates completely random graph, by just randomising distances, with maximum distance set by width
+def randomGraph(filename,n,width):
+    f = open(filename,'x')
+    # to generate metrics satisfying the inequality we chose a value x 
+    # and give each edge any value in the range [x,2x], meaning that all possible triangles
+    # will follow the triangle inequality, since the long edge will be at most the same length as its other edges
+
+    # we choose x so that 2x == width, 
+
+    for i in range(n):
+        for j in range(i):
+            dist = random.randint(0,width)
+            f.write(str(i) + ' ' + str(j) + ' ' + str(dist) + os.linesep)
+
+
+def poly2latex(p):
+    coefs = p.coef  # List of coefficient, sorted by increasing degrees
+    res = ""  # The resulting string
+    for i, a in enumerate(coefs):
+        if int(a) == a:  # Remove the trailing .0
+            a = int(a)
+        if i == 0:  # First coefficient, no need for X
+            if a > 0:
+                res += "{a} + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
+            elif a < 0:  # Negative a is printed like (a)
+                res += "({a}) + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
+            # a = 0 is not displayed 
+        elif i == 1:  # Second coefficient, only X and not X**i
+            if a == 1:  # a = 1 does not need to be displayed
+                res += "X + "
+            elif a > 0:
+                res += "{a} \;X + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
+            elif a < 0:
+                res += "({a}) \;X + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
+        else:
+            if a == 1:
+                # A special care needs to be addressed to put the exponent in {..} in LaTeX
+                res += "X^{i} + ".format(i="{%d}" % i)
+            elif a > 0:
+                res += "{a} \;X^{i} + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1), i="{%d}" % i)
+            elif a < 0:
+                res += "({a}) \;X^{i} + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1), i="{%d}" % i)
+    return "$" + res[:-3] + "$" if res else ""
+
 # will graph data for analysis,
 # assumes data is in folders named fnames, each containing files:
 # results.csv the Nx4 matrix of tour length results
@@ -129,21 +198,26 @@ def randomUniformGraph(filename,n,width):
 #     : 3 = graph the costs of each heuristic from all files for each test number
 #     : 4 = graph runtime against test number for each heuristic in each file over given rows
 #     : 5 = graph average runtime against the size of graph for each heuristic over given rows
-#     : 6 = graph a TSP problem at a single row for up to 4 heuristics
+#     : 6 = graph a TSP problem at a single row for up to 4 heuristics, if not given a graphPath, will look for corresponding graph in graphs/euclidian
 # fnames follow format: ER_s5+1n-10_1_0.5
 #                      euclidianRandom/graphs start at 0 nodes add 1 every 5 rows/3 parameters to custom
-def graphData(fnames,labels,cols,title,rows=[],type=0,errbars=False,trendLines=False,onlyTrends=False,trendDegree=3):
+def graphData(fnames,labels,cols,title,rows=[],type=1,graphPath="",errbars=False,trendLines=False,onlyTrends=False,trendDegree=3):
+    plt.rc('text',usetex=True)
+    plt.rc('font',family='serif')
     # python list containing numpy arrays
     data = []
     routes = []
     names = {0:"swap",1:"twoopt",2:"greedy",3:"custom"}
-    colorsH = {0:'#003f5c',1:'#7a5195',2:'#ef5675',3:'#ffa600'}
+    colorsH = {0:(0, 0.24705882352941178, 0.3607843137254902),1:(0.47843137254901963, 0.3176470588235294, 0.5843137254901961)
+,2:(0.9372549019607843, 0.33725490196078434, 0.4588235294117647)
+,3:(1.0, 0.6509803921568628, 0)}
+    colorsSeq = [(0, 0.24705882352941178, 0.3607843137254902),(0.47843137254901963, 0.3176470588235294, 0.5843137254901961),(0.9372549019607843, 0.33725490196078434, 0.4588235294117647),(1.0, 0.6509803921568628, 0)]
 
     for filename in fnames:
         
         fileToUse = ''
 
-        if type == 1 or type == 2 or type == 3:
+        if type == 1 or type == 2 or type == 3 or type == 6:
             fileToUse = "results.csv"
         elif type == 4 or type == 5:
             fileToUse = "times.csv"
@@ -154,19 +228,19 @@ def graphData(fnames,labels,cols,title,rows=[],type=0,errbars=False,trendLines=F
         try:
             r = np.load(path + "tours.npy",allow_pickle=True)
             d = np.loadtxt(path + fileToUse,delimiter=',')[:,cols]
-            
             if rows != []:
-                data.append(d[:,rows])
-                routes.append(r[:,rows])
+                data.append(d[rows])
+                routes.append(r[rows])
             else:
                 data.append(d)
                 routes.append(r)
+            print(r[rows])
 
         except Exception as E:
-            labels[0].pop()
+            labels.pop(0)
             print(E)
             print("could not load:" + filename + " excluding from graph")
-            
+    
 
     # once we have the data, we pre-process it and graph it
     if type == 1:
@@ -252,6 +326,7 @@ def graphData(fnames,labels,cols,title,rows=[],type=0,errbars=False,trendLines=F
             
             for i in range(len(cols)):
                 label = labels[fileI] + '-' + names[cols[i]]
+
                 if not(onlyTrends):
                     if errbars:
                         ax.errorbar(X,Y[:,i],yerr=Stds[:,i],label=label)
@@ -322,74 +397,160 @@ def graphData(fnames,labels,cols,title,rows=[],type=0,errbars=False,trendLines=F
 
         plt.show()
   
-    elif type == 5:
-        #we graph runtimes
-        return
+    elif type == 6:
+        #we graph routes at first row in rows for all heuristics in the first file
+
+        concernedRoutes = routes[0][0]
+        concernedData = data[0][0]
+        graph = "graphs/euclid/test_" + str(rows[0]) if graphPath == "" else graphPath
+        X,Y = loadEuclidianGraph(graph)
+        # if not given file path to graph assume it's a euclidian graph and it is in a known folder
+
+        xlen = 2 if len(cols) >= 2 else 1
+        ylen = 1 if len(cols) <= 2 else 2
+
+        fig,axes = plt.subplots(ylen, xlen)
+
+        for i,ax in enumerate(axes.flat):
+            permutation = concernedRoutes[cols[i]]
+            ordX = [None] * (len(X) + 1)
+            ordY = [None] * (len(Y) + 1)
+            
+            #wrap around
+            permutation.append(permutation[0])
+
+            for j,p in enumerate(permutation):
+                ordX[j] = X[p]
+                ordY[j] = Y[p]
+
+            sequenceColors = ['k' for x in range(len(X))]
+            sequenceColors[0] = 'r'
+            sequenceColors[1] = 'y'
+            sequenceColors[-1] = 'b'
+
+            ax.scatter(ordX[0:-1],ordY[0:-1],c=sequenceColors, zorder=1)
+            ax.plot(ordX,ordY,color='k',zorder=0)
+            
+            ax.set_title(names[cols[i]] +' '+ str(round(concernedData[cols[i]],1)))
+
+        fig.tight_layout()
+        plt.show()
+            
+
     else:
         return
     return
-#tests.graphData(["ER_s5+1n-10_1_0","ER_s5+1n-10_1_0.5"],["0","0.5"],(0,1,2,3),"blag",[],type=1)
-#tests.graphData(["ER_s5+1n-10_1_0",
-            #   "ER_s5+1n-10_1_0.1",
-            #   "ER_s5+1n-10_1_0.2",
-            #   "ER_s5+1n-10_1_0.3",
-            #   "ER_s5+1n-10_1_0.4",
-            #   "ER_s5+1n-10_1_0.4",
-            #   "ER_s5+1n-10_1_0.5",
-            #   "ER_s5+1n-10_1_0.6",
-            #   "ER_s5+1n-10_1_0.7",
-            #   "ER_s5+1n-10_1_0.8",
-            #   "ER_s5+1n-10_1_0.9",
-            #   "ER_s5+1n-10_1_1"],[str(0.1*x) for x in range(11)],[3],"b",[],type=1)
+
+def shade(RGB,shade,component):
+    R = RGB[0] if component != 0 else (((RGB[0] * 255) + shade) % 255)/255
+    G = RGB[1] if component != 1 else (((RGB[1] * 255) + shade) % 255)/255
+    B = RGB[2] if component != 2 else (((RGB[2] * 255) + shade) % 255)/255
+
+    return (R,G,B)
+#comparing all heuristics
+title1= "Performance of heuristics"
+
+setA = ["ER_s5+1n-10_1_0.5"]
+labelA = ["ER"]
+setB = ["MR_s5+1n-10_1_0.5"]
+labelB = ["MR"]
+setC = ["NMR_s5+1n-10_1_0.5"]
+labelC = ["NMR"]
+
+testHeurs = lambda : graphData(setA+setB+setC,labelA + labelB + labelC,[0,1,2,3],title1,type=1,errbars=True)
+testHeurs1 = lambda : graphData(setA,labelA,[0,1,2,3],title1,type=1)
+testHeurs2 = lambda : graphData(setB,labelB,[0,1,2,3],title1,type=1)
+testHeurs3 = lambda : graphData(setC,labelC,[0,1,2,3],title1,type=1)
+
+testHeursSize = lambda : graphData(setA+setB+setC,labelA + labelB + labelC,[0,1,2,3],title1,type=2)
+testHeursSize1 = lambda : graphData(setA,labelA,[0,1,2,3],title1,type=2)
+testHeursSize2 = lambda : graphData(setB,labelB,[0,1,2,3],title1,type=2)
+testHeursSize3 = lambda : graphData(setC,labelC,[0,1,2,3],title1,type=2)
+
+
+testHeursRuntime =  lambda : graphData(setA+setB+setC,labelA + labelB + labelC,[0,1,2,3],title1,type=5,errbars=True)
+testHeursRuntime1 =  lambda : graphData(setA,labelA,[0,1,2,3],title1,type=5,errbars=True)
+testHeursRuntime2 =  lambda : graphData(setB,labelB,[0,1,2,3],title1,type=5,errbars=True)
+testHeursRuntime3 =  lambda : graphData(setC,labelC,[0,1,2,3],title1,type=5,errbars=True)
+
+#effects of changing opts
+title2 = "Effects of changing number of 2-opt runs"
+
+set1 = ["ER_s5+1n-0_1_0.5","ER_s5+1n-1_1_0.5","ER_s5+1n-2_1_0.5","ER_s5+1n-3_1_0.5","ER_s5+1n-4_1_0.5","ER_s5+1n-5_1_0.5","ER_s5+1n-10_1_0.5","ER_s5+1n-100_1_0.5","ER_s5+1n-1000_1_0.5","ER_s5+1n-10000_1_0.5"]
+label1 = ["ER:0","ER:1","ER:2","ER:3","ER:4","ER:5","ER:10","ER:100","ER:1000","ER:10000"]
+set2 = ["MR_s5+1n-0_1_0.5","MR_s5+1n-1_1_0.5","MR_s5+1n-2_1_0.5","MR_s5+1n-3_1_0.5","MR_s5+1n-4_1_0.5","MR_s5+1n-5_1_0.5","MR_s5+1n-10_1_0.5","MR_s5+1n-100_1_0.5","MR_s5+1n-1000_1_0.5","MR_s5+1n-10000_1_0.5"]
+label2 = ["MR:0","MR:1","MR:2","MR:3","MR:4","MR:5","MR:10","MR:100","MR:1000","MR:10000"]
+set12 =  ["MR_s5+1n-0_1_0.5","MR_s5+1n-1_1_0.5","MR_s5+1n-2_1_0.5","MR_s5+1n-3_1_0.5","MR_s5+1n-4_1_0.5","MR_s5+1n-5_1_0.5","MR_s5+1n-10_1_0.5","MR_s5+1n-100_1_0.5","MR_s5+1n-1000_1_0.5","MR_s5+1n-10000_1_0.5"]
+label12 = ["NMR:0","NMR:1","NMR:2","NMR:3","NMR:4","NMR:5","NMR:10","NMR:100","NMR:1000","NMR:10000"]
+
+testOpts = lambda : graphData(set1+set2+set12, label1 + label2 + label12,[3],title2,type=1)
+testOpts1 = lambda : graphData(set1,label1,[3],title2,type=1)
+testOpts2 = lambda : graphData(set2,label2,[3],title2,type=1)
+testOpts3 = lambda : graphData(set12,label12,[3],title2,type=1)
+
+testOptsSize = lambda : graphData(set1+set2+set12, label1 + label2 + label12,[3],title2,type=2)
+testOptsSize1 = lambda : graphData(set1,label1,[3],title2,type=2)
+testOptsSize2 = lambda : graphData(set2,label2,[3],title2,type=2)
+testOptsSize3 = lambda : graphData(set12,label12,[3],title2,type=2)
+
+testOptsRuntime = lambda : graphData(set1+set2+set12, label1 + label2 + label12,[3],title2,type=5)
+testOptsRuntime1 = lambda : graphData(set1,label1,[3],title2,type=5)
+testOptsRuntime2 = lambda : graphData(set2,label2,[3],title2,type=5)
+testOptsRuntime3 = lambda : graphData(set12,label12,[3],title2,type=5)
+
+#effects of changing bias
+title3 = "Effect of changing bias"
+set3 = ["ER_s5+1n-10_1_0","ER_s5+1n-10_1_0.1","ER_s5+1n-10_1_0.2","ER_s5+1n-10_1_0.3","ER_s5+1n-10_1_0.4","ER_s5+1n-10_1_0.5","ER_s5+1n-10_1_0.6","ER_s5+1n-10_1_0.7","ER_s5+1n-10_1_0.8","ER_s5+1n-10_1_0.9","ER_s5+1n-10_1_1"]
+label3 = ["ER:0","ER:0.1","ER:0.2","ER:0.3","ER:0.4","ER:0.5","ER:0.5","ER:0.6","ER:0.7","ER:0.8","ER:0.9","ER:1"]
+set4 = ["MR_s5+1n-10_1_0","MR_s5+1n-10_1_0.1","MR_s5+1n-10_1_0.2","MR_s5+1n-10_1_0.3","MR_s5+1n-10_1_0.4","MR_s5+1n-10_1_0.5","MR_s5+1n-10_1_0.6","MR_s5+1n-10_1_0.7","MR_s5+1n-10_1_0.8","MR_s5+1n-10_1_0.9","MR_s5+1n-10_1_1"]
+label4 = ["MR:0","MR:0.1","MR:0.2","MR:0.3","MR:0.4","MR:0.5","MR:0.5","MR:0.6","MR:0.7","MR:0.8","MR:0.9","MR:1"]
+set34 =  ["NMR_s5+1n-10_1_0","NMR_s5+1n-10_1_0.1","NMR_s5+1n-10_1_0.2","NMR_s5+1n-10_1_0.3","NMR_s5+1n-10_1_0.4","NMR_s5+1n-10_1_0.5","NMR_s5+1n-10_1_0.6","NMR_s5+1n-10_1_0.7","NMR_s5+1n-10_1_0.8","NMR_s5+1n-10_1_0.9","NMR_s5+1n-10_1_1"]
+label34 = ["NMR:0","NMR:0.1","NMR:0.2","NMR:0.3","NMR:0.4","NMR:0.5","NMR:0.5","NMR:0.6","NMR:0.7","NMR:0.8","NMR:0.9","NMR:1"]
+
+testBias = lambda : graphData(set3+set4+set34,label3 + label4+ label34,[3],title3,type=1)
+testBias1 = lambda : graphData(set3,label3,[3],title3,type=1)
+testBias2 = lambda : graphData(set4,label4,[3],title3,type=1)
+testBias3 = lambda : graphData(set34,label34,[3],title3,type=1)
+
+testBiasSize = lambda : graphData(set3+set4+set34,label3 + label4+ label34,[3],title3,type=2)
+testBiasSize1 = lambda : graphData(set3,label3,[3],title3,type=2)
+testBiasSize2 = lambda : graphData(set4,label4,[3],title3,type=2)
+testBiasSize3 = lambda : graphData(set34,label34,[3],title3,type=2)
+
+testBiasFullGreedy = lambda : graphData(["ER_s5+1n-10_1_0","ER_s5+1n-10_1_0.5"],["ER:0","ER:0.5"],[0,1,2,3],title3,type=1)
+#effects of changing lookahead
+title4 = "Effect of changing lookahead"
+
+set5 = ["ER_s5+1n-10_1_0.5","ER_s5+1n-10_2_0.5","ER_s5+1n-10_3_0.5"]
+label5 = ["ER:1","ER:2","ER:3"]
+set6 = ["MR_s5+1n-10_1_0.5","MR_s5+1n-10_2_0.5","MR_s5+1n-10_3_0.5"]
+label6 = ["MR:1","MR:2","MR:3"]
+set7 = ["MR_s5+1n-10_1_0.5","MR_s5+1n-10_2_0.5","MR_s5+1n-10_3_0.5"]
+label7 = ["NMR:1","NMR:2","NMR:3"]
+
+testLookahead = lambda : graphData(set5+set6+set7,label5+label6+label7,[3],title4,type=1)
+testLookahead1 = lambda : graphData(set5,label5,[3],title4,type=1)
+testLookahead2 = lambda : graphData(set6,label6,[3],title4,type=1)
+testLookahead3 = lambda : graphData(set7,label7,[3],title4,type=1)
+
+testLookaheadSize = lambda : graphData(set5+set6+set7,label5+label6+label7,[3],title4,type=2)
+testLookaheadSize1 = lambda : graphData(set5,label5,[3],title4,type=2)
+testLookaheadSize2 = lambda : graphData(set6,label6,[3],title4,type=2)
+testLookaheadSize3 = lambda : graphData(set7,label7,[3],title4,type=2)
+
+
+testLookaheadRuntime = lambda : graphData(set5+set6+set7,label5+label6+label7,[3],title4,type=5)
+testLookaheadRuntime1 = lambda : graphData(set5,label5,[3],title4,type=5)
+testLookaheadRuntime2 = lambda : graphData(set6,label6,[3],title4,type=5)
+testLookaheadRuntime3 = lambda : graphData(set7,label7,[3],title4,type=5)
 
 if __name__ == "__main__":
-    testName= "ER_s5+1n-0_1_0.5"
+    testName= "ER_s5+1n-10_1_0.5B"
     os.makedirs(("results/" + testName), exist_ok=True)
 
-    (results,tours,times) = testHeuristics([x for x in range(500)],0,1,0.5)
+    (results,tours,times) = testHeuristics([x for x in range(500)],10,1,0.5,[-1 for x in range(500)])
 
     np.savetxt('results/'+testName+'/results.csv',results,delimiter=',')
     np.save('results/'+testName+'/tours.npy',tours,allow_pickle=True)
     np.savetxt('results/'+testName+'/times.csv',times,delimiter=',')
-        
-
-# def poly2latex(poly, variable="x", width=2):
-#     t = ["{0:0.{width}f}"]
-#     t.append(t[-1] + " {variable}")
-#     t.append(t[-1] + "^{1}")
-
-#     def f():
-#         for i, v in enumerate(reversed(poly)):
-#             idx = i if i < 2 else 2
-#             yield t[idx].format(v, i, variable=variable, width=width)
-
-#     return "${}$".format("+".join(f()))
-
-def poly2latex(p):
-    coefs = p.coef  # List of coefficient, sorted by increasing degrees
-    res = ""  # The resulting string
-    for i, a in enumerate(coefs):
-        if int(a) == a:  # Remove the trailing .0
-            a = int(a)
-        if i == 0:  # First coefficient, no need for X
-            if a > 0:
-                res += "{a} + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
-            elif a < 0:  # Negative a is printed like (a)
-                res += "({a}) + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
-            # a = 0 is not displayed 
-        elif i == 1:  # Second coefficient, only X and not X**i
-            if a == 1:  # a = 1 does not need to be displayed
-                res += "X + "
-            elif a > 0:
-                res += "{a} \;X + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
-            elif a < 0:
-                res += "({a}) \;X + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1))
-        else:
-            if a == 1:
-                # A special care needs to be addressed to put the exponent in {..} in LaTeX
-                res += "X^{i} + ".format(i="{%d}" % i)
-            elif a > 0:
-                res += "{a} \;X^{i} + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1), i="{%d}" % i)
-            elif a < 0:
-                res += "({a}) \;X^{i} + ".format(a=np.format_float_scientific(a,exp_digits=1,precision=1), i="{%d}" % i)
-    return "$" + res[:-3] + "$" if res else ""
+    

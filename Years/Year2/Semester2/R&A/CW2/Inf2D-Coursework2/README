@@ -1,0 +1,15 @@
+
+Installing the FF planner:
+Included in this directory is a compiled version of the MetricFF planner in the file: ff
+To be able to run the planner you must make the file executable by running this command:
+$ chmod u+x ff
+
+Once you have done this you can run the planner using this command:
+$ ./ff -o <domain-file> -f <problem-file>
+
+If you are not working on DICE or if this doesn't work for you, you can download and compile the planner on your own. 
+The source code can be downloaded from: https://fai.cs.uni-saarland.de/hoffmann/ff/Metric-FF-v2.1.tgz
+Simply follow the instructions in the README file in that directory. 
+
+
+
