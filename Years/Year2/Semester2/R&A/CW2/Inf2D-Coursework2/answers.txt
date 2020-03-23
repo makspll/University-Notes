@@ -1,8 +1,84 @@
 PART 1
 
 Task 1.1
+Atemporal predicates:
+
+    LOCATION(x) - true iff x is a location,
+    LAND_ROUTE(x,y) - true iff x,y are locations and there is a road between x and y or y and x,
+    AIR_ROUTE(x,y) - true iff x,y are locations and there exists a flight taking you from x to y
+
+Fluent predicates:
+
+    visited(x) - true iff x is a location and the agent has visited it
+    agent_at(x) - true iff x is a location and the agent is currently there
+    car_at(x) -  true iff x is a location and the agent is currently there    
+
+Initial State:
+
+    car_at(E)                   and
+    agent_at(E)                 and
+    LOCATION(A)..LOCATION(I)    and
+    LAND_ROUTE(E,A)             and 
+    LAND_ROUTE(A,I)             and
+    LAND_ROUTE(I,H)             and
+    LAND_ROUTE(H,B)             and
+    LAND_ROUTE(H,G)             and
+    LAND_ROUTE(G,F)             and
+    LAND_ROUTE(F,C)             and
+    LAND_ROUTE(F,D)             and
+    LAND_ROUTE(C,D)             and
+
+    LAND_ROUTE(A,E)             and
+    LAND_ROUTE(A,I)             and
+    LAND_ROUTE(I,H)             and
+    LAND_ROUTE(H,B)             and
+    LAND_ROUTE(H,G)             and
+    LAND_ROUTE(G,F)             and
+    LAND_ROUTE(F,C)             and
+    LAND_ROUTE(F,D)             and
+    LAND_ROUTE(D,C)             and
+
+    AIR_ROUTE(A,C)              and
+    AIR_ROUTE(A,B)              and
+    AIR_ROUTE(C,B)              and
+
+    AIR_ROUTE(B,A)
+
+Goal State:
+    visited(D) and agent_at(E)
 
 Task 1.2
+
+Actions:
+
+Drive(x,y):
+    preconditions: 
+                    LOCATION(x)      and 
+                    LOCATION(y)      and
+                    agent_at(x)      and
+                    car_at(x)        and
+                    LAND_ROUTE(x,y)
+    effects:   
+                    not(agent_at(x)) and
+                    not(car_at(x))   and
+                    agent_at(y)      and
+                    car_at(y)        and
+Fly(x,y):
+    preconditions:
+                    LOCATION(x)      and
+                    LOCATION(y)      and
+                    agent_at(x)      and
+                    AIR_ROUTE(x,y)  
+    effects:        
+                    not(agent_at(x)) and
+                    agent_at(y)
+
+Visit(x):
+    preconditions:
+                    agent_at(x)      and
+                    not(visited(x))    
+    effects:
+                    visited(x)
 
 Task 1.3
 
