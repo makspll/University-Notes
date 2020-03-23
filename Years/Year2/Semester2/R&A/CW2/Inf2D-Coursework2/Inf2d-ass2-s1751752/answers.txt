@@ -1,0 +1,156 @@
+PART 1
+
+Task 1.1
+Atemporal predicates:
+
+    LOCATION(x) - true iff x is a location,
+    LAND_ROUTE(x,y) - true iff x,y are locations and there is a road between x and y or y and x,
+    AIR_ROUTE(x,y) - true iff x,y are locations and there exists a flight taking you from x to y
+
+Fluent predicates:
+
+    visited(x) - true iff x is a location and the agent has visited it
+    agent_at(x) - true iff x is a location and the agent is currently there
+    car_at(x) -  true iff x is a location and the agent is currently there    
+
+Initial State:
+
+    car_at(E)                   and
+    agent_at(E)                 and
+    LOCATION(A)..LOCATION(I)    and
+    LAND_ROUTE(E,A)             and 
+    LAND_ROUTE(A,I)             and
+    LAND_ROUTE(I,H)             and
+    LAND_ROUTE(H,B)             and
+    LAND_ROUTE(H,G)             and
+    LAND_ROUTE(G,F)             and
+    LAND_ROUTE(F,C)             and
+    LAND_ROUTE(F,D)             and
+    LAND_ROUTE(C,D)             and
+
+    LAND_ROUTE(A,E)             and
+    LAND_ROUTE(A,I)             and
+    LAND_ROUTE(I,H)             and
+    LAND_ROUTE(H,B)             and
+    LAND_ROUTE(H,G)             and
+    LAND_ROUTE(G,F)             and
+    LAND_ROUTE(F,C)             and
+    LAND_ROUTE(F,D)             and
+    LAND_ROUTE(D,C)             and
+
+    AIR_ROUTE(A,C)              and
+    AIR_ROUTE(A,B)              and
+    AIR_ROUTE(C,B)              and
+
+    AIR_ROUTE(B,A)
+
+Goal State:
+    visited(D) and agent_at(E)
+
+Task 1.2
+
+Actions:
+
+Drive(x,y):
+    preconditions: 
+                    LOCATION(x)      and 
+                    LOCATION(y)      and
+                    agent_at(x)      and
+                    car_at(x)        and
+                    LAND_ROUTE(x,y)
+    effects:   
+                    not(agent_at(x)) and
+                    not(car_at(x))   and
+                    agent_at(y)      and
+                    car_at(y)        and
+Fly(x,y):
+    preconditions:
+                    LOCATION(x)      and
+                    LOCATION(y)      and
+                    agent_at(x)      and
+                    AIR_ROUTE(x,y)  
+    effects:        
+                    not(agent_at(x)) and
+                    agent_at(y)
+
+Visit(x):
+    preconditions:
+                    agent_at(x)      and
+                    not(visited(x))    
+    effects:
+                    visited(x)
+
+Task 1.3
+
+Step1:
+    goal state: visited(B)
+    relevant actions: Visit(B) - because there is no other action which has visited(B) as effect
+    selected action: Visit(B)
+Step2:
+    goal state: agent_at(B) and not(visited(B))
+    relevant actions: Drive(x,B),Fly(x,B)
+    selected action: Fly(x,B)
+Step3:
+    goal state:    
+                   agent_at(x)      and
+                   LOCATION(x)      and
+                   LOCATION(B)      and
+                   AIR_ROUTE(x,B)   and
+                   not(visited(B))
+    relevant actions: Drive(x2,x),Fly(x2,x)
+    selected action: Drive(x2,x)
+Step4:
+    goal state:
+                    agent_at(x2)     and
+                    car_at(x2)       and
+                    LOCATION(x2)     and
+                    LOCATION(x)      and
+                    LOCATION(B)      and
+                    AIR_ROUTE(x,B)   and
+                    LAND_ROUTE(x2,x) and
+                    not(visited(B))  
+Step5:
+    Finished, solution found:
+        Drive(x2,x),Fly(x,B),Visit(B)
+    goal state:
+        agent_at(x2)     and
+        car_at(x2)       and
+        LOCATION(x2)     and
+        LOCATION(x)      and
+        LOCATION(B)      and
+        AIR_ROUTE(x,B)   and
+        LAND_ROUTE(x2,x) and
+        not(visited(B))  
+    substitution = [x2/E,x/A]
+    substituting the solution and goal state, results in plan
+    with state that agrees with the initial state:
+    solution plan after substituting:    
+        Drive(E,A),Fly(A,B),Visit(B)
+
+    resulting initial state:
+        agent_at(E)     and
+        car_at(E)       and
+        LOCATION(E)     and
+        LOCATION(A)     and
+        LOCATION(B)     and
+        AIR_ROUTE(A,B)  and
+        LAND_ROUTE(E,A) and
+        not(visited(B)) 
+
+    actual initial state:
+        agent_at(E)                 and
+        car_at(E)                   and
+        LOCATION(A)..LOCATION(I)    and
+        AIR_ROUTE(A,B)..etc         and 
+        LAND_ROUTE(E,A)..etc        and
+
+    there are no contradictions and resulting state is "entailed" by actual initial state, 
+    meaning we have found a valid plan taking us from our initial conditions to
+    our goal state
+
+PART 4
+In planning when given a selection of possible plans, you could select the one which maximizes the utility.
+This would work well combined with Hierarchical Task Network planning, since the resulting plan would give us many alternative refinements, which 
+could be evaluated according to our preferences and the best plan chosen. We could also employ a heuristic which takes into account 
+the utility values of actions and apply forward state space search to
+find our ideal plan. backward state space search does not really work that well, as it aims to find a single plan in a depth-first manner.
