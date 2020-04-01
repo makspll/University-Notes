@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{pgf}
 \usepackage{printlen}
+\usepackage{wrapfig}
 
 \begin{document}
 \title{IADS - CW 2}
@@ -14,10 +15,11 @@
 \maketitle
 \pagebreak
 \section{Task1}
-\begin{figure}[h]
-    \raggedright
+
+\begin{wrapfigure}{h}{0.5\textwidth}
+    \includegraphics[scale=1,left]{Years/Year2/Semester2/Learning/CW/python_code/correlation.png} 
     \caption{Heatmaps for the covariance and correlation matrices}
-    \includegraphics[scale=1]{Years/Year2/Semester2/Learning/CW/python_code/correlation.png}
-\end{figure}
+\label{fig:wrapfig}
+\end{wrapfigure}
 
 \end{document}
