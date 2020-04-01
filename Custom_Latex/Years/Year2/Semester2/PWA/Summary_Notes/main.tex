@@ -1,0 +1,272 @@
+\documentclass{article}
+
+\usepackage{Custom_Latex/Summary_Notes/notes}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\graphicspath{{./Images/}}
+
+\everymath{\displaystyle}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\begin{document}
+\title{PWA - Summary Notes}
+\author{Maksymilian Mozolewski}
+\maketitle
+\pagebreak
+\tableofcontents
+\pagebreak
+% WEEK 1 %
+% TUTORIAL - DONE %
+% HAND-IN - COMPLETE %
+
+% DAY - TUESDAY %
+% LECTURE - 1 %
+% READING - DONE %
+% NOTES_COMPLETE - SAME AS DMMR  %
+
+\section{Introduction}
+\subsection{Information}
+general information\bigskip\\
+new course, restructured.
+\section{Counting}
+\nTheorem{Product Rule}{if A and B are finite sets then: $|A \times B| = |A| \cdot |B|$}
+\nTheorem{General Product Rule}{if $A_{1},A_{2},...,A_{m}$ are finite sets then: $|A_{1},A_{2},...,A_{m}| = |A_{1}|\cdot|A_{2}|\cdots|A_{m}|$}
+\nDefinition{Counting Summary}{
+\begin{tabular*}{\textwidth}{l|l|l}
+    Type & Repetition Allowed ? & Formula\\
+    \hline
+    r-permutations & No & $\frac{n!}{(n-r)!}$\\[15pt]
+    r-combinations & No & $\frac{n!}{r!(n-r)!}$\\[15pt]
+    r-permutations & Yes & $n^{r}$\\[15pt]
+    r-combinations & Yes & $\frac{(n + r -1)!}{r!(n-1)!}$
+\end{tabular*}
+}
+
+\nDefinition{Permutations}{A permutation of a set S is an ordered arrangement of the elements
+of S.
+In other words, it is a sequence containing every element of S exactly
+once}
+
+\nTheorem{The Binomial Theorem}{For all $n \geq 0$:
+\begin{align*}
+    (x + y)^{n} = \sum_{j=0}^{n}{{n \choose j}x^{n-j}y^{j}}
+\end{align*}
+}
+
+\nTheorem{Multinomial theorem}{for all n $\geq$ 0 and all k $\geq 1$:
+\begin{align*}
+    ({x_{1}+x_{2}+...+x_{k}})^{n} = \sum_{0\leq n_{1},n_{2},...,n_{k}\leq n}{n\choose n_{1},n_{2},...,n_{k}}x_{1}^{n_{1}}x_{2}^{n_{2}}...x_{k}^{n_{k}}
+\end{align*}}
+% DAY - THURSDAY %
+% LECTURE - 2 %
+% READING -  DONE %
+% NOTES_COMPLETE - DONE %
+\section{Axioms of Probability}
+\subsubsection{Sample Space * Events}
+\nDefinition{Sample Space}{
+a set of all possible outcomes}
+\nDefinition{Event}{any subset of the \bd{sample space}}
+\subsubsection{Basic operations on evnets}
+\nDefinition{Basic Event Operations}{
+\begin{align*}
+    E \cup F = \text{ event where either or both E,F happens}\\
+    EF = E \cap F \text{ event where both E and F happen}\\
+    E^{c} = S - E = \text{ event where E does \bd{not} happen}
+\end{align*}}
+\nDefinition{De Morgan's law for events}{
+\begin{align*}
+    (E_{1}\cup E_{2} \cup \hdots \cup E_{n}) = E_{1}^{c} \cap E_{2}^{c} \cap \hdots \cap E_{n}^{c}\\
+    (E_{1}\cap E_{2} \cap \hdots \cap E_{n}) = E_{1}^{c} \cup E_{2}^{c} \cup \hdots \cup E_{n}^{c}
+\end{align*}}
+\subsubsection{Axioms of Probability}
+\nDefinition{Axioms}{
+for any sequence  $\{E_{1}\E_{2},E_{3},\hdots\}$ of mutually exclusive events and where for each event $E \subseteq S$ we assign a \bd{probability} \mathbb{P}(E) satisfying: 
+\begin{gather}
+    0 \leq \mathbb{P}(E)\leq 1\\
+    \mathbb{P}(S) = 1\\
+     \mathbb{P}(\bigcup_{j=1}^{\infty}E_{j}) = \sum_{j=1}^{\infty}\mathbb{P}(E_{j})
+\end{gather}}
+\subsubsection{Consequences of probability axioms}
+\nDefinition{Null event}{
+\begin{gather}
+    \mathbb{P}(\emptyset) = 0\\
+    \mathbb{P}(\bigcup_{j=j}^{n}E_{j}) = \sum_{j=1}^{n}\mathbb{P}(E_{j})\\
+    \mathbb{P}(E^{c}) = 1 - \mathbb{P}(E)
+\end{gather}}
+\nDefinition{Inclusion-Exclusion principle}{
+\begin{align*}
+    \mathbb{P}(E_{1}\cup E_{2} \cup \hdots E_{n}) = \sum_{j=1}^{n}\mathbb{P}(E_{j}) - \sum_{j < k}^{n}\mathbb{P}(E_{j}\cap E_{k}) + \sum_{j < k < l}^{n}\mathbb{P}(E_{j} \cap E_{k} \cap E_{l})\\ - \hdots + (-1)^{n+1}\mathbb{P}(E_{1} \cap E_{2} \cap \hdots \cap E_{n})
+\end{align*}
+}
+\subsubsection{Probability Distribution}
+\nDefinition{Probability Distribution}{
+Suppose S = $\{x_{1},x_{2},\hdots,x_{N}\}$ is finite. Set $p_{j}=\mathbb{P}(\{x_{j}\})$ with $1 \leq j \leq N$ is known as the probability distribution
+}
+\nDefinition{Uniform distribution}{
+equally likely outcomes, so for any event in S: 
+\begin{align*}
+    \mathbb{P}(E) = \frac{#E}{#S}
+\end{align*}}
+
+% DAY - X %
+% LECTURE - 3 %
+% READING -  %
+% NOTES_COMPLETE -  %
+\section{Conditional Probability And Independence}
+\subsection{Conditional Probability}
+\nDefinition{Conditional Probability}{Probability of F given E:
+\begin{align*}
+    \mathbb{P}(F|E) = \frac{\mathbb{P}(F \cap E)}{\mathbb{P}(E)}
+\end{align*}
+doesn't depend on original sample space!}
+\subsection{Independence of Events}
+\nDefinition{}{Two events E,F are said to be \emph{independent} if
+\begin{align*}
+    \mathbb{P}(F \cap E) = \mathbb{P}(F)\mathbb{P}(E)
+\end{align*}
+A sequence $E_{1},E_{2},\hdots,E_{n}$ of events is said to be independent if for every $i_{1} < i_{2} < \hdots < i_{r}$ such that $i_{j} \in {1,2,\hdots,n}$ and $1 \leq r \leq n $ we have: \begin{align*}
+    \mathbb{P}(E_{i_{1}} \cap E_{i_{2}} \cap \hdots E_{i_{r}}) = \mathbb{P}(E_{i_{1}})\mathbb{P} (E_{i_{2}}) \hdots \mathbb{P}(E_{i_{r}}) = \prod_{j=1}^{r}\mathbb{P}(E_{i_{j}})
+\end{align*}}
+\subsection{Binomial Distribution}
+\nDefinition{Binomial Distribution}{
+for repeated independent trials where each trial has a probability p of success (probability 1 - p of failure) then:
+\begin{align*}
+    \mathbb{P}(\text{k successes in n trials}) = \sum_{J \subseteq(1,2,\hdots,n), \#J = k}\mathbb{P}(E_{j}) = {n \choose k}p^{k}(1-p)^{n-k}   
+\end{align*}
+}
+\subsection{Multiplication rule for probabilities}
+\nDefinition{Chain rule for probabilities}{
+\begin{align*}
+    \mathbb{P}(E_{1}\cap E_{2} \cap \hdots \cap E_{n}) = \mathbb{P}(E_{1})\mathbb{P}({E_{2}|E_{1}})\hdots\mathbb{P}(E_{n}|E_{1}\cap E_{2} \cap \hdots \cap E_{n-1})
+\end{align*}
+}
+\subsection{Law of total probability}
+\nDefinition{}{
+Represent the sample space S as a union of mutually exclusive events:
+\begin{align*}
+    S = F_{1}\cup F_{2} \cup \hdots \cup F_{n}
+\end{align*}
+then any event E can be represented as 
+\begin{align*}
+  E = EF_{1} \cup EF_{2} \cup \hdots \cup EF_{n}  
+\end{align*}
+so that
+\begin{align*}
+    \mathbb{P}(E) = \mathbb{P}(E|F_{1})\mathbb{P}(F_{1}) + \hdots + \mathbb{P}(E|F_{n})\mathbb{P}(F_{n})
+\end{align*}
+}
+\subsection{Baye's formula}
+\nTheorem{Generalised Baye's Theorem}{
+Suppose that $E, F_{1},..., F_{n}$ are events from sample space $\Omega$, and
+that $P : \Omega \rightarrow [0, 1]$ is a probability distribution on $\Omega$. Suppose that $\cup_{i=1}^{n}F_{j} = \Omega$ and that $F_{i} \cap F_{j} = \emptyset$ for all $i \not = j$.\\
+Suppose $P(E) > 0$, and $P(F_{j}) > 0$ for all j. Then for all j:
+\begin{align*}
+    P(F_{j}|E) = \frac{P(E|F_{j})P(F_{j})}{\sum_{i=1}^{n}P(E|F_{i})P(F_{i}))}
+\end{align*}
+}
+\subsection{Expectation}
+\nTheorem{Better expression for Expectation}{
+For a random variable $X : \Omega \rightarrow \mathbb{R}$
+\begin{align*}
+    E(X) = \sum_{r\in range(X)}P(X = r)\cdot r
+\end{align*}}
+
+\section{Continous Random Variables}
+\nDefinition{Definition}{
+$X \in \mathbb{R}$ is a continous random variable if:
+\begin{equation*}
+    F_{x}(x):= \mathbb{P}(X \leq x) \textit{is a continuous function}    
+\end{equation*}
+($F_{x}$ is the \bd{distribution function}/\bd{cumulative probability distribution function} of X) OR, equivalently:
+\begin{equation*}
+    \mathbb{P}(X = x) = 0 \quad \forall x \in \mathbb{R}
+\end{equation*}
+}
+\subsection{Properties}
+\nTheorem{Properties}{
+\begin{flalign*}
+    &F_{x} \quad \textit{is increasing}&\\
+    &F_{x}(\infty) := \lim_{x \rightarrow \infty} \mathbb{P}(X \leq x) = 1&\\ 
+    &F_{x}(-\infty) := \lim_{x \rightarrow -\infty} \mathbb{P}(X \leq x) = 0&\\ 
+\end{flalign*}
+}
+\nTheorem{Theorem}{
+\begin{equation*}
+    F_{x} = \int_{-\infty}^{x}\mathcak{f}_{x}(s)ds
+\end{equation*}}
+
+\nTheorem{Theorem}{
+\begin{equation*}
+    \mathbb{P}(a \leq X \leq b) = \int_{a}^{b}\mathcak{f}_{X}(s)ds
+\end{equation*}}
+
+\subsection{Independence}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathbb{P}(X \in A, Y \in B) = \mathbb{P}(X \in A)\mathbb{P}(Y \in B) \quad \forall A,B\subseteq \mathbb{R} 
+\end{equation*}}
+
+\subsection{Probability density function}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathcak{f}x= F^{'}_{X}
+\end{equation*}
+}
+\subsection{Expectation}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathbb{E}[X] := \int_{-\infty}^{\infty}s\mathcak{f}_{X}(s)ds
+\end{equation*}}
+\nTheorem{Theorem}{
+\begin{equation*}
+    \mathbb{E}[g(X)] = \int_{-\infty}^{\infty}g(t)\mathcak{f}_{X}(t)dt
+\end{equation*}}
+\subsection{Variance}
+\nDefinition{Definition}{
+\begin{equation*}
+    Var[X] := \mathbb{E}[(X - \mathbb{E}[X])^{2}] = \mathbb{E}[X^{2}] - \mathbb{E}[X]^{2}
+\end{equation*}}
+\subsection{N-th Moment}
+\nDefinition{Definition}{
+\begin{equation*}
+    \mathbb{E}[X^{n}] = \int_{-\infty}^{\infty}s^{n}\mathcak{f}_{X}(s)ds
+\end{equation*}}
+
+\subsection{Distributions}
+
+\subsubsection{Uniform}
+\nDefinition{Definition}{
+
+\begin{center}
+    $\mathcak{f}_{X}(x)=$
+    \begin{cases}
+        \frac{1}{b-1}, & a < x < b\\
+        0, & otherwise
+    \end{cases}
+\end{center}
+
+\begin{flalign*}
+    &E[X] = \frac{a+b}{2}&\\
+    &Var[X] = \frac{(b-a)^{2}}{12}&
+\end{flalign*}
+}
+\subsubsection{Exponentially distributed}
+\nDefinition{}{
+parameter $\lambda > 0$, which represents a rate of a poisson process, X would represent time between events
+\begin{center}
+    $\mathcak{f}_{X}(x)=$
+    \begin{cases}
+        \lambda e^{-\lambda x}, & x > 0\\
+        0, & otherwise
+    \end{cases}
+\end{center}
+\begin{flalign}
+    &\mathbb{E}[X] = \frac{1}{\lambda}&\\
+    &Var[X] = \frac{1}{\lambda^{2}}&\\
+    &\mathbb{P}(X > s + t | X > t) = P (X > s)& \quad \text{i.e., the probability depends on the length of the interval but not on when you started counting}
+\end{flalign}
+}
+\end{document}
