@@ -67,7 +67,7 @@ def set_size(width, fraction=1, subplots=(1, 1)):
     return (fig_width_in, fig_height_in)
 
 if __name__ == "__main__":
-    width = 252.5
+    width = 505 #252.5
     
     print("task1_1,b)")
     data = scipy.io.loadmat("../data/dset.mat")
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     outR = scipy.io.loadmat("t1_R.mat")["R"]
     outS = scipy.io.loadmat("t1_S.mat")["S"]
 
-    fig,axes = plt.subplots(nrows=2,ncols=1,figsize=set_size(width,subplots=(2,1)))
+    fig,axes = plt.subplots(nrows=1,ncols=2,figsize=set_size(width,subplots=(1,2)))
     plt.rcParams.update({'font.size': 7})
 
     im = axes[0].imshow(outS, interpolation="none", cmap='RdBu_r',origin='lower',vmin=-0.04,vmax=0.04)
