@@ -4,8 +4,10 @@
 \addtolength{\evensidemargin}{-.5in}
 \addtolength{\textwidth}{1in}
 \usepackage{import}
-
+\usepackage{graphicx}
 \usepackage{pgf}
+\usepackage{printlen}
+\printlength\textwidth
 
 \begin{document}
 \title{IADS - CW 2}
@@ -13,6 +15,10 @@
 \maketitle
 \pagebreak
 \section{Task1}
-\input{"python_code/correlation.png"}
+\begin{figure}[h]
+    \caption{}
+    \centering
+    \includegraphics[scale=1]{Years/Year2/Semester2/Learning/CW/python_code/correlation.png}
+\end{figure}
 
 \end{document}
