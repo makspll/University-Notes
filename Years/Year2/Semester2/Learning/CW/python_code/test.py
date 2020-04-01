@@ -3,7 +3,6 @@ import scipy.io
 import matplotlib.pyplot as plt
 import matplotlib
 
-matplotlib.use("pgf")
 matplotlib.rcParams.update({
     "pgf.texsystem": "pdflatex",
     'font.family': 'serif',
@@ -65,24 +64,26 @@ if __name__ == "__main__":
     outR = scipy.io.loadmat("t1_R.mat")["R"]
     outS = scipy.io.loadmat("t1_S.mat")["S"]
 
-    fig,axes = plt.subplots(1,2,figsize=set_size(width,subplots=(1,2)))
+    fig,axes = plt.subplots(2,1,figsize=set_size(width,subplots=(2,1)))
+
     im = axes[0].imshow(outS, interpolation="none", cmap='RdBu_r',origin='lower',vmin=-0.04,vmax=0.04)
     axes[0].set_title("Covariance matrix of X's")
     axes[0].set_xticks(np.arange(outS.shape[0]))
     axes[0].set_yticks(np.arange(outS.shape[0]))
-    axes[0].tick_params(axis='both', which='major', labelsize=7)
+    axes[0].tick_params(axis='both', which='major', labelsize=5)
     axes[0].set_xlabel("variable")
     axes[0].set_ylabel("variable")
-    plt.colorbar(im,ax=axes[0],shrink=0.5)
+    plt.colorbar(im,ax=axes[0])
 
     im = axes[1].imshow(outR, interpolation="none", cmap='RdBu_r',origin='lower',vmin=-1,vmax=1)
     axes[1].set_title("Correlation matrix of X's")
     axes[1].set_xticks(np.arange(outR.shape[0]))
     axes[1].set_yticks(np.arange(outR.shape[0]))
-    axes[1].tick_params(axis='both', which='major', labelsize=7)
+    axes[1].tick_params(axis='both', which='major', labelsize=5)
     axes[1].set_xlabel("variable")
     axes[1].set_ylabel("variable")
-    plt.colorbar(im,ax=axes[1],shrink=0.5)
-
-    plt.savefig('correlation.pgf')
+    plt.colorbar(im,ax=axes[1])
     
+    fig.tight_layout()
+    plt.savefig('correlation.png')
+    plt.show()
