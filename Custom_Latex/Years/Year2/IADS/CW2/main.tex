@@ -1,0 +1,491 @@
+\documentclass{report}
+\usepackage{Custom_Latex/Summary_Notes/notes}
+
+\begin{document}
+\title{IADS - CW 2}
+\author{Maksymilian Mozolewski}
+\maketitle
+\pagebreak
+
+\section*{Question.1}
+\subsection*{1)}
+let $k_{j} = j$ where $ 1 \leq j \leq n$,\medskip\\
+then $\#_{t}(k_{j},i) = j \Modc{m}$ is an injection, since if:
+\begin{align*}
+    \#_{t}(k,i) = \#_{t}(k^{'},i)\\
+    (k + i) \Modc{m} = (k^{'} + i) \Modc{m}\\
+    k \equiv k^{'} \Mod{m}\\
+    k = k^{'} + cm : c \in \mathbb{Z}
+\end{align*}
+but $k_{j} \leq n \leq m$ and both $k$ and $k^{'}$ are between 1 and n inclusive, so: 
+\begin{equation*}
+    max(k,k^{'}) - min(k,k^{'}) \leq n-1 < m
+\end{equation*}
+and $k \equiv k^{'}$ iff  $c = 0$ and so $k = k^{'}$. The given sequence of keys: $1,2,3,\hdots,n$ will cost only one attempt per key, which is the smallest possible number of attempts for each key. Since each hash is unique among these keys the total number of attempts A is given by: 
+\begin{equation*}
+    A(n) = n
+\end{equation*}
+
+\subsection*{2)}
+
+let $k_{j} = m\cdot j$ where $ 1 \leq j \leq n$,\medskip\\
+then $\#_{t}(k_{j},i) = (k_{j} + i) \Modc{m} = (m \cdot j + i) \Modc{m} = i$. So all keys will hash to position 0 first which is the worst possible case (WLOG).\\
+Then the number of attempts for each k, $A_{k_{j}} = j$. The total number of attempts for the keys:\\ $m,2m,\hdots,mn$ is :
+\begin{equation*}
+    A(n) = \sum_{j=1}^{n} j = \frac{n(n+1)}{2}
+\end{equation*}
+A(n) \in $\theta(n^{2})$
+
+\subsection*{3)}
+The best case can be worse (it could be $n^{2}$ for a really bad hashing function), but it cannot improve, since you need at least an attempt per key.\\
+The worst case cannot get worse (as at most you'll hit all the keys that are in the table at insertion time once, you cannot repeat the same index), however, you can always find a sequence of keys for any hash probe function which will cause your attempts number to grow with the square of n, and so it cannot be beter
+\subsection*{4)}
+first let's prove the swapping of adjacent keys in the sequence to be inserted does not affect $A(k_{n})$ the total number of attempts.\\\usepackage{xcolor}
+
+let i,j be integers between 1 and n, where $i \neq j \And j - i = 1$.\\
+let $k_{n} = k_{1},\hdots,k_{i},k_{j},\hdots,k_{n}$ be the sequence of keys to be inserted and $k_{i}$,$k_{j}$ the elements to be swapped.
+We can split the keys into sequences: left,middle,right, where left are the keys up to, not including $k_{i}$, middle are the  keys $k_{i},k_{j}$, and right are the keys after $k_{j}$. total attempts then can be split like so:
+\begin{equation*}
+ A_{total} = A_{left} + A_{middle} + A_{right}
+\end{equation*}%
+$A_{left}$ will clearly not be affected by the swapping of keys $k_{i}$ and $k_{j}$.\\
+
+let's now consider the middle sequence - $k_{i},k_{j}$.\medskip\\
+let:
+\begin{gather*}
+    frst(k_{i}) = \text{ \# of attempts key $k_{i}$ costs, when inserted after the keys in the sequence: left}\\
+    frst(k_{j}) = \text{ \# of attempts key $k_{j}$ costs, when inserted after the keys in the sequence: left}\\
+    snd(k_{i}) = \text{ \# of attempts key $k_{i}$ costs, when inserted after the keys in the sequence: left,$k_{j}$}\\
+    snd(k_{i}) = \text{ \# of attempts key $k_{j}$ costs, when inserted after the keys in the sequence: left,$k_{i}$}
+\end{gather*} 
+To see if $A_{middle}$ is affected we can define , and vice-versa for $snd(key)$ the cost when the key is inserted second (with the first key already placed in the table).\\
+$A_{middle}$ will be either:
+\begin{equation*}
+    O_{1} = frst(k_{i}) + snd(k_{j})
+\end{equation*}
+\begin{center}
+    or    
+\end{center}
+\begin{equation*}
+    O_{2} = frst(k_{j}) + snd(k_{i}) 
+\end{equation*}
+depending on the order of insertion.
+Let's analyze the possible cases:
+\begin{itemize}
+    \item both $k_{i}$ and $k_{j}$ end up at a different hash-table index if we insert them individually:\\ here $frst(k_{i}) = snd(k_{i})$ and $frst(k_{j}) = snd(k_{j})$ so $O_{1} = O_{2} = A_{middle}$ - order doesn't matter
+    \item both $k_{i}$ and $k_{j}$ end up at the same hash-table index when we insert them individually:\\
+    here, both the keys would have either 'descended' onto the empty position through a cluster, or directly hashed to it on the first attempt. If the slot 1 space after the empty space is empty (no cluster follows the empty space), then:
+    \begin{gather}
+      snd_{k_{i}} = frst(k_{i}) + 1\\
+      snd_{k_{j}} = frst(k_{j}) + 1\\
+      O_{1} = frst(k_{i}) + frst(k_{j}) + 1\\
+      O_{2} = frst(k_{j}) + frst(k_{i}) + 1\\
+      A_{middle} = O_{1} = O_{2}
+    \end{gather}
+    and if the slot after the empty space is not empty (a cluster follows after the empty space):
+    \begin{gather}
+        O_{1} = frst(k_{i}) + frst(k_{j}) + snd(k_{j}) - 1\\
+        O_{2} = first(k_{i}) + frst(k_{j}) + snd(k_{i}) - 1
+    \end{gather}
+    but since after 'descending' to the empty space, the cluster after the empty space will have the same length no matter what which key was first (since it doesn't affect it's length) and so:
+    \begin{gather*}
+        snd(k_{j}) = snd(k_{i})
+    \end{gather*}
+    meaning that, yet again: $A_{middle} = O_{1} = O_{2}$
+\end{itemize}
+no other cases exist, and since in every case $O_{1} = O_{2}$ i.e. $A_{middle}$ will not be affected by the order you insert keys in the middle sequence.\\
+
+As for $A_{right}$, we notice that the order in which the keys in the left and middle sequences where placed in the hash table, does not matter - all the indices that were going to be occupied before the swap, are going to be occupied, the only difference being that the actual keys that occupy them might be different. This means that $A_{right}$ is unaffected by the swap. Since $A_{total} = A_{left} + A_{middle} + A_{right}$ and none of its terms are affected by the swap, we prove that swapping adjacent keys in the sequence does not affect the total number of attempts in inserting the whole sequence.\\
+
+With that out of the way, since every permutation of the sequence of keys to be inserted can be expressed as a sequence of repeated pair-wise adjacent key swaps, we can then deduce that the order of a set of keys with the linear probing strategy, does not matter, $A_{total}$ is always going to be the same
+\subsection*{5)}
+It does not. Consider the following hash probe function:
+\begin{center}
+$\#_{x}(k,i) =$%
+\begin{cases}
+    \#_{t}(k,i) &\mbox{if k is even}\\
+    \#_{t}(k,-i) &\mbox{if k is odd}
+\end{cases}
+\end{center}
+This is a valid hash probe function since it produces a permutation $\pi_{k}$ when applied in sequence with i increasing to $m-1$\medskip\\
+let m = 5, n = 4 and consider the following keys: {0,1,2,7}. When inserted in the order: 0,1,2,7, the total number of attempts is 7. However when inserted in the following order: 0,1,7,2, the total number of attempts is 3. Clearly the claim does not hold for all possible hash probe functions
+\subsection*{6)}
+\begin{gather*}
+    f(\alpha) = \frac{E_{l}(\alpha)}{E_{u}(\alpha)} = \frac{-\alpha^{3} + 3\alpha^{2} - 4\alpha + 2}{2\alpha^{2} - 4\alpha + 2} = -\frac{\alpha^{2} - 2\alpha + 2}{2(\alpha-1)}\\
+    h(\alpha) = \frac{1}{1-\alpha}\\
+    f(\alpha) \in \theta(h(\alpha))
+\end{gather*}
+$h(\alpha)$ clearly grows at a similiar rate since they both tend to infinity at x = 1\\
+\subsection*{7)}
+to prove this rigrously, let our $\beta = 0$, in that case we need to find constants $c,C (C > 0)$ such that for all $x \in (\beta,1)=(0,1)$ the following holds: $c\cdot h(x) \leq f(x) \leq C\cdot h(x)$. As you will see in a second, $c = 0.5$ and $C = 1$ will be such constants.\medskip\\
+For the upper bound:\\
+\begin{gather*}
+    f(x) \leq h(x)\cdot 1 \quad \text{ for x } \in (0,1)
+\end{gather*}
+since if we define $g(x) = f(x) - h(x)$ for $0 \leq x < 1$, then $g(x) \leq 0$ meaning that $f(x)$ is never greater than $h(x)$ on the interval $(0,1)$ which I will show now:\\
+\begin{gather*}
+    g(x) = f(x) - h(x)\\ 
+    = \frac{(x-2)x}{-2x+2}\\
+    = (x-2)x \cdot \frac{1}{-2x+2}
+\end{gather*}
+$g(x)$ has roots at (0,0) and (2,0), $g^{'}(x) = -\frac{x^2 -2x + 2}{2(x-1)^{2}}$, $g^{'}(0) = -1$, meaning g is decreasing on the interval $0 \leq x < 1$\\
+to complete this proof, we notice that $g(0) = 0$ and since its also decreasing it cannot greater or equal than zero. The function g must then be negative on $[0,1)$ and so on $(0,1)$ therefore:
+\begin{gather*}
+    f(x) \leq h(x)\cdot 1 \quad \text{ for x } \in (0,1)
+\end{gather*}
+For the lower bound:\\
+\begin{gather*}
+    h(x)\cdot 0.5\leq f(x)  \quad \text{ for x } \in (0,1)
+\end{gather*}
+because just like in the upper bound, if we define:
+\begin{gather*}
+    g(x) = f(x) - h(x)\cdot 0.5\\ 
+    = -\frac{1}{2}x + \frac{1}{2}
+\end{gather*}
+clearly, g is a decreasing function (a line with negative slope), which has a root at (1,0) and clearly $g(x) \geq 0$ on the interval (0,1)
+meaning that $f(x) \geq h(x)\cdot 0.5$ \\
+
+since for $\beta = 0, c = 0.5, C = 1$ the inequality:
+\begin{equation*}
+    ch(x) \leq f(x) \leq Ch(x)
+\end{equation*}
+holds, we conclude that $f(\alpha) \in \theta(g(\alpha))$as $\alpha \rightarrow 1$ 
+\subsection*{8)}
+\begin{center}
+    \begin{tabularx}{200pt}{|X|c|c|c|c|c|}
+        \hline
+         & 0 & 1 & 2 & 3 & 4 \\\hline
+         0 & $(2,3)$ & $(1,3)$ & $(1,2)$ & $(1,2)$ & $(1,2)$\\\hline
+         1 & $(2,2)$ & $(1,2)$ & $(1,1)$ & $(1,1)$ & $(1,1)$\\\hline
+         2 & $(2,1)$ & $(1,1)$ & $(1,2)$ & $(1,1)$ & $(1,1)$\\\hline
+         3 & $(2,1)$ & $(1,1)$ & $(1,1)$ & $(1,2)$ & $(1,1)$\\\hline
+         4 & $(2,1)$ & $(1,1)$ & $(1,1)$ & $(1,1)$ & $(1,3)$\\\hline
+    \end{tabularx}
+\end{center}
+\subsection*{9)}
+$k_{2}:$
+The sample space to be considered is: $\Omega = \{(0,0),(0,1),\hdots,(m-1,m-1)\}$ i.e. the set of all strings of length 2, with digits up to $m-1$ - where each outcome o is a tuple (a,b) with $a$ being the number of attempts for $k_{2}$ and $b$ the number of attempts for $k_{3}$ when inserting $k_{1},k_{2},k_{3}$ in that order.\medskip\\ Let $X =$ number of attempts when inserting $k_{2}$. Then:
+\begin{equation*}
+    P(X = 2) = \frac{\textit{\# of outcomes with }a = 0 }{\textit{\# of all outcomes}} = \frac{m}{m^{2}} = \frac{1}{m} 
+\end{equation*}
+ And since you can't have both 1 and 2 attempts, and there are no other possibilities
+ \begin{align*}
+     P(X = 1) = 1 - P(X = 2) = \frac{m-1}{m}\\
+     E(X) = 1\cdot P(X=1) + 2\cdot P(X=2) = \frac{m-1}{m} + 2 \cdot\frac{1}{m} =  \frac{m+1}{m}
+ \end{align*}
+\medskip
+$k_{3}:$\\
+let Y = number of attempts when inserting $k_{3}$, Then:\medskip\\
+we can split the sample space into disjoint events such that: $\Omega = A_{0} + A_{1} + \hdots + A_{m-1}$, where $A_{i}$ is the set of outcomes: $o \in \Omega$ such that $o = (a,b)$ and $a = i$ for $0 \leq i \leq m -1$ - i.e. the events where $k_{2}$ is inserted at position $i$\medskip\\
+We can calculate the probability of each of the A's by counting strings starting with i of length 2, with digits $\leq d_{i} \leq m-1$:
+\begin{equation*}
+    P(A_{i}) = \frac{1\cdot m}{m^{2}} = \frac{1}{m}
+\end{equation*}
+then we can use laws of total probability to calculate the various conditional probabilities:
+\begin{gather*}
+    P(Y = 1) = P(Y = 1 | A_{0})P(A_{0}) + P(Y = 1 | A_{1})P(A_{1}) + \hdots + P(Y = 1 | A_{m-1})P(A_{m-1})\\
+    = \sum_{i = 0}^{m-1} \frac{P(Y = 1 \cap A_{i})}{P(A_{i})}\cdot P(A_{i}) = \frac{m-2}{m^{2}}\cdot m = \frac{m(m-2)}{m^{2}}
+\end{gather*}
+
+Now because for there are either one or two ways, depending on if $k_{1}$ and $k_{2}$ are adjacent to each other
+$P(Y = 2 \cap A_{i})$
+\begin{gather*}
+    P(Y = 2) = P(Y = 2 | A_{0})P(A_{0}) + P(Y = 2 | A_{1})P(A_{1}) + \hdots + P(Y = 2 | A_{m-1})P(A_{m-1})\\
+    = P(Y = 2 | A_{0})P(A_{0}) + P(Y = 2 | A_{1})P(A_{1}) + \sum_{i=2}^{m-2}P(Y = 2 | A_{i})P(A_{i}) + P(Y = 2 | A_{m-1})P(A_{m-1})\\
+    = P(Y = 2 \cap A_{0}) + P(Y = 2 \cap A_{1})+ \sum_{i=3}^{m-2} P(Y = 2 \cap A_{i}) +P(Y = 2 \cap A_{m-1})\\
+    = \frac{1}{m^{2}} + \frac{1}{m^{2}} + (m-3)\cdot \frac{2}{m^{2}}+ \frac{1}{m^{2}}\\
+    = \frac{2m - 3}{m^{2}}\\
+\end{gather*}
+
+now since $Y(o) \in \{1,2,3\}$
+\begin{gather*}
+    P(Y = 3) = 1 - P(Y = 2) - P(Y = 1) = 1 - \frac{2m - 3}{m^{2}} - \frac{m(m-2)}{m^{2}} = \frac{m^{2} - 2m + 3 - m^{2} +2m}{m^{2}} \\
+    = \frac{3}{m^{2}}
+\end{gather*}
+then we can calculate the expectation
+\begin{gather*}
+    E(Y) = P(Y=1) + 2P(Y =2) + 3P(Y = 3)\\
+    = \frac{m(m-2)}{m^{2}} + 2\frac{2m-3}{m^{2}} + 3\frac{3}{m^{2}}\\
+    = \frac{m^{2} - 2m + 4m -6 + 9}{m^{2}}\\
+    = \frac{m^{2} +2m +3}{m^{2}}
+\end{gather*}
+\medskip
+$k_{1},k_{2},k_{3}:$\\
+then the average number of attempts for inserting all of the keys, can be found using linearity of expectation:
+\begin{gather*}
+    E(Total) = E(\text{inserting $k_{1}$}) + E(Y + X) = 1 + \frac{m+1}{m} + \frac{m^{2} + 2m + 3}{m^{2}}\\
+    = \frac{2m^{2} + m + m^{2} + 2m + 3}{m^{2}} \\
+    = \frac{3m^{2} + 3m + 3}{m^{2}} 
+\end{gather*}
+\subsection*{10)}
+A uniform probing function would assign each key a random permutation of $\pi$ of length $m$.\medskip\\
+$k_{2}$:\\
+For inserting $k_{2}$, the probability that we will require 2 attempts is the probability that the hashing function $\#_{u}$ will assign the key $k_{2}$ a permutation starting with 0, this is just the probability that a randomly chosen string of length m starts with 0:
+\begin{equation*}
+    P(X = 2) = \frac{(m-1)!}{m!} = \frac{1}{m}
+\end{equation*}
+Then $P(X = 1) = 1 - P(X = 2) = \frac{m-1}{m}$ and so:
+\begin{equation*}
+    E(X) = P(X=1) + 2P(X=2) = \frac{m-1}{m} + \frac{2}{m} = \frac{m+1}{m}
+\end{equation*}
+$k_{3}$:\\
+For inserting $k_{3}$ \\
+The probability that we will require 1 attempt is the probability that it hashes to one of the m-1 positions that are  not already occupied, this is the probability that the hashing function does not assign $k_{3}$ on its first attempt the position of zero(strings not starting with 0) and it also doesn't assign it the position of $k_{2}$, we can count those permutations/strings :
+\begin{equation*}
+    P(Y = 1) = \frac{{m-2 \choose 1}(m-1)!}{m!} = \frac{{m-2 \choose 1}}{m} = \frac{m-2}{m}
+\end{equation*}
+In general the probability that one key hashes to the same position as another on the same attempt is the probability that two random strings of length m share the same value at that position. This is equal to the number of strings with the same value at that position over the total:
+\begin{equation*}
+    P(\#_{u}(k_{a},i) = \#_{u}(k_{b},i)) = \frac{(m-1)!}{m!} = \frac{1}{m} 
+\end{equation*}
+for three attempts, we need to calculate the probability that the key $k_{3}$ is assigned the position of 0 on its first attempt and then of $k_{2}$ or vice-versa, I will approach this by counting all the assignments of permutations to keys where that is the case and dividing by the total number of permutations. To count this, we first count the number of ways to pick an index  $X$ with which $k_{3}$ will collide, it cannot be zero, so we have ${m-1 \choose 1}$ choices, then we have to count the permutations in which $k_{2}$ ends up in position $X$, there are 2 cases, it either first hashes to zero and then to X, or straight to X - so $(m-1)(m-1)! + (m-1)(m-2)!$ such permutations for each X. We then calculate the permutations where $k_{3}$ hits 0 and $X$ in its first 2 attempts, it can hit them in any order, and there are $(m-2)!$ such permuattions for each X, so then: 
+\begin{equation*}
+    P(Y = 3) = \frac{{m-1 \choose 1} \cdot ((m-1)! + (m-2)!) \cdot 2(m-2)!}{m!m!}
+\end{equation*}
+which simplifies down to:
+\begin{equation*}
+    P(Y = 3) = \frac{2}{m(m-1)}
+\end{equation*}
+
+Then $P(Y = 2) = 1 - P(Y = 3) - P(Y = 1) = 1 - \frac{2}{m(m-1)} - \frac{m-2}{m} = \frac{2m-4}{m(m-1)}$\\
+Then the expectation, or average is:
+\begin{equation*}
+    E(Y) = \frac{m+1}{m-1}
+\end{equation*}
+$k_{1},k_{2},k_{3}$:\\
+for all of the keys, again, we use linearity of expectation and:
+\begin{equation*}
+    E(all) = 1 + E(X) + E(Y) = \frac{3m^2-1}{m(m-1)}
+\end{equation*}
+\section{Question.2}
+\subsection*{1)}
+
+\begin{forest}
+    for tree={
+        draw,
+        align=center
+    }
+    [12[8[5[3[2[1][1]][1]][2[1][1]]][3[2[1][1]][1]]][4[2[1][1]][2[1][1]]]]
+\end{forest}\\
+
+\\
+\subsection*{2)}
+There are at most n elements at each level so the work at any level of the tree for merging will be at most $n$ at any level:
+\begin{equation*}
+    W(l) \leq n
+\end{equation*}
+Then to show that $W(l) \in O(n^{d})$, we prove that, for some N and $C > 0$:
+\begin{equation*}
+    n \leq n^{d}C  \quad \text{for } n \geq N
+\end{equation*}
+so then:
+\begin{align*}
+    \log_{n}(nC) \leq d\\
+    1 + \log_{n}(C) \leq d\\
+\end{align*}
+so to minimize d, we choose C to be 1, and so, regardless of N :
+\begin{equation*}
+    1 \leq d
+\end{equation*}
+\begin{center}
+d = 1    
+\end{center}
+\subsection*{3)}
+
+The tree will have its deepest node, when following the path of the bigger tables, i.e. the longest path in the tree, will be the one where we take the subtree  of size $\floor{\frac{3n}{2}}$ on each step. The amount of steps is the number of times we have to multiply n  by $\floor{\frac{2}{3}}$ to reach 1 , which is equivalent to $\log_{\frac{2}{3}}n$:
+\begin{equation*}
+    h(n) = \frac{\log_{2}n}{\log_{2}\frac{2}{3}} = \frac{1}{k}\log_{2}n = k^{'}\cdot \log_{2}(n) = \theta(1) \log_{2}n
+\end{equation*}
+where k and $k^{'}$ are some arbitrary constants, therefore h(n)$\in \theta(log_{2}(n))$ or since the base of the log does not affect its asymptotic growth, $h(n) \in \theta(log(n))$ with any base
+\subsection*{4)}
+\begin{comment}
+NAH
+The recursion tree, can be split into two parts, one complete binary tree, and the rest. The height at which we still have a complete binary tree can be calculated by counting the steps in the quickest path from the root to the singleton list, which happens when we take a third of the elements at each node:
+\begin{equation*}
+    CDepth(n) = \ceil{\log_{3}n}
+\end{equation*}
+at depth any further than our 'complete depth', the levels will have less elements than n, we can try to define this number of elements as a function of distance from the complete depth, or enumerate the possible ways to reach those levels, by subdividing the number of elements $l$ times.
+we can express the number of nodes at each depth (if we assume they won't get to their leaves earlier on) as:
+\begin{equation*}
+    ns(d) = \sum_{k = 0}^{d}{d \choose k}
+\end{equation*}
+
+but we know that some of these paths, will lead to $n < 1$ at that depth, meaning, they have no leaves at the required depth. so we have to remove those terms which lead to n smaller than 1. We can find those terms by realising, that the paths which third n one less times than the shortest path in the tree, i.e. those whose number of elements is equal to:  $\floor{(\frac{1}{3})^{CDepth-1}\frac{2}{3}n}$ cannot have leaves at CDepth + 2, or more generally, the deleted terms are those which choose to '$\frac{2}{3}'rd$" their path less than or $h-1$ times. The number of deleted terms for each depth $h$ below CDepth is then the number of such paths at that depth:
+\begin{equation}
+    del(h,d) = \sum_{k=0}^{h-1}{d \choose k}
+\end{equation}
+so the total number of nodes at any depth d, h levels below the complete depth is :
+\begin{equation*}
+    = \sum_{k = 0}^{d}{d \choose k} - \sum_{k=0}^{h-1}{d \choose k} = \sum_{k = h-1}^{d}{d \choose k } = 2^{d} - 2^{h-1}
+\end{equation*}
+which we can calculate in terms of the number of elements at the root and depth completely:
+\begin{equation*}
+    2^{d} - 2^{d - \ceil{\log_{3}n} - 1 }
+\end{equation*}
+and then sum over the depths  
+\end{comment}
+ Since Merge sort is a comparison based sort, it can be thought of as a decision tree, where each node represents a comparison, and its children nodes signify the results of the comparison, i.e. left is bigger, right is smaller. Then the tree will be a perfect binary tree, and will have to have at least $n!$ leafs, each corresponding to a possible permutation. We need to find the height of the tree, i.e. the number of comparisons needed to find the permutation. The number of leaves is $2^{n}$ because it's a binary tree. We can then find the height, which is the number of steps in the worst case.
+ \begin{align*}
+     2^{h} \geq n!\\
+     h \geq \log_{2}(n!)
+ \end{align*}
+ and since $n! \geq (\frac{n}{2})^{\frac{n}{2}}$
+ then:
+ \begin{equation*}
+     h \geq \frac{n}{2}\log(\frac{n}{2})
+ \end{equation*}
+ therefore:
+ \begin{equation*}
+     h \in \Omega(n\log_{2}(2))
+ \end{equation*}
+ where h is the number of comparisons, and so the 'work' done by merge sort
+ \\
+ \subsection*{5)}
+The given algorithm can be decribed with the following recurrence relation:
+\begin{center}
+    $T(n) = $
+    \begin{cases}
+    \theta(1) & \text{if } n \leq 2 \\
+    \theta(1) + \theta(n) + T(\floor{\frac{2n}{3}}) + T(\ceil{\frac{2n}{3}}) & \text{if } n \geq 3
+\end{cases}
+\end{center}
+
+Now we can apply the Master theorem since the recurrence is of the appropriate form and the conclusion will not be affected by the ceil and floor functions:\\\\
+then: $f(n) \in \theta(n)$, $a = 2$. $b= \frac{3}{2}$\\
+We notice that $f(n) \in O(n^{\log_{\frac{3}{2}}2}-\epsilon)$ for $\epsilon \approx 0.71$. Therefore $T(n) \in O(n^{\log_{\frac{3}{2}}2})$ and so the answer is that the worst-case running time of the algorithm will definitely be different than that of Merge-Sort3rd since it's worst case time cannot be better than it's upper bound.
+\section{Q.3}
+\subsection*{1)}
+We know that the tree is balanced, let's split the proof into two parts, for the worst and best case in terms of height.\\
+The tree will have the smallest height, when all of its internal nodes will have 3 children, this happens when its a full 3-ary tree. This depth can be found in terms of n as $\log_{3}n$.\\
+For the biggest height, the tree will have at most 2 children at any node, making it a full 2-ary tree. This can be found in terms of n as $\log_{2}n$.\\\\
+So the height will be bounded with:
+\begin{equation*}
+    \log_{3}n \leq h \leq \log_{2}n
+\end{equation*}
+meaning that $h \in \theta(\log(n))$, since log bases don't affect asymptotic complexity by more than a constant, and so the lower and upper bound are the same.\\
+
+\subsection*{2)}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.3,0.3,0.3}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{b}{rgb}{0.58,0,0.82}
+\definecolor{d}{rgb}{0.58,0,0.82}
+\lstdefinestyle{mystyle}{
+    % backgroundcolor=\color{backcolour},
+    commentstyle=\color{blue},
+    keywordstyle=\color{black},
+    numberstyle=\tiny\color{black},
+    stringstyle=\color{gray},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=none,
+    numbersep=10pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=8,
+    numberfirstline=false,
+    literate=
+        {=}{$\leftarrow{}$}{1}
+        {==}{$={}$}{1}
+        {leq}{$\leq{}$}{1}
+        {geq}{$\geq{}$}{1},
+    morekeywords={then},
+}
+\lstset{style=mystyle}
+\begin{lstlisting}[language=Python]
+Algorithm insert(key, element):
+
+    newNode = Node(key, element)
+    if (isEmpty()) then
+        return newNode
+    else
+        expectedParent <- lookup(root, key)
+
+        if (expectedParent.leftKey == key) then
+            expectedParent.left = newNode
+        else if (expectedParent.midKey == key) then
+            expectedParent.mid = newNode
+        else if (expectedParent.rightKey == key) then
+            expectedParent.right = newNode
+
+        else if (expectedParent.right is null) then
+
+            if (expectedParent.leftKey > key) then
+                expectedParent.right = expectedParent.mid
+                expectedParent.mid = expectedParent.left
+                expectedParent.left = newNode
+
+            else if (expectedParent.midKey > key) then
+                expectedParent.right = expectedParent.mid
+                expectedParent.mid = newNode
+            else
+                expectedParent.right = newNode
+            updateKeys(expectedParent)
+
+        else
+            #This is the non-trivial case, here we split the overflow into 2 nodes, and leave the smaller 2 at the current place, and carry on inserting upwards the tree recursively
+            insertNode(expectedParent, newNode)
+            updateKeys(expectedParent)
+            
+\end{lstlisting}
+\begin{lstlisting}[language=Java]
+Function lookup(u, key):
+    if (u.left.isLeaf(q)) then
+        return u
+    if (u.leftKey geq key) then:
+        return lookup(u.left, key)
+    else if (u.midKey geq key) then:
+        return lookup(u.mid, key)
+    else if (u.right is not "null")
+        return lookup(u.right, key)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+Function updateKeys(currentNode):
+    if (currentNode.left is a leaf) then
+        currentNode.leftKey = currentNode.left.key
+        currentNode.midKey = currentNode.mid.key
+        currentNode.rightKey = currentNode.right.key
+    else
+        currentNode.leftKey = currentNode.left.rightKey
+        currentNode.midKey = currentNode.mid.rightKey
+        currentNode.rightKey = currentNode.right.rightKey
+    if (currentNode is not a root) then
+        updateKeys(currentNode.parent)                                                                  
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+Function insertNode(parent, newNode):
+    if (parent.rightKey is "null") then
+        parent.right = n
+    else
+        children = [parent.left, parent.mid, parent.right, newNode]
+
+        parent.left = smallest of all children based on key values
+        parent.mid = second smallest of all children
+        
+        newNode = Node(empty)
+        newNode.left = smaller of the 2 leftover children
+        newNode.mid  = last leftover child
+        newNode.leftKey = newNode.left.rightKey
+        newNode.midKey = newNode.mid.rightKey
+        #we split the root if we reach it, this makes the tree grow up only, and makes it balanced
+        if (parent is a root) then
+            newRoot = new Node()
+            newRoot.left = parent
+            newRoot.mid = newNode
+        else
+            #we recursively 'climb' the tree
+            insertNode(parent.parent, newNode)
+            
+\end{lstlisting}
+
+The algorithm runs in $\theta(lg(n))$ since all the given procedures run in $lg(n)$ time and so th total running time is within a constant of that
+
+\end{document}
+
