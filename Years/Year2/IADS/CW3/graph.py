@@ -85,11 +85,13 @@ class Graph:
     # commit to the swap if it improves the cost of the tour.
     # Return True/False depending on success.
     def trySwap(self,i):
+        # will not work when the graph has 2 nodes or less, where swapping doesn't affect the cost
+        if self.n <= 2:
+            return False
+
         # we only need to consider the impact on the "sub-tour" between i-1 and i+2
         # effectively only the cost between i-1 and i, i and i+1, i+1 and i+2 changes
-        # will not work when the graph has only 2 nodes, where swapping doesn't affect the cost
-        if self.n == 2:
-            return False
+        
 
         A = self.perm[(i-1) % self.n]
         B = self.perm[i]
@@ -111,14 +113,18 @@ class Graph:
     # if it improves the tour value.
     # Return True/False depending on success.              
     def tryReverse(self,i,j):
-        #the effect of reversing will only change the costs around the edges of the reversed permutation segment
-        preInode = self.perm[(i-1) % self.n]
-        iNode = self.perm[i]
-        jNode = self.perm[j]
-        postJnode = self.perm[(j + 1) % self.n]
+        #reversing will not improve the tour if the graph has ony 2 nodes or less
+        if self.n <= 2:
+            return False
 
-        costInitial = self.dists[preInode][iNode]  + self.dists[jNode][postJnode]
-        costAfter = self.dists[preInode][jNode] + self.dists[iNode][postJnode]
+        #the effect of reversing will only change the costs around the edges of the reversed permutation segment
+        A = self.perm[(i-1) % self.n]
+        B = self.perm[i]
+        C = self.perm[j]
+        D = self.perm[(j + 1) % self.n]
+
+        costInitial = self.dists[A][B]  + self.dists[C][D]
+        costAfter = self.dists[A][C] + self.dists[B][D]
         
         if(costAfter < costInitial):
             self.perm[i:j+1] = self.perm[i:j+1][::-1]
@@ -167,7 +173,9 @@ class Graph:
 
     # a heuristic which chooses the best option between greedy with lookahead and nearest insertion, then tries a 2-opt improvement up to totOpts times
     # method factor biases the heuristic towards one of the methods (0.5 = equal, 0 = greedy, 1 = nearest insertion)
-    def EPICHeuristic(self,totOpts,lookahead,bias):
+    def custom(self,totOpts,lookahead,bias):
+        if self.n == 0:
+            return
 
         perm = [0]    
         startIdx = 0
@@ -182,11 +190,11 @@ class Graph:
             delta1,delta2,subPathNew1,insertIdx,cityToInsert = sys.float_info.max,sys.float_info.max,[],0,0
 
             if bias == 0:
-                (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
+                (delta1,subPathNew1) = self.greedyLookahead(nextIdx,lookahead,visited)
             elif bias == 1:
                 (delta2,insertIdx,cityToInsert) = self.insertNearest(perm,visited)
             else:
-                (delta1,subPathNew1) = self.shortestPathFrom(nextIdx,lookahead,visited)
+                (delta1,subPathNew1) = self.greedyLookahead(nextIdx,lookahead,visited)
                 (delta2,insertIdx,cityToInsert) = self.insertNearest(perm,visited)
 
             # (cost,subpath) = min([(c,p) for (c,p) in [(cost1,subPath1),(cost2,subPath2)]])
@@ -214,15 +222,10 @@ class Graph:
                
         self.perm = perm
     
-   
-    def resetPerm(self):
-        self.perm = [x for x in range(self.n)]
-
-
     # returns shortest path starting on node n with length l and the cost of it
     # r is the distance from minimum if you want a non-shortest path
     # visited is the set of nodes you don't want to explore
-    def shortestPathFrom(self,n,l,visited):
+    def greedyLookahead(self,n,l,visited):
         if l == 0:
             return (0,[n])
         else:
@@ -241,7 +244,7 @@ class Graph:
                 smallestCost = sys.float_info.max
                 bestPath = None
                 for i in neighbours:
-                    (c,p) = self.shortestPathFrom(i,l-1,explored)
+                    (c,p) = self.greedyLookahead(i,l-1,explored)
                     c +=self.dists[n][i]
 
                     if c < smallestCost:
@@ -307,22 +310,9 @@ class Graph:
             return True
         else:
             return False
-        
+    
+    def resetPerm(self):
+        self.perm = [x for x in range(self.n)]
 
-#finds the value which is closest to minimum + r of the minimum
-# works on tuples of values of the type: (value,item)
-# assumes the minimum is not 0
+    
 
-# def relaxedMinimum(r,l):
-#     # first find the minimum
-#     (minimum,minItem) = min(l)
-#     # then find the value which is closest to r + minimum
-#     bestDist = sys.float_info.max
-#     bestTuple = (None,None)
-#     for (v,i) in l:
-#         dist = abs(v-(minimum + r)) 
-#         if dist < bestDist:
-#             bestDist = dist
-#             bestTuple = (v,i)
-
-#     return bestTuple

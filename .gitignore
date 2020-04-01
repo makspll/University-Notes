@@ -1,3 +1,11 @@
 graphs/
 results/
 __pycache__/
+data/
+cwk/
+*.fls
+*.log
+*.fdb_latexmk
+*.aux
+*.pyc
+*.pdf
