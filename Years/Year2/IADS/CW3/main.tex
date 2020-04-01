@@ -1,0 +1,170 @@
+\documentclass{report}
+\usepackage{Custom_Latex/Summary_Notes/notes}
+\addtolength{\oddsidemargin}{-.5in}
+\addtolength{\evensidemargin}{-.5in}
+\addtolength{\textwidth}{1in}
+\usepackage{pgf}
+
+\graphicspath{{./Images/}}
+
+
+\begin{document}
+\title{IADS - CW 2}
+\author{Maksymilian Mozolewski}
+\maketitle
+\pagebreak
+\section{Algorithm}
+\subsection{Introduction}
+The algorithm I want to present, is a mix of innovation and old heuristics. I decided to create a heuristic which required setting parameters, and so naturally ended up experimenting with different values and comparing my custom heuristic to the others presented.
+\subsection{Explanation}
+The heuristic is a mix of greedy, 2-opt and a nearest insertion heuristic \cite{nearest}. Instead of the classic greedy, I used "Greedy with lookahead" which given l - the lookahead parameter, a set of visited nodes, and a tour, will look for the shortest sub-tour starting at the end of the permutation with length l. the nearest insertion heuristic, is similar to greedy, but instead of looking at just the last node in the permutation, it finds the nearest unvisited node to any of the nodes present in the tour already, and looks for an edge into which the node can be inserted to minimize the total cost of the tour. The custom heuristic performs both greedy lookahead and nearest insertion, and commits to the tour which results in the smaller increase in cost, while taking into acount a "bias" parameter which can sway its choice - I could have picked the one which minimizes cost per new node, however decided not to as I intended for smaller lookahead values to be preferred - after each lengthening of the tour, the heuristic performs a number of 2-opt optimisations on the tour for as long as they improve the cost or untill we hit the maximum number of optimisations: which is another parameter.
+\subsection{Pseudocode}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.3,0.3,0.3}
+\definecolor{codepurple}{rgb}{0.2,0,0.82}
+\definecolor{b}{rgb}{0.58,0,0.82}
+\definecolor{d}{rgb}{0.58,0,0.82}
+\definecolor{back}{rgb}{0.95,0.95,0.95}
+\lstdefinestyle{mystyle}{
+    language = none,
+    backgroundcolor=\color{back},
+    commentstyle=\color{codegray},
+    keywordstyle=\color{codepurple},
+    numberstyle=\tiny\color{black},
+    stringstyle=\color{codegreen},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=2pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    numberfirstline=true,
+    literate=
+        {=}{$\leftarrow{}$}{1}
+        {==}{$={}$}{1}
+        {leq}{$\leq{}$}{1}
+        {geq}{$\geq{}$}{1}
+        {cup}{$\cup{}$}{1},
+    morekeywords={then,Algorithm,Function,while,if,else},
+}
+\lstset{style=mystyle}
+
+\begin{lstlisting}
+Algorithm Custom (o,l,b)
+    perm = [0] 
+    visited = {0}
+    n = number of nodes in the graph
+
+    while perm.length < n
+        
+        if bias is 1 or 0, only carry out nearest,greedy and update tour,
+        otherwise:
+            subTour,costDelta1 = GreedyLookahead(perm,visited,l)
+            insertionIdx,insertValue,costDelta2 = NearestInsertion(perm,visited)
+            
+            if costDelta1*bias < costDelta2*(1-bias) 
+                perm = perm1,subTour
+            else
+                perm = perm.insert(insertionId,insertValue)
+
+        opts = 0
+        better = True
+        while better and opts < o
+            better = False 
+            for j from 0 to perm.length -1
+                for i from 0 to j
+                    better = tryReverse(i,j)
+            opts = opts + 1
+            
+\end{lstlisting}
+
+\subsection{Runtime Analysis}
+Let m be the length of current subtour, n the number of nodes in the graph, and o,l,b the maximum 2-opt runs, lookahead and bias.\\\\
+With nearest insertion we first find a node closest to one of the nodes in the current subtour, this in the worst case is $O(nm)$.
+We then check the m edges to find the one which minimizes the cost, which is at worst $O(m)$.
+This totals a worst case performance of $O(nm)$
+\\\\
+Greedy with lookahead is a little more complicated, but essentially it's described by the recurrence $T(n,l,m) = (n-m-1)T(n,l-1,m+1) + O(n)$ when $l \neq 0 \And m < n$ or $O(1)$ otherwise. We can calculate the total running time by noting that the work on each level h can be captured with $W(h) = \frac{(n-m-1)!}{(n-m-1-h)!}O(n)$, which summed over the worst-case height of the tree: l is:
+\begin{equation*}
+    \sum_{i = 0}^{l}\frac{(n-m-1)!}{(n-m-1-i)!}O(n) = O(n) + (n-m-1)O(n)+ (n-m-1)(n-m-2)O(n)+\hdots = O(n) + O(n^{2}) + O(n^{3})+\hdots = O(n^{l})
+\end{equation*}
+\\\\
+With 2-opt, we check if reversing any part of the permutation improves it, and if it does, we commit to the reversing. We only use indices up to the diagonal, so we have $m^{2}$ possible reversals, and each reversal, if committed to would take $\theta(m)$ time, so a single optimization round of 2-opt in the worst case will take $O(m^{2} + m) = O(m^{2})$ operations, and so the complexity here at worst is $O(om^{2})$.
+\\\\
+So the worst case running time of the whole algorithm is given by: 
+\begin{equation*}
+    \sum^{n}_{m = 1}(O(n^{l}) + O(om^{2}) + O(nm) + O(1)) = O(n^{l+1} +o(\frac{n(n+1)}{2})^{2} + \frac{n^{2}(n+1)}{2} + n) = O(n^{l+1} + on^{4} + n^{3})
+\end{equation*}
+Which is clearly polynomial since l and o are constants with $l \geq 1, o \geq 0$. And when the bias is set to 0 or 1, the running time becomes: respectively $O(n^{l+1} + n^{3})$,$O(on^{4} + n^{3})$
+\section{Experiments}
+\subsection{Testing set up}
+The heuristics were tested on random graphs in 3 categories: euclidian-metric,non-euclidian-metric,non-euclidian-non-metric (ER,MR,NMR).\\\\
+The ER graphs were generated by selecting random n points with a spread proportional to the number of nodes. MR graphs were generated by picking a value x proportional to the number of nodes, and for each edge a random value in the range [x,2x], which meant that the graphs were not necessarily Euclidian, but each set of 3 edges satisfied the triangle inequality. NMR graphs were generated by just chosing random numbers for the distances, proportional to the number of nodes in the graphs. I decided to keep the spread proportional to number of nodes since for random uniform tests, altering the spread would likely not have any meaningful impact, apart from "scaling" the output values uniformly anyway, and very small values in distances would not be ideal.\\\\
+In total I had 500 graphs where every 5 graphs the number of nodes increased by 1, giving 100 different sized graphs in each problem type.
+I then measured the Average Tour Value across all graphs, the Average Tour Value across tests with the same size, The run-times and also recorded the resulting permutations for all heuristics. After collecting all the data (around 70 different files/28Mb), I graphed some of it. The default values used for parameters were 10,1,0.5 for opts,lookahead and bias respectively, and were varied for certain experiments.
+
+\subsection{Hypothesis}
+My hypothesis was that since my heuristic incorporated parts of Greedy and two-opt, that it would find a solution somewhat close to either of them, and that for non-metric graphs it would fare much better if run with a higher lookahead value, since in non-metric graphs, a path might end up being shorter if you remove one of its nodes, and so I thought that looking ahead more than 1 node unlike Greedy, would yield great results. I also expected the bias to have quite a big effect on the tours.
+\subsection{Results}
+The custom heuristic turned out to be consistently better than pure greedy, see \bd{Figure 1}, which was not surprising since custom was a modified version of greedy with a layer of optimisations. I did wonder if the fact that 2-opt changed the last element of the permutation with some probability on each iteration would have a negative impact on the quality of the tour, but it turns out that wasn't the case. I figure that the optimisation each iteration had a "restarting effect" on the tour, where greedy/insertion were performed on a better or identical tour, and so custom could not perform worse than just greedy\\\\
+\bd{Figure 1} also shows that the swap heuristic performs much better in MR graphs than any other, and in those problem spaces performs reasonably well. This is quite interesting and surprising, especially since I'd expect that if a heuristic performs well on euclidian graphs then it should perform quite similarly on metric graphs.\\\\
+It turned out that the custom heuristic was sometimes better than 2-opt by itself, however on average 2-opt was still slightly better. The big surprise to me was that even though 2-opt has a much worse time complexity (some papers state $O(n^{10})$ )\cite{2-opt} it has been much faster than my algorithm as seen in \bd{Figure 6} - you can see that the different problem spaces didn't really change runtimes, and that custom had the steepest runtime curve, while 2-opt was 2nd worse. One explanation is that 2-opt optimisation runs faster on smaller inputs up to some size which I have not recorded, or that on this domain of problems 2-opt optimisation has a different worst case runtime - the cited study generated graphs on the unit square.\\\\
+an interesting fact is that my heuristic seems to suffer the same problems as greedy - it generates bad paths whenever the closest points form a path in such a way that there are leftover points that the heuristic needs to travel back to. However this weakness is softened by the usage of 2-opt which smooths out the tour. It also seems to beat 2-opt in situations where there aren't too many points "left behind", and where greedy would have failed badly, the optimisations can recover the tour into a much more efficient one. See \bd{Figures 3 and 4}.
+\\\\
+A big surprise to me, was how little the nearest insertion heuristic helped, the additional information really did not seem to impact the tour values positively at all, in fact using the custom heuristic with bias set for just greedy, showed slightly better results, and varying the bias showed no significant impact. This is probably due to 2-opt optimisations run at each iteration "converging" the tours to similar local optima even with the different bias parameters\\\\
+It's interesting to see that the bias and lookahead did not have a serious effect on the average tour costs, which was quite unexpected, I only show \bd{Figure 5}, and leave out the graphs inspecting bias, as they show the same pattern and are uninteresting. I think that this could be due to the fact that the a higher lookahead value just ended up returning similar paths to those which greedy would take, and 2-opt "converged" the differences to the same local optima; or that higher lookahead meant that nearest insertion was preferred, due to higher cost deltas involved in greedy lookaheads, which meant that the results ended up being similar to the runs involving a bias towards insertions - and changing the bias showed no impact on the averages, meaning that the lookahead parameter was not really significant and only increased the runtime by a factor of $n^{l}$.
+\\\\
+\subsection{Conclusions}
+The custom heuristic works better than greedy if running time is not very important, if one needs a quick and relatively good heuristic, just using greedy or 2-opt seems to be the best choice out of the studied heuristics. Custom works best with bias set to 0, lookahead set to 1 and optimisations set to 1. The Swap heuristic becomes a reasonable choice (not necessarily a good one) as a heuristic but only for MR graphs.
+\subsection{Data}
+\begin{figure}[p]
+    \caption{Results from performing each of the heuristics on 500 RE,MR,NMR graphs with increasing numbers of nodes, and widths proportional to their size. The graph shows average tour values for each graph size}
+    \centering
+    \scalebox{0.5}{\input{Years/Year2/IADS/CW3/Images/Heuristics.pgf}}
+\end{figure}
+\begin{figure}[p]
+    \caption{Results from performing custom on 500 RE graphs with varying values for the optimisations parameter.}
+    \centering
+    \scalebox{0.5}{\input{Years/Year2/IADS/CW3/Images/2-optNumber.pgf}}
+\end{figure}
+\begin{figure}[p]
+    \caption{Example Euclidian TSP problem where custom fares very well}
+    \centering
+    \scalebox{0.5}{\input{Years/Year2/IADS/CW3/Images/CustomBetterRoute.pgf}}
+\end{figure}
+\begin{figure}[p]
+    \caption{Example Euclidian TSP problem where custom fares quite badly}
+    \centering
+    \scalebox{0.5}{\input{Years/Year2/IADS/CW3/Images/CustomWorseRoute.pgf}}
+\end{figure}
+
+\begin{figure}[h]
+    \caption{Results from performing custom on 500 ER,MR,NMR graphs with different values for the lookahead parameter.}
+    \centering
+    \scalebox{0.5}{\input{Years/Year2/IADS/CW3/Images/LookaheadChange.pgf}}
+\end{figure}
+
+\begin{figure}[h]
+    \caption{Average runtimes of all heuristics after running them on 500 different ER,MR,NMR graphs with the same parameters}
+    \centering
+    \scalebox{0.5}{\input{Years/Year2/IADS/CW3/Images/RuntimeHeuristicsAll.pgf}}
+\end{figure}
+
+\begin{thebibliography}{}
+\bibitem{2-opt} 
+Matthias,Heiko,Berthold: Worst Case and Probabilistic Analysis of the 2-Opt Algorithm for the TSP [2013],
+\\\texttt{http://www-cs-faculty.stanford.edu/\~{}uno/abcde.html}
+\bibitem{nearest} 
+Weihuang,Jeffrey: Investigating TSP Heuristics for Location-Based Services [2017]
+,
+\\\texttt{
+https://link.springer.com/article/10.1007/s41019-016-0030-0}
+\end{thebibliography}
+
+\end{document}
