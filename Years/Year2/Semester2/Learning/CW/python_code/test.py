@@ -67,7 +67,7 @@ def set_size(width, fraction=1, subplots=(1, 1)):
     return (fig_width_in, fig_height_in)
 
 if __name__ == "__main__":
-    width = 505
+    width = 252.5
     
     print("task1_1,b)")
     data = scipy.io.loadmat("../data/dset.mat")
@@ -77,23 +77,22 @@ if __name__ == "__main__":
     outS = scipy.io.loadmat("t1_S.mat")["S"]
 
     fig,axes = plt.subplots(nrows=2,ncols=1,figsize=set_size(width,subplots=(2,1)))
+    plt.rcParams.update({'font.size': 7})
 
     im = axes[0].imshow(outS, interpolation="none", cmap='RdBu_r',origin='lower',vmin=-0.04,vmax=0.04)
     axes[0].set_title("Covariance Matrix")
     axes[0].set_xticks(np.arange(outS.shape[0]))
     axes[0].set_yticks(np.arange(outS.shape[0]))
-    axes[0].tick_params(axis='both', which='major', labelsize=5)
-    axes[0].set_xlabel("variable")
-    axes[0].set_ylabel("variable")
+    axes[0].tick_params(axis='both', which='major', labelsize=4)
+
     colorbar(im)
 
     im = axes[1].imshow(outR, interpolation="none", cmap='RdBu_r',origin='lower',vmin=-1,vmax=1)
     axes[1].set_title("Correlation Matrix")
     axes[1].set_xticks(np.arange(outR.shape[0]))
     axes[1].set_yticks(np.arange(outR.shape[0]))
-    axes[1].tick_params(axis='both', which='major', labelsize=5)
-    axes[1].set_xlabel("variable")
-    axes[1].set_ylabel("variable")
+    axes[1].tick_params(axis='both', which='major', labelsize=4)
+
     colorbar(im)
 
     fig.tight_layout()
