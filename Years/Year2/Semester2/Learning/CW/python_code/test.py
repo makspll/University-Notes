@@ -11,6 +11,7 @@ matplotlib.rcParams.update({
 })
 
 import task1_1
+import task1_3
 
 # for easier colorbar layout
 def colorbar(mappable):
@@ -69,7 +70,8 @@ def set_size(width, fraction=1, subplots=(1, 1)):
 if __name__ == "__main__":
     width = 505 #252.5
     
-    print("task1_1,b)")
+    # TASK1_1
+    print("task1_1")
     data = scipy.io.loadmat("../data/dset.mat")
     task1_1.task1_1(data["X"],data)
 
@@ -97,5 +99,28 @@ if __name__ == "__main__":
 
     fig.tight_layout()
 
-    plt.savefig('correlation.png')
+    #plt.savefig('correlation.png')
     plt.show()
+
+    # TASK1_3
+    plt.rcdefaults()
+    print("task1_3")
+    task1_3.task1_3(outS)
+
+    outEVe = scipy.io.loadmat("t1_EVecs.mat")["EVecs"]
+    outEVa = scipy.io.loadmat("t1_EVals.mat")["EVals"]
+    outCV = scipy.io.loadmat("t1_Cumvar.mat")["Cumvar"]
+    outMD = scipy.io.loadmat("t1_MinDims.mat")["MinDims"]
+  
+    fig,ax = plt.subplots(1,figsize=set_size(width))
+
+    X = np.arange(len(outCV))
+    ax.set_xticks(X)
+    ax.set_title("Cummulative Variance")
+    ax.set_xlabel("Dimensions")
+    ax.set_ylabel("Total Variance")
+    ax.bar(X,outCV.flatten())
+
+    plt.savefig('cumvar.png')
+    plt.show()
+    

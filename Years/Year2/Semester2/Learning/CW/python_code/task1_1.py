@@ -34,7 +34,7 @@ def task1_1(X, Y):
     scipy.io.savemat('t1_R.mat', mdict={'R': R})
 
 def test():
-    print("task1_1,b)")
+    print("task1_1")
     data = scipy.io.loadmat("../data/dset.mat")
     task1_1(data["X"],data["Y_species"])
 
