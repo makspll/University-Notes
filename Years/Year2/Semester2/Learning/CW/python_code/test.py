@@ -3,12 +3,6 @@ import scipy.io
 import matplotlib.pyplot as plt
 import matplotlib
 
-matplotlib.rcParams.update({
-    "pgf.texsystem": "pdflatex",
-    'font.family': 'serif',
-    'text.usetex': True,
-    'pgf.rcfonts': False,
-})
 
 import task1_1
 import task1_3
@@ -71,6 +65,13 @@ if __name__ == "__main__":
     width = 505 #252.5
     
     # TASK1_1
+    matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+    })
+
     print("task1_1")
     data = scipy.io.loadmat("../data/dset.mat")
     task1_1.task1_1(data["X"],data)
@@ -104,6 +105,13 @@ if __name__ == "__main__":
 
     # TASK1_3
     plt.rcdefaults()
+    matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+    })
+
     print("task1_3")
     task1_3.task1_3(outS)
 
