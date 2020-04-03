@@ -136,9 +136,13 @@ if __name__ == "__main__":
     # draw the data after PCA using the first 2 eigenvalues as new basis
     fig,ax = plt.subplots(1,figsize=set_size(width))
     
-    # get transformation matrix
+    # get matrix to transform data
     W = outEVe[:,[0,1]]
-    # project the data
+
+    # the dot product of each feature vector with each unit eigenvector: 1-by-D dot D-by-1 gives
+    # the scalar projection or the distance of the vector projection along that eigenvector
+    # D is then a N-by-2 matrix of the feature vectors expressed as a linear combination of the first 2 principal components
+      
     D = data["X"]@W
     
     # plot each class in a different color
