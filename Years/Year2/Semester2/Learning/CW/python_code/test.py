@@ -127,8 +127,31 @@ if __name__ == "__main__":
     ax.set_title("Cummulative Variance")
     ax.set_xlabel("Dimensions")
     ax.set_ylabel("Total Variance")
+
     ax.bar(X,outCV.flatten())
 
-    plt.savefig('cumvar.png')
+    #plt.savefig('cumvar.png')
     plt.show()
     
+    # draw the data after PCA using the first 2 eigenvalues as new basis
+    fig,ax = plt.subplots(1,figsize=set_size(width))
+    
+    # get transformation matrix
+    W = outEVe[:,[0,1]]
+    # project the data
+    D = data["X"]@W
+    
+    # plot each class in a different color
+    for i in range(10):
+        idxs = np.argwhere(data["Y_species"] == i)
+        D = D
+        X = D[idxs,0]
+        Y = D[idxs,1]
+        ax.scatter(X,Y,label = data["list_species"][i,0][0],s=3)
+    ax.legend(loc="upper right",fontsize="x-small")
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_title("Data transformed onto first two principle components")
+    fig.tight_layout()
+    plt.savefig('pca.png')
+    plt.show()

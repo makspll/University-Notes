@@ -24,14 +24,11 @@ def task1_3(Cov):
         EVecs[0,i] = EVecs[0,i] * -1
     
     # reverse the order of EVals and EVecs
-    EVals = EVals[::-1]
+    EVals = EVals[::-1][np.newaxis,:].T
     EVecs = np.flip(EVecs,1)
 
     # calculate the cummulative variance which is the sum of eigen values at each addition
-    Cumvar = np.zeros((D,1))
-    Cumvar[0,0] = EVals[0]
-    for i in range(1,D):
-        Cumvar[i] = Cumvar[i-1] + EVals[i]
+    Cumvar = np.cumsum(EVals,axis=0)
 
     # calculate MinDims using Cumvar
     minBounds = np.array([70,80,90,95])/100 * Cumvar[-1]  # the minimum variance bounds
