@@ -6,6 +6,7 @@ import matplotlib
 
 import task1_1
 import task1_3
+import task1_mgc_cv
 
 # for easier colorbar layout
 def colorbar(mappable):
@@ -157,5 +158,41 @@ if __name__ == "__main__":
     ax.set_ylabel("PC2")
     ax.set_title("Data transformed onto first two principle components")
     fig.tight_layout()
-    plt.savefig('pca.png')
+    # plt.savefig('pca.png')
     plt.show()
+
+    #TASK 1.4
+    plt.rcdefaults()
+    matplotlib.rcParams.update({
+    "pgf.texsystem": "pdflatex",
+    'font.family': 'serif',
+    'text.usetex': True,
+    'pgf.rcfonts': False,
+    })
+
+    fig,ax = plt.subplots(1,figsize=set_size(width))
+
+    X = [1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.01,0.001,0.0001,0.00001,0.000001,0.0000001,0.0000001,0.000000001,0]
+    Y = []
+    for e in X:
+        try:
+            task1_mgc_cv.task1_mgc_cv(data["X"],data["Y_species"],1,e,5)
+            outCM = scipy.io.loadmat('t1_mgc_5cv6_ck1_CM.mat')["CM"]
+            print(e,outCM)
+            Y.append(np.sum(outCM.diagonal()))
+        except: 
+            Y.append(np.nan)
+
+    ax.plot(X,Y)
+    ax.set_xlabel("Epsilon")
+    ax.set_ylabel("accuracy")
+    ax.set_title("Classification with 5-fold cv, full covariance matrices and varying epsilon")
+
+    plt.savefig('epsilon.png')
+    plt.show()
+
+def task4(e):
+    data = scipy.io.loadmat("../data/dset.mat")
+    task1_mgc_cv.task1_mgc_cv(data["X"],data["Y_species"],1,e,5)
+
+          
