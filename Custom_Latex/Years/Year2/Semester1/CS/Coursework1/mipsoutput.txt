@@ -1,7 +1,0 @@
-0,0 V bad
-0,0 V ba
-0,2 V bad
-0,2 V ba
-1,0 H aaa
-2,0 H ddd
-
