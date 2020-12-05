@@ -428,5 +428,32 @@
     \includegraphics[width=0.5\columnwidth]{rgb_normalisation}
 }
 
+\nDefinition{Mean Shift Segmentation}{
+    We can segment the image by performing clustering on the pixels by their color values (or any attributes for that reason)!
+
+    The algorithm works as follows:
+
+    \begin{enumerate}
+        \item create a feature space over the attributes chosen to represent each pixel (for example for a grayscale this could be a 1d intensity axis)
+            \newline \includegraphics[width=0.7\columnwidth]{msc_0.png}
+        \item distribute a number of "search windows" or kernels over the space 
+            \newline \includegraphics[width=0.7\columnwidth]{msc_1.png}
+        \item calculate each window's mean 
+        \item shift the center of each window to its mean 
+            \newline \includegraphics[width=0.7\columnwidth]{msc_3.png} 
+        \item repeat steps 3-4 until convergence 
+            \newline \includegraphics[width=0.7\columnwidth]{msc_4.png}
+        \item merge windows ending up in close-enough locations, and call these the clusters
+        \item cluster each pixel according to which cluster its original window ended up at 
+            \newline \includegraphics[width=0.7\columnwidth]{msc_5.png}
+    \end{enumerate}
+
+    the feature space can contain any number of dimensions, and so we could include spatial, color, texture-data, and so on. This is a very versatile algorithm.
+    It is application-independent, model-free (does not assume any shape of clusters),
+    only requires a single parameter (window size h) which affects the scale of the clustering
+    It is robust to outliers and finds a variable number of modes given the same h.
+
+    The output is heavilly dependent on the window size h, however. And the selection of h is not trivial. The whole algorithm is rather expensive and does not scale well with the dimension of the feature space.
+    }
 
 \end{document}
