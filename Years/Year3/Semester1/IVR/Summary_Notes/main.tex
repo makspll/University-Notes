@@ -25,6 +25,9 @@
 \tableofcontents
 
 \pagebreak
+
+\nChapter{Vision}
+
 \nSection{Introduction to Vision}
 
 \nDefinition{Computer vision}{Processing data from any modality which uses the electromagnetic spectrum and produces an image}
@@ -793,5 +796,252 @@
         \nImg{chamfer_matching_map.png}         
     \end{center}
 }
-\
+
+
+\nChapter{Robotics}
+\nSection{Introduction to perception and action}
+\nDefinition{Robot}{
+    A robot is a: 
+    \begin{quote}
+        \textit{"reprogrammable, multifunctional manipulator designed to move material, parts, tools, or specialized devices through variable programmed motions for the performance of a variety of tasks"}
+        \\
+        \hspace*{0.1in} - Robot institute of America
+    \end{quote}
+
+    Robots are needed to perform tasks which are: 
+    \begin{itemize}
+        \item \textbf{Dangerous}: exploration, chemical spill cleanup, disarming bombs, disaster cleanup
+        \item \textbf{Boring and/or repetitive}: welding car frames, manufacturing parts
+        \item \textbf{High precision or high speed}: electronics testing, surgery, precision machining.
+    \end{itemize}
+
+    Most robots exhibit at least some of the following:
+    \begin{enumerate}
+        \item \textbf{Sense} their environment as well as their own state
+        \item Exhibit \textbf{intelligence} in behaviour, especially planned behaviour which mimics humans or other animals 
+        \item \textbf{Act} upon their environment, move around, opearte a mechanical limb, sense actively, communicate $\hdots$
+    \end{enumerate}
+    }
+\nDefinition{Perception}{
+    The sensory experience of the world around us.
+
+    \nHeader{Types of sensory information}
+    
+    There are two main categories of sensory information:
+
+    \begin{itemize}[noitemsep]
+        \item \textbf{Semantic} information - what is out there ?
+        \item \textbf{Metric} information - where is it exactly ?
+    \end{itemize}
+
+    Some examples of such information include:
+
+    \begin{itemize}[noitemsep]
+        \item Distance
+            \subitem vision 
+            \subitem hearing 
+            \subitem smell 
+        \item Contact 
+            \subitem taste 
+            \subitem pressure 
+            \subitem temperature
+        \item Internal 
+            \subitem balance
+            \subitem actuator position and movement
+            \subitem pain or damage 
+    \end{itemize}
+
+    \nHeader{Types of perception}
+
+    There are three main categories of perception:
+
+    \begin{itemize}[noitemsep]
+        \item \textbf{Exteroception} - the perception of external stimuli or objects
+        \item \textbf{Proprioception} - the perception of self-movement and internal state
+        \item \textbf{Exproprioception} - the perception of relations and changes of relations between the body and the environment (a mix of both of the above)
+    \end{itemize}
+}
+
+\nDefinition{Actuation}{
+    An \textbf{effector} is a tool used by a robot to perform some task. An \textbf{actuator} is used to move the robot either indirectly via joint movement or directly (propulsion?).
+
+    There are two main types of joints:
+    \begin{itemize}[noitemsep]
+        \item Rotary (revolute)
+        \item Prismatic (linear)
+    \end{itemize}
+}
+
+\nDefinition{Degrees of freedom}{
+    There are two different definitions for DoF's
+
+    \begin{itemize}[noitemsep]
+        \item DoF's for a task (\textbf{n}) - the number of linearly independent axes of motion required to perform a certain task 
+            \subitem (6 DoF's required to move freely in 3D space)
+        \item DoF's of a robot (\textbf{m}) - the number of actuators the robot can move (not necessarily independent)  
+    \end{itemize}
+
+    Notice how a robot that consists of 6 linear actuators pointing in the same direction has 3 DoF's but cannot move at all in 3D space, even though it has the required number of DoF's.
+    So to count the "real" DoF's of a robot we might only count the independent axes of motion. Even though all the parameters of each actuator define the state of the robot. 
+
+    If $m > n$, the robot is \textbf{redundant}.
+    If $m < n$, the robot is \textbf{underactuated}.
+    (Regardless of it's "real" DoF's)
+}
+
+\nSection{Rigid-body motion}
+
+\nDefinition{Configuration and Work spaces}{
+    We usually refer to the vector of all actuator parameters of a robot with the label $\vec{q}$, and the position of the \textbf{end-effector} position resulting from that configuration with the label: $\vec{x}$
+
+    The set of all possible configurations of the joint parameters is called the \textbf{Configuration} space.
+    
+    The set of all "reachable" via end-effector, positions is called the \textbf{work} space.
+
+    \begin{center}
+        \nImg[0.9]{configuration_workspace.png}
+    \end{center}
+}
+
+
+\nDefinition{Reference frames}{
+
+    This is a very important concept, you cannot talk about motion, without first specifying the coordinate system you're working in.
+    From the point of view of an observer at a train station, the trains are moving, from the point of view of an observer inside the train, the train is stationary and the world is moving.
+    
+    \smallskip
+    We can think of reference frames as coordinate systems, we are mostly interested in coordinate systems attached to either stationary objects, or objects moving at a constant velocity (\textbf{inertial frames}).
+    Think trains again, if you drop something in a train which is either stationary or moving at a constant speed, the object will drop straight down as expected since it inherits the train's velocity.
+    If the train is \textbf{accelerating} however, the object you drop still inherits the train's velocity, but \textbf{not} its acceleration, and therefore the object seems to fall towards the back of the train while falling.
+    
+    \smallskip
+    If we express the movements of our robot in terms of a frame which accelerates, we will see similar artifacts.
+    
+
+    \begin{center}        
+        \nImg{frame_of_reference.png}
+    \end{center}
+}
+
+\nDefinition{Right handed coordinates}{
+    The most common way of assigning the axes names is using the right handed rule:
+    
+    \begin{center}
+        \nImg[0.45]{right_handed_frame} 
+    \end{center}
+}
+
+\nDefinition{Changing between frames}{
+    We can express the coordinates of in one frame, within another frame's coordinates.
+    This can be done using matrix transformations. 
+
+    \textbf{The matrix transformation which transforms points in frame A to points in frame B - will convert points from frame B to points in frame A}
+
+    \nHeader{Transforming between points in different frames}
+
+        Consider the black and red reference frames A,B respectively below:
+    \begin{center}
+        \nImg[0.3]{rotating_frames.jpg}
+    \end{center}
+
+    The point P can be expressed as either 
+    $P_{A} = \begin{pmatrix}
+        1/2 \\ -1/4
+    \end{pmatrix}$ or 
+    $P_{B} = \begin{pmatrix}
+        1/3 \\ 2/3
+    \end{pmatrix}$, relative to either frame.
+
+    What does this mean precisely ? Here both these frames use different basis vectors, and these coordinates underneath represent this:
+
+    \begin{equation}
+        \begin{aligned}
+            (1)\quad &P_{A} = 1/2 \cdot i_{A} -1/4 \cdot j_{A} \\
+            (2)\quad &P_{B} = 1/3 \cdot i_{B} + 2/3 \cdot j_{B} \\
+        \end{aligned}
+    \end{equation}
+    Notice how the definitions $i_{A},j_{A}$ and $i_{B},j_{B}$ are ambigious, since we can express these in any coordinate system.  
+    How can we convert between points $P_{A}$ and $P_{B}$ ? 
+    \begin{itemize}
+        \item $P_{A} \rightarrow P_{B}$ : simply use equation (1) but express $i_{A},j_{A}$ in the coordinate system of frame B:
+
+            \begin{equation}
+                i_{A} = 0 \cdot i_{B} + \frac{4}{3} \cdot j_{B} , \quad j_{A} = -\frac{4}{3} \cdot i_{B} + 0 \cdot j_{B} 
+            \end{equation}
+
+            \begin{equation}
+                P_{A \; \textit{in} \; B} 
+                = 1/2 \cdot 
+                \begin{pmatrix}
+                    0 \\ 4/3
+                \end{pmatrix}
+                -1/4 \cdot 
+                \begin{pmatrix}
+                    -4/3 \\ 0
+                \end{pmatrix} 
+                = 
+                \begin{pmatrix}
+                    1/3 \\ 2/3
+                \end{pmatrix}
+            \end{equation}  
+    \end{itemize}
+
+    \begin{itemize}
+        \item $P_{B} \rightarrow P_{A}$ : simply use equation (2) but express $i_{B},j_{B}$ in the coordinate system of frame A:
+            
+        \begin{equation}
+            i_{B} = 0 \cdot i_{A} + -\frac{3}{4} j_{A} , \quad j_{B} = \frac{3}{4} i_{A} + 0 \cdot j_{A}
+        \end{equation}
+
+            \begin{equation}
+                P_{B \; \textit{in} \; A} 
+                = 1/3 \cdot 
+                \begin{pmatrix}
+                    0 \\ -3/4
+                \end{pmatrix}
+                + 2/3 \cdot 
+                \begin{pmatrix}
+                    3/4 \\ 0
+                \end{pmatrix} 
+                = 
+                \begin{pmatrix}
+                    1/2 \\ -1/4
+                \end{pmatrix}
+            \end{equation}  
+    \end{itemize}
+
+    \nHeader{Expressing points from one frame in another frame}
+
+    We can express the transition between frames as a matrix transformation, a matrix whose columns are unit vectors of frame B expressed in frame A's coordinate system:
+    \begin{itemize}
+        \item Maps points in frame B's coordinate system to points in frame A's coordinate system
+        \item Aligns the frame A with the frame B
+        \item Expresses coordinates originally with respect to B's coordinate system, as coordinates with respect to A's coordinate system
+    \end{itemize}
+
+    \begin{equation}
+        P_{A}(P_{B})=
+        \begin{bmatrix}
+            i_{B \; in \; A} & j_{B \; in \; A} \\
+        \end{bmatrix}
+        P_{B}
+    \end{equation}
+
+    So in our concrete example, to express points in B with respect to A's coordinate system:
+
+     $\begin{bmatrix}
+        0 & -3/4 \\
+        -3/4 & 0 
+    \end{bmatrix}
+    \begin{bmatrix}
+        1 \\ 0
+    \end{bmatrix}
+    = 
+    \begin{bmatrix}
+        0\\-3/4 
+    \end{bmatrix}
+    $
+    
+}
+
 \end{document}

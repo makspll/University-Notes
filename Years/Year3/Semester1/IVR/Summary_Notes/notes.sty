@@ -15,9 +15,17 @@
   \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
   \sectionmark{#1}}
 
+
+\newcommand\invisiblesubsection[1]{%
+  \refstepcounter{subsection}%  
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}#1}%
+  \sectionmark{#1}}
+
 \newcommand{\nDefinition}[2]{\begin{definitionBox}{\bf{#1}}#2\end{definitionBox} }
 \newcommand{\nTheorem}[2]{\begin{theoremBox}{\bf{#1}}#2\end{theoremBox} }
-\newcommand{\nSection}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{#1}\end{center}} \invisiblesection{#1}}
+\newcommand{\nSection}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{#1}\end{center}} \invisiblesubsection{#1}}
+\newcommand{\nChapter}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{\textbf{#1}}\end{center}} \invisiblesection{#1}}
+
 \newcommand{\nHeader}[1]{\tcbsubtitle[before skip=\baselineskip]{#1}}
 \newcommand{\nImg}[2][0.5]{\includegraphics[width=#1\columnwidth]{#2}}
 \newcommand{\nImgs}[3][0.45]{    
