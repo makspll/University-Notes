@@ -8,6 +8,7 @@
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage{textcomp}
+\usepackage[hidelinks]{hyperref}
 
 \usepackage[a4paper,margin=0.5in]{geometry}
 
@@ -21,7 +22,7 @@
 \title{IVR Condensed Summary Notes For Quick In-Exam Strategic Fact Deployment }
 \author{Maksymilian Mozolewski}
 \maketitle
-
+\tableofcontents
 
 \pagebreak
 \nSection{Introduction to Vision}
@@ -681,4 +682,117 @@
         \item[-] very expensive computationally  
     \end{itemize}
 }
+
+\nSection{Object recognition}
+
+\nDefinition{Assumptions \& Approaches}{
+
+    \nHeader{Approaches}
+    Several approaches to classification/recognition. Choose the same class as objects with:
+    \begin{itemize}
+        \item \textbf{Shape} - similar shape descriptors 
+        \item \textbf{Appearence} - similar pixel values 
+        \item \textbf{Geometric} - similar structures in similar places with similar parameters 
+        \item \textbf{Graph} - similar part relationships
+        \item \textbf{Bag of words} - similar local feature descriptors (frankenstein objects made up of smaller objects)
+    \end{itemize}
+
+    \nHeader{Assumptions}
+    Assumptions made in this course: 
+    \begin{itemize}
+        \item Flat objects, viewed orthographically
+        \item Always looked at from same distance
+        \item Good contrast everywhere 
+        \item No specularities 
+        \item shape-based recognition only 
+    \end{itemize}
+
+    \nHeader{Shape-based recognition}
+
+    \begin{enumerate}
+        \item Extract object from image via segmentation 
+        \item Compute its properties 
+        \item Use those properties to compute the class it belongs to 
+        \item Learn/improve the model properties for the classes
+    \end{enumerate}
+}
+
+\nDefinition{Probabilistic object recognition}{
+    The process of classifying the shape into a class by calculating the probability of it belonging to each class.
+
+    \nHeader{Bayes rule}
+
+    we can calculate the probability of feature vector $\vec{x}$ (which may be a collection of shape descriptor values, or any other properties) being drawn from the probability distribution which best describes the class c as:
+    \begin{equation}
+        p(c|\vec{x}) = 
+        \frac{p(\vec{x}|c)p(c)}{p(\vec{x})} =
+        \frac{p(\vec{x}|c)p(c)}{\sum_{k}p(\vec{x}|k)p(k)}
+    \end{equation}
+
+    where:
+    \begin{itemize}
+        \item $p(\vec{x}|c)$ is the probability of observing the feature vector $\vec{x}$ if it belongs to class c (using the distribution of feature vectors from class c)
+        \item $p(c)$ is the $\textit{a priori}$ probability of observing a feature vector from class c (before making any observations)
+        \item $p(\vec{x})$ is the total probability of seeing the feature vector $\vec{x}$ amongst all the classes
+    \end{itemize}
+}
+
+\nTheorem{Multivariate Gaussian distribution}{
+    how do we model the probability $p(\vec{x}|c)$ of observing each feature class, knowing some feature vectors belonging to each class ?
+
+    We can perform Maximum likelihood estimation (MLE) on the observed $k > n$ (n being the dimensionality of $\vec{x}$)"training" instances of data  and build a multivariate gaussian distribution for each class.
+    MLE yields the following values for each class:
+
+    \begin{itemize}
+        \item mean vector of each feature $\vec{m}_{c}$ of dimension n - average value of each feature in class c:
+            \begin{equation}
+                \vec{m}_{c} = \frac{1}{k}\sum_{i=1}^{k}\vec{x}_{i}
+            \end{equation}
+        \item covariance matrix $\mathcal{A}_{c}$ - the $n x n$ matrix of co-variances betwen each pair of features/properties:
+            \begin{equation}
+                \mathcal{A}_{c} = \frac{1}{k-1}\sum_{i=1}^{k}(\vec{x}_{i}-\vec{m}_{c})(\vec{x}_{i} - \vec{m}_{c})^{T}
+            \end{equation}
+    \end{itemize}
+
+    With those properties the multivariate gaussian is formed as follows:
+    \begin{equation}
+        p(\vec{x}|c) = \frac{1}{(2\pi)^{\frac{n}{2}}}\frac{1}{|\mathcal{A}_{c}|^{\frac{1}{2}}}\exp^{-\frac{1}{2}[(\vec{x} - \vec{m}_{c})^{T} \mathcal{A}_{c}^{-1}(\vec{x} - \vec{m}_{c})]}
+    \end{equation}
+}
+
+\nDefinition{Recognition Algorithmics}{
+
+    We split the data into:
+    \begin{itemize}
+        \item a \textbf{training} set to estimate the model's parameters (e.g. the gaussian distributions)
+        \item a \textbf{validation} set to pick the ideal "hyper" parameters which affect the performance of the algorithm without necessarily affecting the underlying model 
+        \item a \textbf{test} set to evaluate the performance of the algorithm 
+    \end{itemize}
+
+    note: \textit{we must have more training samples than the dimensions of the feature vectors used!} 
+}
+
+\nDefinition{Chamfer-based shape matching}{
+    We can employ an entirely different method of object recognition. In a way similar to 2D convolutions:
+    \begin{itemize}
+        \item Extract edges/contours of image we want to identify object in (perhaps using convolutions)
+        \item Create a chamfer or "template" which forms the shape of the object we want to identify in the image 
+        \item Slide it over the image, at each point find the "chamfer distance" by calculating the average distance of points on the chamfer to closest edges in the image: 
+            \begin{equation}
+                D_{\textit{chamfer}}(T,I) = \frac{1}{|T|}\sum_{t \in T}d_{I}(t)
+            \end{equation} 
+            where: 
+            \subitem $T,I$ are the sets of template and image points respectively 
+            \subitem $d_{I}(t)$ is the minimum distance for any template point t to any point in the image I
+            \subitem $|T|$ is the number of points in the template
+    \end{itemize}
+
+    \nHeader{Optimisations}
+    the naive implementation is very expensive as we re-compute the distances between each time.
+    Instead we can do this only once by producing a look-up image of distances encoding the distance between each pixel in the image to the nearest edge inside it:
+    \begin{center}
+        \nImg{chamfer_matching_map.png}         
+    \end{center}
+}
+\
 \end{document}
