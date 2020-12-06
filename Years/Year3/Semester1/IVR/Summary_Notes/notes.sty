@@ -13,5 +13,14 @@
 \newcommand{\nDefinition}[2]{\begin{definitionBox}{\bf{#1}}#2\end{definitionBox} }
 \newcommand{\nTheorem}[2]{\begin{theoremBox}{\bf{#1}}#2\end{theoremBox} }
 \newcommand{\nSection}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{#1}\end{center}}}
+\newcommand{\nHeader}[1]{\tcbsubtitle[before skip=\baselineskip]{#1}}
+\newcommand{\nImg}[2][0.5]{\includegraphics[width=#1\columnwidth]{#2}}
+\newcommand{\nImgs}[3][0.45]{    
+\begin{center}
+    \begin{tabular*}{\columnwidth}{m{0.5\columnwidth}m{0.5\columnwidth}}
+        \includegraphics[width=#1\columnwidth]{#2}&
+        \includegraphics[width=#1\columnwidth]{#3}
+    \end{tabular*}
+\end{center}}
 
 \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}

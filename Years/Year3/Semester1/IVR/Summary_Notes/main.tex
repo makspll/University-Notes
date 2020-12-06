@@ -6,6 +6,9 @@
 \usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{textcomp}
+
 \usepackage[a4paper,margin=0.5in]{geometry}
 
 \graphicspath{{./Images/}}
@@ -249,12 +252,8 @@
 \nDefinition{Radial lens distortion}{
 
     Lenses sometimes slightly distort the image "radially" making accurate measurements hard
-    \begin{center}
-        \begin{tabular*}{\columnwidth}{m{0.5\columnwidth}m{0.5\columnwidth}}
-            \includegraphics[width=0.35\columnwidth]{radial-lens-distor.png}&
-            \includegraphics[width=0.35\columnwidth]{lens-distortion-graphic.jpg}
-        \end{tabular*}
-        \end{center}
+    \nImgs[0.35]{radial-lens-distor.png}{lens-distortion-graphic.jpg}
+
     Solutions: more expensive lenses, view from further away
 }
 \nDefinition{Homography}{
@@ -322,7 +321,7 @@
 }
 
 \nDefinition{Thresholding}{
-    This method assumes that pixels are separable based on their colour values. We can pick threshold boundaries for each color value and select regions based on 
+    This method assumes that pixels are separable based on their color values. We can pick threshold boundaries for each color value and select regions based on 
     regions of pixels which fall in those boundaries.
 
     \centering
@@ -333,14 +332,14 @@
     \begin{itemize}
         \item Distributions may be broad and have some overlap leading to misclassified pixels
         \item variations in lighting might cause parts of the object to be missing, or shadows to be classified as objects
-        \item colour distributions might have more than 2 peaks
+        \item color distributions might have more than 2 peaks
     \end{itemize}
 }
 
 \nDefinition{Convolutions}{
-    General purpose image (and signal) processing function.
+    General-purpose image (and signal) processing function.
 
-    can be used to remve noise, smooth data, or detect features!
+    can be used to remove noise, smooth data, or detect features!
 
     In the case of thresholding, we can use convolutions to smooth the histogram.
     Imagine convolutions as a sliding window, where each point in the original image is replaced with the weighted average of the window at that position with the pixels.
@@ -453,7 +452,233 @@
     only requires a single parameter (window size h) which affects the scale of the clustering
     It is robust to outliers and finds a variable number of modes given the same h.
 
-    The output is heavilly dependent on the window size h, however. And the selection of h is not trivial. The whole algorithm is rather expensive and does not scale well with the dimension of the feature space.
+    The output is heavily dependent on the window size h, however. And the selection of h is not trivial. The whole algorithm is rather expensive and does not scale well with the dimension of the feature space.
     }
 
+\nSection{Description of Segments}
+
+\nDefinition{Shape}{
+
+    a set of points in the plane, or a continuous outline (silhouette)
+
+    \centering
+    \includegraphics[width=0.5\columnwidth]{shape.png}
+
+    \raggedright
+
+    \nHeader{Cues}
+
+    shapes can give us cues (\textbf{interior} and \textbf{boundary} cues)about the objects they outline.
+
+    Some classes are defined purely by the boundary of the shape, some are defined purely by the \textbf{contents/interior} of the shape (i.e. texture,color), and some are defined by a mixture of both
+
+    \nHeader{Correspondence and recognition}
+
+    We can draw conclusions about similarities between shapes using \textbf{point-to-point} correspondences or \textbf{shape characteristics} to help us recognize objects belonging to certain classes.
+
+    \centering
+    \includegraphics[width=0.7\columnwidth]{correspondence_recognition.png}
+
+    \raggedright
+
+    Good methods of finding similarities will be :
+    \begin{itemize}
+        \item Invariant to rigid transformations like: translation, rotation and scale
+         \newline \nImg[0.4]{invariance_rigid.png}
+        \item Tolerant to non-rigid deformations
+         \newline \nImg[0.4]{tolerance_non-rigid.png}
+    \end{itemize} 
+    }
+
+
+\nDefinition{Global shape descriptors}{
+    Shape descriptors which put a number of a certain characteristic of a shape based on its \textbf{entirety} - hence "global".
+
+    \nHeader{Convexity}
+
+    Convexity describes the ratio of a shape's convex hull to its perimeter, values of 1 mean that the shape is entirely convex, and values $<$ 1 mean the shape is less convex.
+        \begin{center}
+        \nImg[0.2]{convexity.png}
+    \end{center}
+    \begin{equation}
+        \textit{conv} = \frac{P_{\textit{hull}}}{P_{\textit{shape}}}
+    \end{equation}
+
+    \nHeader{Compactness}
+    Compactness describes how close the perimeter of the shape is to the perimeter of the circle with the same area.
+    \begin{itemize}
+        \item If the circle of equal area has a smaller perimeter, this value will be smaller than 1, meaning that the shape's "mass" is distributed in a less compact manner.
+        \item If the circle of equal area has equal parimeter, this value will be equal to 1, meaning the shape's "mass" is distributed as compactly as possible.
+        \item This value cannot be greater than 1, as the circle is the most compact distribution of mass
+    \end{itemize}
+    \begin{center}   
+        \nImg[0.2]{compactness.png}
+    \end{center}
+    \begin{equation}
+        \textit{comp} = \frac{2\sqrt{A\pi}}{P_{\textit{shape}}}
+    \end{equation}
+
+
+    \nHeader{Elongation}
+
+    The elongation is simply the ratio of the principal axes, i.e. the aspect ratio of a shape, this value can be anywhere between 0 (flat line) and $\infty$ (also flat line)
+    This can be computed by taking the cross product of the principal axes with their length being set to the eigen values of the covariance matrix (if you treat each pixel as a data point)
+    \begin{center}
+        \nImg[0.2]{elongation.png}        
+    \end{center}
+    \begin{equation}
+        \textit{elong} = \frac{c_{yy} + c_{xx} - \sqrt{(c_{yy}+c_{xx})^{2} -4(c_{xx}c_{yy} - c_{xy}^{2})}}
+                                {c_{yy} + c_{xx} + \sqrt{(c_{yy}+c_{xx})^{2} -4(c_{xx}c_{yy} - c_{xy}^{2})}}
+    \end{equation}
+
+    \nHeader{Properties of these global descriptors}
+
+    \begin{itemize}[noitemsep]
+        \item[+] Invariant to translation/rotation/scale (rigid)
+        \item[+] Robust to shape deformations (non-rigid)
+        \item[+] Simple 
+        \item[+] Fast to compute  
+        \item[-] These do not find any point correspondences, 
+        \item[-] Little power to discriminate between shapes (Can you discriminate between the shape of a horse and a plane with these ?) 
+    \end{itemize}
+}
+
+
+\nDefinition{Moments}{
+    Moments in mathematics are measures which put a number on the function of interest's graph. A shape can be thought of like the graph of some function defined on the 2D space (\textbf{f(x,y)}) 
+
+    Family of stable \textbf{binary} (and grey level) shape descriptions which can be made invariant to translation, rotation and scaling
+
+    Let $p_{yx}$ be the pixel value $ \in {0,1}$ at row y and column x
+
+    Area $A = \sum_{y}\sum_{x}p_{yx}$
+    
+    Center of mass $(\hat{y},\hat{x}) = (\frac{1}{A}\sum_{y}\sum_{x}y \cdot p_{yx},\frac{1}{A}\sum_{y}\sum_{x}x \cdot p_{yx})$ i.e. average of x and y values weighted by "mass"
+
+    \nHeader{Translation invariant}
+
+    let $u,v \in \mathbb{Z}$
+
+    then a family of 'central' (translation invariant) moments can be defined as:
+    \begin{equation}
+        m_{uv} = \sum_{y}\sum_{x}(y - \hat{y})^{u}(x - \hat{x})^{v}p_{yx}
+    \end{equation}
+
+    notice how with $u,v = 2$ this is somewhat similar to variance and a little close to the moment of inertia ($\sum_{p} mr^{2}$). This moment encapsulates the distribution of points around the center of mass, thanks to this 
+    it does not matter where the shape is positioned.
+
+    \nHeader{Scale invariant}
+
+    We can make this family of moments invariant by noticing the fact that if we double the dimensions uniformly, then the moment $m_{uv}$
+    increases by a factor of $2^{u}2^{v}$ w.r.t weightings ($y - \hat{y},x - \hat{x}$) and its area increases by 4.
+    Hence $A^{\frac{u+v}{2}+1}$ grows by a factor of $4 \cdot 2^{u}2^{v}$,
+    Therefore the ratio:
+    \begin{equation}
+        \mu_{uv} = \frac{m_{uv}}{A^{\frac{u+v}{2}+1}} = \frac{m_{uv}}{m_{00}^{\frac{u+v}{2}+1}}
+    \end{equation}
+    is invariant to scale (it cancels out the effects of increasing area, i.e. area = 1)
+
+    \nHeader{Rotation invariant}
+
+    We can generate a similar moment using complex numbers and multiple scale-invariant moments which is invariant to rotation:
+
+    let $c_{uv} = \sum_{y}\sum_{x}((y - \hat{y}) + i(x - \hat{x}))^{u} ((y - \hat{y}) - i(x - \hat{x}))^{v}p_{yx}$
+    
+    then let:
+    \begin{equation}
+        \begin{aligned}
+            &s_{11} = c_{11}/A^{2} \\
+            &s_{20} = c_{20}/A^{2} \\
+            &s_{21} = c_{21}/A^{2.5} \\
+            &s_{12} = c_{12}/A^{2.5} \\
+            &s_{30} = c_{30}/A^{2.5} \\
+        \end{aligned}
+    \end{equation}
+
+    we can combine these to get rotation invariant descriptors in similar magnitudes like so:
+    \begin{equation}
+        \begin{aligned}
+            &ci_{1} = \textit{real}(s_{11}) \\
+            &ci_{2} = \textit{real}(10^{3}\cdot s_{21} \cdot s_{12}) \\
+            &ci_{3} = 10^{4} \cdot \textit{real}(s_{20} \cdot s_{12}^{2})\\
+            &ci_{4} = 10^{4} \cdot \textit{imag}(s_{20} \cdot s_{12}^{2})\\
+            &ci_{5} = 10^{6} \cdot \textit{real}(s_{30} \cdot s_{12}^{3})\\
+            &ci_{6} = 10^{6} \cdot \textit{imag}(s_{30} \cdot s_{12}^{3})\\
+        \end{aligned}
+    \end{equation}
+
+    }
+
+\nDefinition{Shape signatures}{
+    We can represent the shape using a 1D function (\textbf{f(t)}) defined via the points on the boundary of the shape.
+    Once we have such descriptors, we can establish similarity between two shapes using: $\int f(t) - f(t')$ i.e. the difference between the shape's descriptors integrated over t
+    \nHeader{Centroid distance}
+
+    for angle $t$, and point on boundary at that angle $p(t)$
+    \begin{equation}
+        \textit{r}(t) = d(p(t),\textit{centroid}) 
+    \end{equation}
+    \begin{center}
+        \nImg{centroid_distance}    
+    \end{center}
+
+    \nHeader{Curvature}
+    for angle $t$, and angle $\theta$ representing the angle between points $p(t)$ and $p({t+\Delta t})$ on the boundary at the angles $t$ and $t+ \Delta t$
+    \begin{equation}
+        k(t) = d\theta/dt
+    \end{equation}
+
+    \begin{center}
+        \nImg{curvature_descriptor}
+    \end{center}
+
+    \nHeader{Properties of shape signatures}
+
+    \begin{itemize}[noitemsep]
+        \item[+] invariant to translation,scale(if shape is normalized), rotation (if orientation is normalized)
+        \item[+] point correspondences (if both descriptors are aligned)
+        \item[+] informative 
+        \item[+] deformations affect signature locally  and not globally (i.e. at a single point of the signature)  
+        \item[\texttildelow] manages to handle shape deformation to some degree
+        \item[-] where to start t ? high computational cost of alignment of two signature functions
+        \item[-] sensitive to noise (especially with derivatives)  
+    \end{itemize}
+}
+
+
+\nDefinition{Shape Context}{
+    Shape context is a shape descriptor utilizing the local properties of points on the boundary of each shape to establish \textbf{point-to-point} correspondences
+
+    We do this by counting the number of other points around the points on the boundary of each shape in each bin of a polar-coordinate "kernel" (this forms a histogram)
+    \begin{center}
+        \nImgs{shape_context_descriptor_polar.png}{shape_context_descriptor}
+    \end{center}
+
+    We can compare the K-bin histograms $h_{i}(k),h_{j}(k)$ of two points $i,j$ on different shapes respectively, using the chi-squared test: 
+    \begin{equation}
+        C(i,j) = \frac{1}{2} \sum_{k=1}^{K}\frac{(h_{i}(k) - h_{j}(k))^{2}}{h_{i}(k) + h_{j}(k)}
+    \end{equation} 
+    This establishes a cost function over which we can pair-up the corresponding points on each shape, by finding the least-cost matching $\pi(p)$ of points on one shape to the other (perhaps using the hungarian or blossom algorithms)
+    which minimizes the total cost:
+    \begin{equation}
+        H(\pi) = \sum_{p \in \textit{all\_points}} C(p,\pi(p))
+    \end{equation}
+
+    thus establishing a point-to-point correspondence between two shapes:
+    \begin{center}
+        \nImg[0.2]{point_correspondance}
+    \end{center}
+
+    \nHeader{Propertis of shape signatures}
+
+    \begin{itemize}[noitemsep]
+        \item[+] invariant to translation
+        \item[+] invariant to scaling (if we normalize the radial distances between points in each shape by their mean)
+        \item[+] informative - describes points in the context of the overall shape
+        \item[+] handles non-rigid deformations quite well - more sensitive for deformations closest to the point of interest due to shape of kernel 
+        \item[-] not invariant to scale (but could be added by measuring angles in terms of tangents at each point instead of global coordinates)  
+        \item[-] many parameters (\# and size of bins, \# of iterations, \# number of points, etc..)
+        \item[-] very expensive computationally  
+    \end{itemize}
+}
 \end{document}
