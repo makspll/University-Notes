@@ -9,8 +9,8 @@
 \usepackage{enumitem}
 \usepackage{textcomp}
 \usepackage[hidelinks]{hyperref}
-
 \usepackage[a4paper,margin=0.5in]{geometry}
+\renewcommand\vec{\mathbf}
 
 \graphicspath{{./Images/}}
 
@@ -931,7 +931,7 @@
     \end{center}
 }
 
-\nDefinition{Changing between frames}{
+\nTheorem{Changing between frames}{
     We can express the coordinates of in one frame, within another frame's coordinates.
     This can be done using matrix transformations. 
 
@@ -1041,7 +1041,211 @@
         0\\-3/4 
     \end{bmatrix}
     $
+}
+
+\nTheorem{Rotation}{
+
+    Rotations between frames are nothing more than changes of basis, to rotate from frame A to frame B, we form a matrix with columns formed by frame B's basis vectors in A's space (using geometric relationships)
+
+    Using this method we can form elementary rotation matrices around each axis:
+
+    \begin{equation}
+        R_{z}(\theta) = \begin{pmatrix}
+            \cos \theta & -\sin \theta & 0 \\
+            \sin \theta & \cos \theta & 0 \\
+            0 & 0 & 1
+        \end{pmatrix}
+    \end{equation}
+
+    \begin{equation}
+        R_{y}(\theta) = \begin{pmatrix}
+            \cos \theta & 0 & -\sin \theta \\
+            0 & 1 & 0 \\
+            \sin \theta & 0 & \cos \theta  
+        \end{pmatrix}
+    \end{equation}
+
+    \begin{equation}
+        R_{x}(\theta) = \begin{pmatrix}
+            1 & 0 & 0 \\
+            0 & \cos \theta & - \sin \theta \\
+            0 & \sin \theta & \cos \theta \\
+        \end{pmatrix}
+    \end{equation}
+
+    \nHeader{Properties}
+
+    All rotation matrices:
+    \begin{itemize}[noitemsep]
+        \item Are \textbf{orthogonal} $R^{T} = R^{-1}$
+        \item Have determinants of 1 (do not change vector lengths)
+        \item Can be fully defined with 3 variables
+    \end{itemize}
+}
+\nTheorem{Translation as a matrix transformation}{
+    Translation is a non-linear transformation and as such cannot be represented as a matrix transformation. It can however if we use Homogenous coordinates!
+
+    We can combine a rotation R and translation by O (in this order) into a single homogenous matrix transformation:
+    \begin{equation}
+        A = \begin{bmatrix}
+            R_{3\times 3} & O_{3\times 1} \\
+            0_{1\times 3}  & 1
+        \end{bmatrix}_{4\times 4}
+    \end{equation}
+
+    \nHeader{Properties}
+
+    \begin{equation}
+        A^{-1} = \begin{bmatrix}
+            R^{T} & -R^{T}O \\
+            0  & 1
+        \end{bmatrix}
+    \end{equation}
+}
+
+\nDefinition{Orientation}{
+    We know how to describe a position in space, but how do we define the orientation of something in 3D space ?
+
+    There are many conventions, all based on the idea of picking a specific series of rotations, around different axes in a specific order.
+
+    \textit{In general we can describe any orientation with 3 variables}
+
+    \begin{center}
+        \nImg[0.4]{orientation}
+    \end{center}
+
+    \nHeader{Euler angles}
+    To describe an orientation with the Euler angle convention, we perform rotations as follows:
+    \begin{equation}
+        R = R_{z}(\alpha)R_{y'}(\beta)R_{z''}(\gamma)
+        = \begin{pmatrix}
+            c_{\alpha}c_{\beta}c_{\gamma} - s_{\alpha}s_{\gamma} &
+            -c_{\alpha}c_{\beta}s_{\gamma} - s_{\alpha}c_{\gamma} &
+            c_{\gamma}s_{\beta}\\
+            s_{\alpha}c_{\beta}c_{\gamma} + c_{\alpha}s_{\gamma} &
+            -s_{\alpha}c_{\beta}s_{\gamma} + c_{\alpha}c_{\gamma} &
+            s_{\gamma}s_{\beta}\\
+            -s_{\beta}c_{\gamma} & s_{\beta}s_{\gamma} & c_{\beta}
+        \end{pmatrix}
+    \end{equation} 
+
+    Notice how each rotation rotates the frame result of the previous rotation.
+
+    To calculate the parameters from any euler rotation matrix we use: 
+    \begin{equation}
+        \alpha = atan_{2}(r_{23},r_{13}), \beta = atan_{2}(\sqrt{r_{13}^{2} + r_{23}^{2}},r_{33}), \gamma = atan_{2}(r_{32},-r_{31})
+    \end{equation}
+    \nHeader{Roll,Pitch,Yaw angles}
+
+    This convention is mostly used in aerospace engineering:
+    
+    \begin{equation}
+        R = R_{z}(\alpha)R_{y'}(\beta)R_{x''}(\gamma)
+        = \begin{pmatrix}
+            c_{\alpha}c_{\beta} & c_{\alpha}s_{\beta}s_{\gamma} - s_{\alpha}c_{\gamma} & c_{\alpha}s_{\beta}c_{\gamma} + s_{\alpha}s_{\gamma}\\
+            s_{\alpha}c_{\beta} & s_{\alpha}s_{\beta}s_{\gamma} + c_{\alpha}c_{\gamma} & s_{\alpha}s_{\beta}c_{\gamma} - c_{\alpha}c_{\gamma}\\
+            -s_{\beta} & c_{\beta}s_{\gamma} & c_{\beta}c_{\gamma} 
+        \end{pmatrix}
+    \end{equation}
+
+    To calculate the parameters from any RPY rotation matrix we use: 
+    \begin{equation}
+        \alpha = atan_{2}(r_{21},r_{11}), \beta = atan_{2}(-r_{31},\sqrt{r_{32}^{2} + r_{33}^{2}}), \gamma = atan_{2}(r_{32},-r_{33})
+    \end{equation}
+
+}
+
+\nDefinition{Gimbal lock}{
+    If we create a Euler rotation matrix with $\beta = 0$ (or any multiple of $\pi$), the rotation order devolves from: zyz, to zz, since the y rotation matrix becomes the identity matrix. While this does not matter when we're just trying to rotate a frame,
+    It does matter if we want to retrieve the parameters from this rotation matrix we will fail. The parameters could be any number of infinite combinations. Gimbal lock is more serious when we're dealing with real devices such as gyroscopes, in which case the rotation axes can physically become coupled and unable to be separated.
+
+    \begin{center}
+        \nImg{gimball_lock}        
+    \end{center}
+}
+
+
+\nSection{Forward kinematics}
+\nDefinition{Forward Kinematics function}{
+    Forward kinematics is a way of computing the end-effector position from the parameters of the robot's actuators.
+    It is as simple as chaining the transformations between each frame in the robot's joints, and expressing the position of the end effector in the ground frame:
+
+    \begin{equation}
+        \vec{x} = A_{g \rightarrow l_{0}}(\vec{q})A_{l_{1} \rightarrow l_{2}}(\vec{q}) \hdots A_{l_{n} \rightarrow e}(\vec{q}) = k(\vec{q}) 
+    \end{equation}
+    \begin{center}
+        \nImg[0.8]{fk}
+    \end{center}
+    }
+
+\nDefinition{Denavit-Hartenberg convention (D-H)}{
+    The amount of ways in which we can pick our frames at each joint is way too big, and using this many parameters is wasteful. 
+    D-H proposes a way of deriving frames and transformations between them with only 4 parameters:
+
+    \begin{itemize}[noitemsep]
+        \item Place the z-axis in the direction of motion for linear joints and perpendicular to the rotation direction for revolute joints
+        \item Select the x-axis so that it is perpendicular to both the current and previous z-axis, and such that it intersects the previous z-axis (the distance along this axis between the z-axis is called the common normal)
+        \item Select the origin of each joint's frame to be at the intersection of its x and z axes
+        \item Complete the right-handed coordinate frame with y 
+    \end{itemize}
+
+    Once we select our frames in this way we can create transformations between each frame pair using the following operation order:
+    \begin{equation}
+        R_{z,\theta_{i}}T_{z,d_{i}}T_{x,a_{i}}R_{x,\alpha_{i}} = 
+        \begin{pmatrix}
+            c_{\theta_{i}} & -s_{\theta_{i}}c_{\alpha_{i}} & s_{\theta_{i}}s_{\alpha_{i}} & a_{i}c_{\theta_{i}}\\
+            s_{\theta_{i}} & c_{\theta_{i}}c_{\alpha_{i}} & -c_{\theta_{i}}s_{\alpha_{i}} & a_{i}s_{\theta_{i}} \\
+            0 & s_{\alpha_{i}} & c_{\alpha_{i}} & d_{i} \\
+            0 & 0 & 0 & 1 
+        \end{pmatrix}
+    \end{equation}
+
+    the parameters at each frame i (apart from the ground frame) represent:
+    \begin{itemize}[noitemsep]
+        \item $\theta_{i}$: the angle (including rotation of the joint) about $z_{i-1}$ between the previous $x_{i-1}$ and $x_{i}$
+        \item $d_{i}$: the distance along the previous $z_{i-1}$ to the common normal (think up/down) i.e. the next $x_{i}$ axis
+        \item $\alpha_{i}$: the angle about the common normal/ new $x_{i}$ axis from the old $z_{i-1}$ to new $z_{i}$ axis
+        \item $a_{i}$: the length of the common normal 
+    \end{itemize}
+
+    \begin{center}
+        \nImg{d-h}    
+    \end{center}
     
 }
 
+\nDefinition{Velocity of end-effector}{
+    Given the change in $\vec{q}$ can we find out the resulting velocity of the end-effector $\vec{\dot{x}}$? 
+    Yes, using the jacobian:
+
+    \begin{equation}
+        \vec{\dot{x}}_{e} = \frac{\partial k(\vec{q})}{\partial\vec{q}}\vec{\dot{q}} = J(\vec{q}) \vec{\dot{q}}
+    \end{equation}
+
+    \begin{equation}
+        J(\vec{q}) = 
+        \frac{\partial k(\vec{q})}{\partial\vec{q}} = 
+        \begin{pmatrix}
+            \frac{\partial k_{1}(\vec{q})}{\partial q_{1}} & \frac{\partial k_{1}(\vec{q})}{\partial q_{2}} & \hdots & \frac{\partial k_{1}(\vec{q})}{\partial q_{m}}\\  
+            \frac{\partial k_{2}(\vec{q})}{\partial q_{1}} & \frac{\partial k_{2}(\vec{q})}{\partial q_{2}} & \hdots & \frac{\partial k_{2}(\vec{q})}{\partial q_{m}}\\  
+            \vdots & \vdots & \vdots & \vdots\\  
+            \frac{\partial k_{n}(\vec{q})}{\partial q_{1}} & \frac{\partial k_{n}(\vec{q})}{\partial q_{2}} & \hdots & \frac{\partial k_{n}(\vec{q})}{\partial q_{m}}
+
+        \end{pmatrix}
+    \end{equation}
+}
+
+\nDefinition{Open vs Closed chains}{
+    in  an open kinematics chain, each joint may rotate or translate indepdently:
+
+    \begin{center}
+        \nImg[0.2]{open-chain}
+    \end{center}
+    
+    In a closed kinematics chain, joint motion may be coupled. Rotating or translating one joint may force another to to rotate or translate. 
+    
+    \begin{center}
+        \nImg[0.5]{closed-chain}
+    \end{center}
+}
 \end{document}
