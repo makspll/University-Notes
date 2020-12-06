@@ -8,4 +8,6 @@ cwk/
 *.fdb_latexmk
 *.aux
 *.pyc
-
+*.toc
+*.synctex.gz
+*.out

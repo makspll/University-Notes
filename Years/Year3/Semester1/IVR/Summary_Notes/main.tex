@@ -106,7 +106,7 @@
     Notice how a point in homogenous space can be multiplied by any constant, and yet when it is converted back to normal space, it becomes the same point. \textbf{The ratio} between the components defines the line in homogenous space.
 }
 
-\nDefinition{Pinhole camera}{
+\nTheorem{Pinhole camera}{
     
     Capturing on a simple plane does not work because multiple rays from the same point in the scene travel to multiple parts of the film. We want the film to capture a single "ray" per point of interest
     \begin{center}
@@ -203,61 +203,7 @@
     \end{center}
 }
 
-\nSection{Problems with image capture}
-
-\nDefinition{Focus problems}{
-    Focus set to one distance, and other nearby distances in focus (depth of focus). Further or closer not so well focused.
-    
-    \centering
-    \includegraphics[width=0.3\columnwidth]{focus_problem.png}
-    
-    \raggedright
-    Solutions: Use smaller aperture and brighter light
-}
-
-\nDefinition{Shadow problems}{
-    False colours due to different intensity of light (shadows) make it difficult to separate shapes of interest from shadows.
-    (is the white part under this part a shadow or the edge ?)
-
-    Main cause of problem: point of light sources, the perceived brightness at a surface is proportional to the \textbf{square} of the distance between the surface and the light source.
-
-    \centering
-    \includegraphics[width=0.3\columnwidth]{shadow_problems.png}
-    \includegraphics[width=0.6\columnwidth]{diffuser_panels.png}
-
-    \raggedright
-    Solutions: increase ambient lighting by using diffusing panels or lots of point lights
-    }
-
-\nDefinition{Specularities/highlights}{
-    (Saturated pixels set to red)
-
-    \centering
-    \includegraphics[width=0.3\columnwidth]{specularities.png}
-    
-    \raggedright
-    Solutions: increase ambient lighting by using diffusing panels or lots of point lights, or use smaller aperture, reduce gain and adjust gamma
-    
-}
-
-\nDefinition{Non-uniform ilumination}{
-    Contrast on background enhanced: may cause analysis problems
-
-    \centering
-    \includegraphics[width=0.3\columnwidth]{non-uniform-ilum.png}
-
-    \raggedright
-    Solutions: increase ambient lighting by using diffusing panels or lots of point lights
-    
-}
-\nDefinition{Radial lens distortion}{
-
-    Lenses sometimes slightly distort the image "radially" making accurate measurements hard
-    \nImgs[0.35]{radial-lens-distor.png}{lens-distortion-graphic.jpg}
-
-    Solutions: more expensive lenses, view from further away
-}
-\nDefinition{Homography}{
+\nTheorem{Homography}{
     An invertible linear transformation $\mathbf{P}$ that maps points from one plane to another (think of it as a change of POV)
 
     \centering
@@ -307,6 +253,59 @@
     \end{equation}
     ($\lambda$ representing the fact that this coordinate is in homogenous space)
 
+}
+
+\nDefinition{Focus problems}{
+    Focus set to one distance, and other nearby distances in focus (depth of focus). Further or closer not so well focused.
+    
+    \centering
+    \nImg[0.6]{focus_problem.png}
+    
+    \raggedright
+    Solutions: Use smaller aperture and brighter light
+}
+
+\nDefinition{Shadow problems}{
+    False colours due to different intensity of light (shadows) make it difficult to separate shapes of interest from shadows.
+    (is the white part under this part a shadow or the edge ?)
+
+    Main cause of the problem: point of light sources, the perceived brightness at a surface is proportional to the \textbf{square} of the distance between the surface and the light source.
+
+    \centering
+    \includegraphics[width=0.3\columnwidth]{shadow_problems.png}
+    \includegraphics[width=0.6\columnwidth]{diffuser_panels.png}
+
+    \raggedright
+    Solutions: increase ambient lighting by using diffusing panels or lots of point lights
+    }
+
+\nDefinition{Specularities/highlights}{
+    (Saturated pixels set to red)
+
+    \centering
+    \includegraphics[width=0.3\columnwidth]{specularities.png}
+    
+    \raggedright
+    Solutions: increase ambient lighting by using diffusing panels or lots of point lights, or use smaller aperture, reduce gain and adjust gamma
+    
+}
+
+\nDefinition{Non-uniform ilumination}{
+    Contrast on background enhanced: may cause analysis problems
+
+    \centering
+    \includegraphics[width=0.3\columnwidth]{non-uniform-ilum.png}
+
+    \raggedright
+    Solutions: increase ambient lighting by using diffusing panels or lots of point lights
+    
+}
+\nDefinition{Radial lens distortion}{
+
+    Lenses sometimes slightly distort the image "radially" making accurate measurements hard
+    \nImgs[0.35]{radial-lens-distor.png}{lens-distortion-graphic.jpg}
+
+    Solutions: more expensive lenses, view from further away
 }
 
 \nSection{Image Segmentation}

@@ -1,6 +1,0 @@
-\contentsline {section}{\numberline {1}Introduction to Vision}{2}{section.1}%
-\contentsline {section}{\numberline {2}Image Basics}{4}{section.2}%
-\contentsline {section}{\numberline {3}Problems with image capture}{7}{section.3}%
-\contentsline {section}{\numberline {4}Image Segmentation}{10}{section.4}%
-\contentsline {section}{\numberline {5}Description of Segments}{16}{section.5}%
-\contentsline {section}{\numberline {6}Object recognition}{21}{section.6}%
