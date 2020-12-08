@@ -1248,4 +1248,123 @@
         \nImg[0.5]{closed-chain}
     \end{center}
 }
+
+\nSection{Motion representation}
+
+\nDefinition{Many ways to skin a cat}{
+We have a way of solving for the end-effector position using the geometry of a robot, but how do we do the reverse and find the angles required to put the end-effector in any position we desire ?
+
+\begin{center}
+    \nImg{solutions_motion}
+\end{center}
+For the robot above:
+\begin{itemize}[noitemsep]
+    \item No configuration reaching $\vec{x}$ with $|\vec{x}| > a_{1}+a_{2}+a_{3}$
+    \item 1 configuration reaching $\vec{x}$ with $|\vec{x}| = a_{1}+a_{2}+a_{3}$
+    \item 2 configurations reaching $\vec{x}$ with $|\vec{x}| < a_{1}+a_{2}+a_{3}$
+\end{itemize}
+}
+\nDefinition{Jacobian mapping}{
+    The jacobian can be thought of as a mapping of joint velocity to end-effector velocity.
+    The null-space of the jacobian are all the joint velocities which \textbf{do not move the end-effector}
+
+    \begin{center}
+        \nImg[0.8]{jacobian_mapping}
+    \end{center}
+}
+\nTheorem{Numerical solution}{
+    Given $\vec{x_{d}}$ the desired position of end-effector, 
+    and $\vec{x}$ the current position of end effector,
+    we can use the inverse of our Jacobian to find the velocity (or change in) the parameters $\vec{{\Delta q}}$ which always brings us closer to the desired configuration!
+
+    \begin{equation}
+        \begin{aligned}
+            &\vec{\dot{x}} = J\vec{\dot{q}} \\
+            &\vec{\Delta q} = \int_{\vec{x}}^{\vec{x}_{d}} J^{-1}\vec{\dot{x}} \; \mathrm{dt}\\
+            &\vec{\Delta q} = \left. J^{-1}\vec{x} \right|_{\vec{x}}^{\vec{x_{d}}}\\
+            &\vec{\Delta q} = J^{-1}(\vec{x_{d}} - \vec{x}) 
+        \end{aligned}
+    \end{equation}
+
+    Notice how this means the resultant velocity at each joint is just the sum of all joint velocities at each intermediate position!
+    When calculating this in real scenarios, we can simply perform differentiation/integration numerically (as opposed to analytically), 
+    and take the resulting velocity of joints at each step each frame as the small change to q which brings us closer to the goal:
+    \begin{equation}
+         \vec{q} = \vec{\Delta q} + \vec{q}_{0}= J^{-1} \left( \vec{x_{d}} - \vec{x} \right) + \vec{q_{0}}
+        \approx kJ^{-1} \left( \vec{x_{d}} - \vec{x} \right) + \vec{q_{0}}
+    \end{equation}
+    where k is the size of the step we want to take at each iteration.
+    }
+
+\nDefinition{Non-invertible jacobians}{
+    There are many reasons for which we might not be able to find the inverse of the Jacobian $J^{-1}$
+    
+    \nHeader{Under-actuated or Redundant robot}
+    
+    Notice that as soon as the robot has less or more parameters than dimensions in its work-space, the jacobian is no longer square ($x \times q$) 
+
+    \begin{center}
+        \nImgs[0.2]{redundant_arm}{under-actuated}
+    \end{center}
+
+    \nHeader{Singularitiies}
+
+    Whenever two of the jacobian's columns or rows become linearly dependent, 
+    it loses rank and therefore its determinant drops to zero, preventing us from finding the inverse.
+    This happens whenever two joints.
+
+    consider the following jacobian:
+    \begin{equation}
+        \begin{bmatrix}
+            x \\ y
+        \end{bmatrix}
+        =
+        \begin{bmatrix}
+            1 & 2 \\
+            1 & 2 \\
+        \end{bmatrix}
+    \end{equation}
+
+    What does this configuration mean ? Have a look at what happens when we try to apply velocities to all our joints:
+    \begin{equation}
+        J \begin{bmatrix}
+            1 \\ 0
+        \end{bmatrix}
+        = 
+        \begin{bmatrix}
+            1 \\ 1
+        \end{bmatrix}, \; \;
+        J \begin{bmatrix}
+            0 \\ 1
+        \end{bmatrix}
+        = 
+        \begin{bmatrix}
+            2 \\ 2
+        \end{bmatrix},
+    \end{equation}
+    \begin{equation}
+        \begin{bmatrix}
+            1 \\ 1
+        \end{bmatrix}
+        = \frac{1}{2}
+        \begin{bmatrix}
+            2 \\ 2
+        \end{bmatrix}
+    \end{equation}
+
+    both joints result in velocities in the same \textbf{direction}, but with different magnitudes. 
+    Assuming the joints can act in different directions, this configuration causes us to lose a degree of freedom!
+    Such positions occur whenever joints align, or extend fully. A similar situation is represented in the figure below:
+
+    \begin{center}
+        \nImg[0.5]{singularity_custom}
+    \end{center}
+
+    While we technically still can move the joints in such a way as to reach any position in the work space, 
+    the Jacobian tells us a different story! That's because at that instant of time, any movement of our joints
+    results in the same direction of movement, should we somehow leave this configuration the next iteration, the jacobian will be back to normal!
+
+}
+
+
 \end{document}
