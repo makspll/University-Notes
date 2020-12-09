@@ -29,7 +29,145 @@
 \nChapter{IAML}
 
 \nSection{Introduction}
+
+\nDefinition{Machine Learning}{
+    A machine learning model \textbf{takes in} data, \textbf{outputs} predictions. It's a function of data really together with a set of training data.
+
+    Learning = Representation + Evaluation + Optimisation
+}
 \nSection{Thinking about data}
+
+\nDefinition{Classification}{
+    Sort data points into discrete buckets based on training data 
+}
+
+\nDefinition{Regression}{
+    Output a continuous/real value for each data point based on training data. 
+}
+
+\nDefinition{Clustering}{
+    Detect which data points are related to which other data points, find outliers.
+}
+
+\nDefinition{Data representation}{
+    What format do we feed the data in ? Most likely as a \textbf{bag of features}. I.e. collection of attribute-value pairs, every data point must have an attribute-value pair for each property (in most cases)
+    
+    Data representation has more impact on the performance of your ML algorithm than anything.
+
+    \nHeader{Types of attributes}
+
+    \begin{itemize}[noitemsep]
+        \item \textbf{Categorical}
+            \subitem- e.g. red/blue/brown
+            \subitem- a set of possible \textbf{mutually exclusive} values
+            \subitem- meaningful operators: equality comparison
+            \subitem- usually represented as numbers 
+            \subitem- problems: {\color{red} synnonymy is a major challenge e.g. some values might mean the same thing to a human but not to the machine (country == folk?)}   
+        \item \textbf{Ordinal}
+            \subitem- e.g. poor $<$ satisfactory $<$ good $<$ excellent
+            \subitem- a set of possible \textbf{mutually exclusive} values, but with a \textbf{natural ordering}
+            \subitem- meaningful operators: equality comparison, sorting
+            \subitem- problems: {\color{red} sometimes hard to differentiate from categorical (single $<$ divorced)?}    
+        \item \textbf{Numeric}
+            \subitem- e.g. 3.1/5
+            \subitem- meaningful operators: arithmetic, distance metrics, equality, sorting 
+            \subitem- problems:
+                \subsubitem- {\color{red} sensitive to extreme outliers (handle these \textbf{before normalization})}
+                \subsubitem- {\color{red} skewed distributions (assymetric) - outliers might actually be real data (e.g. personal wealth data)}
+                \subsubitem- {\color{red} Non-monotonic effect of attributes - e.g. predicting someone is going to win a marathon, here the relationship is not monotonic i.e. norect correlatio din, might be a curve with a "sweet spot"}
+            \subitem- solutions:
+                \subsubitem- \textit{Deal with outliers, maybe trim them for training phase only?}
+                \subsubitem- \textit{use a log/atan scale to make data more linear}
+                \subsubitem- \textit{discretize data into buckets}
+    \end{itemize}
+}
+
+\nDefinition{Picking attributes}{
+    We want:
+    \begin{itemize}[noitemsep]
+        \item all our attributes to have similar values if the data points that posses them are similar themselves!    
+        \item small change in input $\rightarrow$ small change in values
+    \end{itemize} 
+    }
+
+
+\nDefinition{Supervised Learning}{
+    Supervised learning algorithms have some sort of "performance" metric they can use, i.e. test labels they can validate their guesses on.
+    When the algorithm can measure accuracy directly it's a supervised algorithm.
+}
+
+\nDefinition{Unsupervised Learning}{
+    Learning without a specific accuracy measure available. Algorithms in this area usually look for structure/patterns/information in the data which can be helpful in other ways.
+    There is nothing specific the algorithm is looking for.
+    Can be \textbf{direct} when the algorithm helps to make sense of the data directly, or \textbf{indirect} when it is "plugged" into another machine learning aglorithm as an attribute itself. 
+}
+
+\nDefinition{Semi-supervised Learning}{
+    Using unsupervised methods to improve supervised algorithms. Usually have a few labelled examples but lots more unlabelled. 
+}
+
+\nDefinition{Multi-class classification}{
+    Classification with multiple mutually exclusive labels/classes.
+    
+    Might be hard to tell when something belongs to none of the available classes.
+}
+\nDefinition{Binary classification}{
+    Classification with 2 mutually exclusive labels/classes in each "run". 
+    This way of classification can be applied to multiple-classes classification but with a "One-vs-Rest" meta-strategy (a vs not a, b vs not b).
+    In this way a sample may belong to multiple classes but never to two sides of the one-vs-rest structure simultaneously in each run.
+    
+    In this classification method we can actually tell when something doesn't belong to any class!
+}
+
+\nDefinition{Analysing data}{
+    We have to check for a number of things in our data sets:
+    \begin{itemize}[noitemsep]
+        \item Are there any dominating classes ? what would the best "dummy" model do ? always predicting no ?
+        \item What should we use as the appropriate error metric ? How important are the false positives vs the false negatives ? 
+    \end{itemize}
+}
+
+\nDefinition{Generative model}{
+    A generative model, develops a probabilistic model of each class, i.e. tries to "model" the underlying probability distribution directly.
+    The decision boundary becomes implicitly defined by the probabilities of each input being in each class.
+}
+
+\nDefinition{Discriminative model}{
+    A discriminative model ignores the underlying model and tries to "separate" the data, i.e. it tries to model the boundaries that divide the classes.
+    \textbf{Not designed to use unlabeled data} so cannot be used for unsupervised tasks.
+}
+
+\nDefinition{Dealing with fdata structure}{
+    What do we do if the data input has some sort of hierarchical structure ?  Where the position of occurrence of a node affects its meaning?
+    We can encode as attributes the existence of root-to-leaf paths in the entire tree, and use this bag-of-words approach to perform machine learning 
+    \begin{center}
+        \nImg{structure_input}
+    \end{center}
+
+    What if we need to predict the output structure from the input structure ? This is very difficult, but we can "trick" our classifier and turn this more into a search problem by embedding the possible outputs with each input and classifying on that instead:
+
+    \begin{center}
+        \nImg[0.9]{structure_output}
+    \end{center}
+    This of course means we have to search for all possible output structures!
+
+    }
+
+\nDefinition{Dealing with outliers}{
+    \textbf{Outliers} are isolated instances of a class that are unlike any other instance of that class. These affect all learning models to some degree.
+
+    There are some ways we can deal with outliers. One method is to remove the outliers just before we perform any sort of normalisation on the data, (ONLY FOR THE PURPOSES OF TRAINING!!)
+    We can also put a confidence interval around our data, and removing values outside of those intervals (with x,y values outside of a normal range).
+    Some data points might still be outliers even though they are within expected x,y ranges! (second figure)
+    
+    \begin{center}
+        \nImg{outliers}    
+    \end{center}
+
+    Best way to deal with outliers ? \textbf{VISUALISE YOUR DATA}
+    }
+
+
 \nSection{Naive Bayes}
 \nSection{Decision Trees}
 \nSection{Generalisation \& Evaluation}
