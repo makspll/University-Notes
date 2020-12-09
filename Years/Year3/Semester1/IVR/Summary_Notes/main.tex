@@ -1478,6 +1478,122 @@ For the robot above:
         \textit{Note:This method requires that the target is stationary!}
     }
 
-\nSection{Dynamics}
+\nSection{Dynamics \& Statics}
 
+\nDefinition{Statics}{
+        In statics we consider systems at rest, where all the forces are balanced - under \textbf{static equilibrium}. We use the idea of \textbf{virtual displacement} and \textbf{virtual forces} to examine the system and work out equivalences between forces!
+        Under static equilibrium, the \textbf{work done} by all forces is zero (because there is no motion at all). Since no work is done we can use the idea of infinitesimal virtual displacements to quantify the net zero work done by each force. This is analogous to hanging a mass off a scale, waiting till the system is at rest and taking a reading for the weight of the mass, we can also artificially pull down on the mass to see what happens to the weight - except in this case 
+        no real forces are changed, and the whole system is in a freeze-frame, i.e. no time passes!
+        }
+
+\nDefinition{Work}{
+    The work done is basically the energy change in a system caused by an application of a force. A change of energy happens only if something moves!
+
+    The work done is defined as:
+    \begin{equation}
+        w = Fs
+    \end{equation}
+    where w is the work done (Joules or Newton-meters), F is the force (Newtons), and s is the displacement (meters)
+
+    If a force only affects the kinetic energy of an object (i.e. no heat loss and no increase in potential energy) the work done is related to the change in kinetic energy $\left(\frac{1}{2}mv^{2}\right)$:
+    \begin{equation}
+        w = \Delta E_{k} = \frac{1}{2}mv^{2}_{1} - \frac{1}{2}mv^{2}_{0}
+    \end{equation}
+}
+
+\nDefinition{Torque at joints required to balance a force}{
+    Have a look at the situation below:
+    \begin{center}
+        \nImg[0.3]{statics_arm}
+    \end{center}
+
+    Imagine a force is to be applied to the end-effector of a robot, some kid is pushing a toy robot-arm at the end-effector and we want to counter-act the force how do we do that with statics ?
+    Well, first of all we need a static equilibrium, assume that all the forces are balanced. 
+    Which forces are involved ? 
+    \\
+    We have the force F acting at the end-effector, and all the torques $r_{1}$ through $r_{4}$ acting on the motors.
+
+    Essentially what we need all the torques combined to equal the force at the end effector but just in the other direction - let's ignore the direction for a moment.
+
+    We introduce a virtual displacement due to the force, which causes an equivalent virtual displacement of the joint angles, these two are related geometrically, and this relationship is:
+    \begin{equation}
+        \delta \vec{x} = J \delta \vec{q}
+    \end{equation}
+    This arbitrary displacement is a theoretical tool we use to work out constraints and equivalences.
+    Since everything is at equilibrium then no work is done, as well as this, no \textbf{virtual work} is done either:
+    \begin{equation}
+        \delta w = 0 = \vec{r}^{T} \delta \vec{q} - \vec{F}^{T} \delta \vec{x} =\vec{r}^{T} \delta \vec{q} - \vec{F}^{T} J \delta \vec{q} = \delta \vec{q}^{T}(\vec{r} - J^{T}\vec{F}) 
+    \end{equation}
+    From this, since the virtual displacement $\delta q$ is non-zero (but infinitesimal), we must have that:
+    \begin{equation}
+        \begin{aligned}
+            &\vec{r} - J^{T}\vec{F} = 0 \\
+            &\vec{r} = J^{T}\vec{F}
+        \end{aligned}
+    \end{equation}
+    
+    i.e. to counter-act the force we would need to apply a torque of $J^{T}\vec{F}$ in the opposite direction!
+    This equivalence works only in the absence of gravity and friction, but is still quite neat.
+}
+
+\nDefinition{Forward Dynamics}{
+    \textbf{Forward dynamics} is the function relating the state of the robot as well as the forces acting on it, to the reactive accelerations generated on the robot!
+
+    The general equation of motion for all rigid-body robots(manipulators specifically) is:
+
+    \begin{equation}
+        \vec{\ddot{q}} = I^{-1}(\vec{q})(-B(\vec{q})[\vec{\dot{q}}\vec{\dot{q}}] - C(\vec{q})[\vec{\dot{q}}^{2}] - G(\vec{q}) + \vec{r})
+    \end{equation}
+
+    Where:
+    \begin{itemize}
+        \item I: Inertia matrix 
+        \item B: Coriolis matrix 
+        \item C: Centrifugal matrix 
+        \item G: Gravity matrix
+        \item $[\vec{\dot{q}}\vec{\dot{q}}] = \left( \dot{q_{1}}\dot{q_{2}}, \dot{q_{1}}\dot{q_{3}} \; \hdots \; \dot{q}_{n-1}\dot{q_{n}} \right) ^{T}$ 
+        \item $[\vec{\dot{q}}^{2}] = \left(\dot{q}_{1}^{2},\dot{q}_{2}^{2}, \hdots, \dot{q}_{n}^{2} \right) ^{T}$ 
+
+    \end{itemize}
+}
+
+\nDefinition{Inverse Dynamics}{
+    The inverse dynamics, specifies the forces we need to apply (e.g. torques) to generate desired state and motion.
+    Unlike with kinematics, the inverse dynamics equation is very easy to find (because $I(\vec{q}$ is always positive semi-definite!)):
+    
+    \begin{equation}
+        I(\vec{q})\vec{\ddot{q}} + B(\vec{q})[\vec{\dot{q}}\vec{\dot{q}}] + C(\vec{q})[\vec{\dot{q}}^{2}] + G(\vec{q}) = \vec{r}
+    \end{equation}
+}
+
+\nDefinition{Simulating motion}{
+    Now these equations above get extremely complicated, they are differential equations of second order, how do we put them to practice ?
+
+    If we are interested in simulating how a manipulator will behave under certain forces ,we can use the forward dynamics equation, which gives us an expression for: $\vec{\ddot{q}}(t)$
+    We can integrate this (using Euler's method) to get: (\textbf{the classic equations of motion})
+    \begin{equation}
+        \begin{aligned}
+            &\vec{\dot{q}}(t) = \vec{\dot{q}}(t - \Delta t) + \ddot{\vec{q}}(t - \Delta t) \Delta t \\
+            &\vec{q}(t) = \vec{q}(t - \Delta t) + \vec{\dot{q}}(t - \Delta t)\Delta t + \frac{1}{2}\vec{\ddot{q}}(t - \Delta t)^{2}
+        \end{aligned}
+    \end{equation}
+
+    Think about it, if we divide time into discrete time steps, and at step t we know the previous velocity we were traveling at, as well as the way we accelerated last time,
+    we can calculate the velocity at the new time step by retaining the velocity and adding ontop of that the result of the acceleration!
+    A similar case goes for our position, only this time we also include the effect of translation due to the previous velocity as well!
+
+    \begin{center}
+        \nImg{equations_motion}
+    \end{center}
+
+    Also try to internalize that:
+    \begin{itemize} [noitemsep]
+        \item The velocity of an object is the derivative of its displacement with respect to time: $v = \frac{ds}{dt}s$, i.e. change in distance over time
+        \item The acceleration of an object is the derivative of its velocity with respect to time: $a = \frac{dv}{dt}v$, i.e. change in speed over time
+        \item The opposite relationships hold, i.e. the displacement, is the integral of velocity over time, and velocity is the integral of acceleration over time
+    \end{itemize}
+
+    \textit{Note: this is exactly how physics in game engine's/simulations works(maybe not the robot manipulator part, but the integration of acceleration part)}
+
+}
 \end{document}
