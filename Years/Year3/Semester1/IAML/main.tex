@@ -81,6 +81,12 @@
                 \subsubitem- \textit{discretize data into buckets}
     \end{itemize}
 }
+\nDefinition{Normalisation}{
+    Normalization is the process of converting all the data such that each different attribute is roughly in the same range, and comparable.
+
+    Normalization is mostly necessary for linear methods.
+}
+
 
 \nDefinition{Picking attributes}{
     We want:
@@ -88,7 +94,35 @@
         \item all our attributes to have similar values if the data points that posses them are similar themselves!    
         \item small change in input $\rightarrow$ small change in values
     \end{itemize} 
-    }
+    
+    \nHeader{Images}
+
+    For images, can we use pixel data as attributes directly ? it depends, if the pixel 20,20 always corresponds to the middle of a letter then yes, this is a meaningful attribute which might help us discern whether digits given have strokes going through the middle of the image!
+    What if the pixel is always something random ? This could happen whenever we are looking for an object which can be anywhere in the image, in which case the attribute would be gibberish!
+    In the case of image classification, we want attributes which are:
+    \begin{itemize}
+        \item invariant to size 
+        \item invariant to rotation 
+        \item invariant to illumination
+    \end{itemize}
+    
+    How can we classify whether an image contains a desired object ? In general we do the following:
+    \begin{itemize}
+        \item \textbf{Segment} the image, into regions of pixels which we believe are related (by colour, texture, position etc..)
+        \item Pick a number of attributes which you will use to describe each of the regions
+        \item Then use those features in your machine learning algorithm!
+    \end{itemize}
+    Keep in mind though, the segmentation \textbf{will} make errors, we can hope that these will be consistent across all images (all images will have their legs chopped off). Sometimes we can segment using a grid
+    
+    \nHeader{Text}
+        For textual data, often we can use the \textbf{bag-of-words} approach. I.e. we can form an attribute vector which counts the amount of occurrences of each word, regardless of position. This is invariant to word shuffling for example.
+    \nHeader{Sound}
+    For sound, the data is sound waves. How can we select attributes here? We can count the number of different frequencies occurring in the piece, (using Fourier's transform) and treat this as a feature vector!
+    \begin{center}
+        \nImg{attributes_sound}
+    \end{center}
+}
+
 
 
 \nDefinition{Supervised Learning}{
@@ -137,7 +171,7 @@
     \textbf{Not designed to use unlabeled data} so cannot be used for unsupervised tasks.
 }
 
-\nDefinition{Dealing with fdata structure}{
+\nDefinition{Dealing with data structure}{
     What do we do if the data input has some sort of hierarchical structure ?  Where the position of occurrence of a node affects its meaning?
     We can encode as attributes the existence of root-to-leaf paths in the entire tree, and use this bag-of-words approach to perform machine learning 
     \begin{center}
@@ -166,6 +200,7 @@
 
     Best way to deal with outliers ? \textbf{VISUALISE YOUR DATA}
     }
+
 
 
 \nSection{Naive Bayes}
