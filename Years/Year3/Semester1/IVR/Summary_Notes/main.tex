@@ -1294,6 +1294,8 @@ For the robot above:
         \approx kJ^{-1} \left( \vec{x_{d}} - \vec{x} \right) + \vec{q_{0}}
     \end{equation}
     where k is the size of the step we want to take at each iteration.
+
+    \textit{Note: this does not really work well in practice because the measurements of q can be very noisy}
     }
 
 \nDefinition{Non-invertible jacobians}{
@@ -1311,7 +1313,6 @@ For the robot above:
 
     Whenever two of the jacobian's columns or rows become linearly dependent, 
     it loses rank and therefore its determinant drops to zero, preventing us from finding the inverse.
-    This happens whenever two joints.
 
     consider the following jacobian:
     \begin{equation}
@@ -1366,5 +1367,117 @@ For the robot above:
 
 }
 
+
+\nSection{Inverse Kinematics}
+
+
+\nTheorem{Pseudo-inverse}{
+    How can we then in general find the angles which position the end-effector wherever we desire?
+
+    A general solution to the non-invertibility problem (in the case of redundancy) is the use of a \textbf{pseudo-inverse}. 
+
+    pseudo-inverses deal with tall-matrices, i.e. systems of equations which have an infinite number of solutions.
+    For example the Moore-Penrose pseudo-inverse, finds a solution which minimizes the distance $|Ax- b|$ for the system $Ax = b$
+
+    There are two possible inverses which yield two different solutions in our case:
+    \begin{equation}
+        J^{+} = (J^{T}J)^{-1}J^{T} = J^{T}(JJ^{T})^{-1}
+    \end{equation}
+
+    \nHeader{Properties}
+    \begin{equation}
+        \begin{aligned}
+            &JJ^{+}J = J\\
+            &J^{+}JJ^{+} = J^{J}\\
+            &(JJ^{+})^{T} = JJ^{+}\\
+            &(J^{+}J)^{T} = J^{+}J
+        \end{aligned}
+    \end{equation}
+
+    \begin{itemize}
+        \item As the determinant of J gets closer to zero (as J grows closer to a \textbf{singularity}), the pseudo-inverse $J^{+}$'s elements grow towards infinity!
+    \end{itemize}
+    }
+
+
+\nTheorem{Redundancy-proof IK methods}{
+    There are many methods to perform Inverse Kinematics (\textit{None of these deal with singularities! only the redundancy!}):
+
+    \nHeader{Pseudo-inverse method}
+    
+    \begin{equation}
+        \vec{\dot{q}} = J^{+}\vec{\dot{x}}    
+    \end{equation}
+    
+    \nHeader{Weighted Inverse Kinematics}
+    Result of minimising the expression (solving IK the constraints of our robot while minimising $|\vec{\dot{x}} - J\vec{\dot{q}}|$):
+    \begin{equation}
+        g(\vec{\dot{q}}) = \frac{1}{2}\vec{\dot{q}}^{T}W\vec{\dot{q}} + \lambda^{T}(\vec{\dot{x}} - J\vec{\dot{q}})
+    \end{equation}
+
+    Where W is a positive definite matrix (i.e. the mass distribution of the arm, in which case this minimizes the kinetic energy of the system)
+
+    Using lagrange-multipliers, results in:
+
+    \begin{equation}
+        \vec{\dot{q}} = W^{-1}J^{T}(JW^{-1}J^{T})^{-1} \vec{\dot{x}}
+    \end{equation}
+}
+
+\nTheorem{Dealing with singularities}{
+    In order to avoid singularities we need to employ additional goals and methods!
+    \nHeader{Pseudo inverse + secondary task}
+
+    We introduce a secondary task, we can describe the "general solution" as follows: 
+    "maximise $\vec{\dot{q}_{0}}$, while trying to hit the desired position"
+    \begin{equation}
+        \vec{\dot{q}} = J^{+}\vec{\dot{x}} + (\mathbf{I} - J^{+}J)\vec{\dot{q}_{0}}
+    \end{equation}
+
+    We define $\vec{\dot{q}_{0}}$ as follows:
+    \begin{equation}
+        \vec{\dot{q}_{0}} = k_{0} \left( \frac{\partial w(\vec{q})}{\partial \vec{q}} \right)^{T}
+        = k_{0}
+        \begin{bmatrix}
+            \frac{\partial w}{\partial q_{1}} \\
+            \vdots \\
+            \frac{\partial w}{\partial q_{n}} \\
+        \end{bmatrix}
+    \end{equation}
+
+    i.e. the derivative of some function $w$ of the joint values with respect to the joint values.
+    Each element of the derivative may be numerically estimated as: $\frac{\Delta w}{\Delta q}$
+
+    To avoid singularities we may define w as :
+    \begin{equation}
+        w(\vec{q}) = \sqrt{det(J(\vec{q})J^{T}(\vec{q}))}
+    \end{equation}
+    i.e. we try to maximise the determinant of J!
+
+    \nHeader{Damped pseudo inverse}
+
+    Instead of $J^{+}$ we can use the damped pseudo inverse:
+    \begin{equation}
+        J^{\star} = J^{T}(JJ^{T} + k^{2}\mathbf{I})^{-1}
+    \end{equation}
+    with k being the damping factor. 
+    This pseudo-inverse will limit the size of entries (mostly near-singularities, while farther from singularities, this has little effect) in the pseudo-matrix in effect "damping" the rise to infinity and normalizing the behaviour of our robot.
+
+    \nHeader{"Spring" method}
+        We can attach a fictitious spring at the end-effector with the other end connected to the target position. 
+        More correctly we can move in the direction of the force a spring would exert if it were there.
+
+        \begin{equation}
+            \Delta q = J^{T}K(\vec{x}_{d} - \vec{x}_{e})
+        \end{equation}
+
+        This works because the transpose of the Jacobian actually maps forces at the end effector to equivalent forces in the joints required for equivalent work done (explained in the dynamics section). 
+        We simply take those torques, and use their directions (we can take the magnitudes in proportion as we like)
+
+        
+        \textit{Note:This method requires that the target is stationary!}
+    }
+
+\nSection{Dynamics}
 
 \end{document}
