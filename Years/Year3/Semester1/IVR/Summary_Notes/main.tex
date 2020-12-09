@@ -1596,4 +1596,186 @@ For the robot above:
     \textit{Note: this is exactly how physics in game engine's/simulations works(maybe not the robot manipulator part, but the integration of acceleration part)}
 
 }
+
+\nSection{Control}
+\nDefinition{Control system}{
+    A control system is a system, which provides the desired response by automatically manipulating the system inputs.
+    \begin{center}
+        \nImg{control_system}
+    \end{center}
+}
+\nDefinition{Open vs Closed loop}{
+    A \textbf{open-loop} control system, attempts to generate the desired outputs without actually getting any feedback on what the current outputs at any moment are.
+    Think of such systems, as blind algorithms, which generate such signals which always get the system to the desired configuration no matter what. 
+    An example would be a funnel and a ball, we don't  care about the current position of the ball in the funnel, we know that if it's in the funnel, it will fall down, and that's all we care about.
+
+    \par 
+    An \textbf{closed-loop} control system, receives \textbf{feedback} from sensors and uses it to lead the outputs to the desired configuration.
+    }
+
+\nDefinition{SISO vs MIMO}{
+    \textbf{SISO} (single input and single output) control systems, as the name suggests, have a single input and output.
+    \textbf{MIMO} (multiple inputs and outputs) control systems with multiple inputs and outputs 
+}
+\nDefinition{Discrete vs Continous}{
+    \textbf{Continous} time control systems, deal with signals which happen on a continous time-scale, i.e. the signal is a smooth function.
+    \textbf{Discrete} time control systems, work with signals which are not continuous, but rather arrive in discrete time steps (for example, every 1 second, or whenever a switch is turned on) 
+}
+\nDefinition{Regulation vs Tracking}{
+    \textbf{Regulation} controllers have as a goal an output value which stays in place (the target output does not move.
+    \textbf{Tracking} controllers face outputs which follow trajectories and do not stay in one place.
+
+    \begin{center}
+        \nImg{regulation_tracking}
+    \end{center}
+    }
+
+\nDefinition{Types of control systems}{
+    \begin{itemize}
+        \item Linear control - output is proportional to input
+        \item Nonlinear control - output is not proportional to input
+        \item Optimal control - control of a system while maximising some other function 
+        \item Adaptive control - control where the system must adapt to initially uncertain/changing parameters 
+        \item Robust control - control designed to work with uncertainty explicitly
+        \item Stochastic control - control which models the output using probability theory
+        \item Intelligent control - control applying machine learning models
+        \item Chaos control - control designed to operate \textbf{chaotic} systems (ones where small changes to input cause massive changes to output)
+    \end{itemize}
+}
+
+\nDefinition{PID control}{
+    If our desired output is y, and we know 
+    the error (distance from correct output to curent output), its derivative and integral, we can design a controller which uses these values to direct the inputs in the directions which bring us closer to the correct output:
+    \begin{equation}
+        \vec{r} = k_{p}(y_{d} - y) - k_{d}\dot{y} + k_{i} \int (y_{d} - y) \; dt  
+    \end{equation} 
+
+    where the k values serve as tuning parameters.
+    \begin{itemize}
+        \item The proportional term guides the system in proportion to the error 
+        \item The derivative term acts like a break, and tries to counterract the proportional change, effectively damping it to prevent overshooting
+        \item The integral term sums the total error over time to "offset" and counter the effects of long-term error build up. This effectively removes \textbf{steady-state} error.
+    \end{itemize}
+    \textit{\color{red} Note: usage of the integral term is not generally safe for robots}
+    
+    \nHeader{Problems with integral control}
+
+    \begin{equation}
+        k_{i} \int (y_{d} - y) \; dt
+    \end{equation}
+    \begin{itemize}[noitemsep]
+        \item Wind-up effects
+            \subitem- in the beginning of control, the integral term can lead to large values that can result in unpredictable behaviour
+            \subitem- any errors that occur after the initial phase will normally be compensated by opposite errors anyway
+        \item For precision, a small gain factor for this term is used 
+            \subitem- Integral leads to long reaction times
+            \subitem- not really good for tracking tasks
+        \item Generally, we can likely remove steady-state error if we apply some domain knowledge, for example in the case of a pendulum,damper and spring setup, the steady state error of an open-loop control system, is caused by the offset of gravity!
+        \item It is possible to use imperfect or time-windowed integration or resets in order to mitigate these effects (i.e. we could every now and then "clear" the integral)
+    \end{itemize}
+
+    }
+
+\nDefinition{Robot PID control}{
+    We can apply PID control to a robot's joints as follows:
+    \begin{equation}
+        \vec{r} = K_{p}(\vec{q}_{d} - \vec{q}) + K_{d}(\vec{\dot{q}}_{d} - \vec{\dot{q}}) + K_{i} \int (\vec{q}_{d} - \vec{q}) \; dt 
+    \end{equation}
+    This will generate torques which get us closer to the desired joint configurations!
+
+    Where all K's are \textbf{positive} semi-definite matrices!
+    
+    Notice how this totally disregards the dynamics of the system, it also ignores the fact that the dynamics is non-linear (while PID is a linear controler). The simplicity of the PID controller outweight the negatives however, even though the motion might not be perfect, it's still satisfactory.
+
+    \begin{center}
+        \nImg{pid_robot}
+    \end{center}
+    
+    \nHeader{Gravity compensation}
+    In order to remove/reduce steady-state error (to replace the unsafe integral term) we can factor in the gravity term:
+    \begin{equation}
+        \vec{r} = K_{p}(\vec{q}_{d} - \vec{q}) + K_{d}(\vec{\dot{q}}_{d} - \vec{\dot{q}}) + G(\vec{q})
+    \end{equation}
+
+    This causes the controller to try and factor gravity offsets into the equation.
+
+    \nHeader{End-effector control}
+        We can apply the same idea, but to control the end-effector position as opposed to the joint positions, the velocity $\vec{\dot{q}}$ at each step can be found with:
+        \begin{equation}
+            \vec{\dot{q}} = J^{+}(K_{D}\vec{\dot{x}}_{d} + K_{p}(\vec{x}_{d} - \vec{x})) + (\mathbf{I} - J^{+}J)\vec{\mathbf{q}}_{0}
+        \end{equation}
+        This includes the secondary-task term as defined previously.
+        Notice how all we did is to use the direct output of the PID controller in place of the end-effector velocity, i.e. we change the q parameters in direction of velocity proportional to the torque
+        
+        Why do we include the jacobian ? It simply won't work otherwise, and the Jacobian defines the geometric relationships between the angles and end-effector positions.
+        
+        \begin{center}
+            \nImg{pid_angles}
+        \end{center}
+
+        \nHeader{Mixing joint and end-effector control}
+
+        We can combine the two controllers to create a full controller which manipulates motors with torque:
+    
+        \begin{center}
+            \nImg[0.70]{pid_merged}
+        \end{center}
+
+        Notice how the first part finds the configuration of joints which positions the end-effector in the desired position, while the other part finds the torques which get us to that position!
+        PERFECTION, WE HAVE CONTROL. We can directly plug that output to our motors, since most of them operate on torque settings.
+    }
+
+\nDefinition{Choosing the gains settings}{
+    \nHeader{Characterising system behaviour}
+        There are a number of characterisics which define a controller's response:
+        \begin{itemize}[noitemsep]
+            \item \textbf{Stability} : whether the controller reaches a stable point 
+            \item \textbf{Accuracy} : how big is the Steady-state error offset from the desired output 
+            \item \textbf{Settling time} : how long does it take for the system to converge to its steady state 
+            \item \textbf{Rise time} : how long does it take for the controller to get close to the desired output for the first time (i.e. just before overshooting)
+            \item \textbf{Overshoot} : how much does the system overshot the steady state at most  
+        \end{itemize}
+    \nHeader{Choosing proportional gain}
+
+    First set all gains to zero, then slowly increase $K_{p}$.
+    Proportional gain reduces the rise time of the controller as well as the overshoot. Increasing this term decreases error and time taken to reach target but also stability
+    \nHeader{Choosing integral gain}
+    After setting the proportional gain, slowly increase the integral gain until satisfactory.
+
+    Increasing this gain reduces error, but increases the overshoot and reduces the stability of the system.
+
+    Should normally be way lower than $K_{p}$
+
+    This term is normally not needed unless steady-state error is expected or the system if very noisy.
+
+    \nHeader{Choosing derivative gain}
+
+    Finally vary $k_{d}$ untill it's satisfactory.
+
+    Increasing this term damps the system, while increasing the stability. It reduces the overshoot but increases the rise time slightly.
+
+    \textit{$K_{d}$ takes a derivative of the error term which might be very noisy, in which case it amplifies the error!}
+
+    \nHeader{Summary}
+
+    \begin{center}
+        \nImg[0.8]{pid_summary_gains}
+    \end{center}
+
+}
+
+\nDefinition{Evaluation of PID }{
+
+    \begin{itemize}
+        \item PID control is usually the best controller without any built in model 
+        \item PID does not provide \textbf{optimal control} i.e. it's not perfect 
+        \item Only reactive, may be slow, and needs errors to be able to react
+        \item D-term may suffer from intrinsic or measurement noise (use low pass filter to counteract)
+        \item D-term (error derivative) and I-term may suffer from suddent target-point hcanges (use set-point ramping)
+        \item Is tuned to a particular and specific working regime (we can use gain scheduling, to change parameters dynamically)
+        \item Is \textbf{linear} and (anti)symmetric (e.g. usually a heating system does not involve symmetric cooling)
+        \item May not be perfect when \textbf{tracking}, due to constant delay (this can be reduced with higher proportional gain settings)
+    \end{itemize}
+}
+
 \end{document}
