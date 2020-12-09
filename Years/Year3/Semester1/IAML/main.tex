@@ -204,6 +204,99 @@
 
 
 \nSection{Naive Bayes}
+
+\nTheorem{Bayes rule}{
+    \begin{equation}
+        P(y|x) = \frac{P(x|y) P(y)}{\sum_{y'} P(x|y')P(y')}
+    \end{equation}
+
+    where:
+    \begin{itemize}[noitemsep]
+        \item y : one of the classes
+        \item x : the input data, feature vector
+        \item P(y) : \textbf{prior}, the probability of seeing elements of class y in general prior to making any observations
+        \item $P(x|y)$ : \textbf{class model/likelihood}, given the data is in class y, how likely are the features that i am seeing
+        \item P(x) = $\sum_{y'}P(x|y')P(y')$ : \textbf{normalizer}, does not affect the probabilities, but without this term we cannot compare data in terms of probability of being in each class (i.e. for confidence values)
+    \end{itemize}
+
+    \textit{Note: this works with probability densities too (which we're using almost exclusively)}
+}
+
+\nDefinition{Naive bayes}{
+    Bayesian classifier, which assumes \textbf{conditional independence} between different attributes. It attempts to model the underlying probability distribution so it's a \textbf{generative} model.
+
+    I.e.:
+    \begin{equation}
+        P(\vec{x}|y) = \prod_{i=1}^{d} P(x_{i}|x_{1} \hdots x_{i-1},y)=  P(x_{1}|y) \cdot P(x_{2}|y) \cdot P(x_{3}|y) \hdots
+    \end{equation}
+    It assumes that there are no correlations between the variables themselves, and any correlations are explained by the fact they belong to the same class.
+
+    \nHeader{Example}
+    The probability of going to the beach and getting a heat stroke are not independent: $P(B,S) > P(B)P(S)$.
+    The may be independent if we know the weather is hot (i.e. external factor is what actually causes the dependence, which we can factor into the equation):
+    $P(B,S|H) = P(B|H)P(S|H)$ This hidden factor in naive bayes is \textbf{the class}
+}
+
+\nDefinition{Gaussian Naive bayes}{
+    A Naive Bayes classifier which uses the gaussian distribution as a class model for each class.
+
+    \begin{equation}
+        \LARGE
+        p(x|y) = \frac{1}{\sqrt{2\pi \sigma_{x,y} ^{2}}}\exp^{-\frac{1}{2} \frac{(x - \mu_{x,y})^{2}}{\sigma_{x,y}^{2}}}
+    \end{equation}
+
+    With:
+    \begin{itemize}[noitemsep]
+        \item $\mu_{x,y}$ : the mean of the gaussian modelling class y's attribute x
+        \item $\sigma_{x,y}^{2}$ : variance of the gaussian modelling class y's attribute x
+        \item $x$ : the value of the attribute
+        \item $y$ : the class 
+    \end{itemize}
+    \textit{Note: this is not actually a probability per-se, this is a p.d.f function which can be higher than 1}
+    }
+
+\nDefinition{Problems with Naive Bayes}{
+    \nHeader{Covariance}
+    Naive bayes cannot model covariance of the attributes, i.e.:
+    \begin{center}
+        \nImg{covariance_nb}
+    \end{center}
+    in the above case the only thing differentiating the classes is their relationship between x and y, i.e. the two attributes. Naive bayes can only model 
+    \textbf{spherical} distributions
+    
+    \nHeader{Zero frequency problem}
+        Should any data never appear under any of the classes the probability of it belonging to that class is always going to be zero.
+        So say we are classifying emails as spam or non-spam, and the word "now" never occurred in non-spam emails, but had occurred in some spam emails. Any sentence containing the word "now" would always be classified as spam no matter the actual probability of it being spam!
+
+        Solution, add a small epsilon to all "feature counts", or perform laplace smoothing: 
+        \begin{equation}
+            P(w,c) = \frac{num(w,c) + \epsilon}{num(c) + 2\epsilon}
+        \end{equation}
+        
+        Zipf's law: 50\% of words occur once 
+        \nHeader{Independence assumption}
+
+        Continuing with the spam example, every word contributes to the total probability independently, easy to fool. Simply stuff lots of non-spammy words into email
+    
+        }
+
+\nDefinition{Deaing with missing data}{
+
+    Suppose we have missing data for some attribute i of a sample x. How can we compute the likelihood of this sample belonging to any class ? 
+
+    We simply ignore it:
+    \begin{equation}
+        P(x_{1}\hdots x_{i} \hdots x_{d}|y) = \prod_{k \neq i}^{d} P(x_{i}|y)
+    \end{equation}
+
+    There is no need to fill in the gaps artificially because missing attribute data essentially has a probability of 1: 
+    
+    \begin{center}
+        \nImg[0.8]{nb_missing_data}
+    \end{center}
+}
+
+
 \nSection{Decision Trees}
 \nSection{Generalisation \& Evaluation}
 \nSection{Linear regression}
