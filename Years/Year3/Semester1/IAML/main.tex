@@ -366,6 +366,8 @@
     If the entropy in the new subsets is on average higher than the entropy in the original subset, 
     we have lost information (note this is not possible in this scenario) and if it's lower, we have indeed gained information. The split which maximises this quantity is the best.
     
+    \textit{
+    Note: that picking the split on this criterion, implies that no attribute will be picked twice (since if we split on it once, all the subsets in nodes below will have the same value for this attribute)}
     \nHeader{Gain ratio}
 
     Using this heuristic will lead the algorithm to pick splits which lead to more subsets naturally (if allowed by shape of attributes and data)
@@ -404,7 +406,9 @@
 
 \nDefinition{Numeric attributes}{
     How can we apply this to numeric attributes? Split based on \textbf{thresholds}, threshold can be picked via some process.
-    Easy solution is to take all the values for the attribute we are evaluating a split on, sort them and go through the split on each of those one-by-one.
+    The easy solution is to take all the values for the attribute we are evaluating a split on, sort them and go through the split on each of those one-by-one.
+
+    \textit{Note: this will lead to one attribute possibly being split multiple times since we can always divide the values into smaller subsets}
 }
 
 \nDefinition{Multi-class classification}{
@@ -462,6 +466,9 @@
 }
 
 \nSection{Generalisation \& Evaluation}
+
+\nDefinition{}{}
+
 \nSection{Linear regression}
 \nSection{Logistic regression}
 \nSection{Optimisation \& Regularisation}
