@@ -298,6 +298,169 @@
 
 
 \nSection{Decision Trees}
+
+\nDefinition{Method}{
+    Decision trees split the data based on the label of each data point, in a way which maximizes the entropy of each split. This means we are splitting on attributes which have the most "discriminatory" power at each step
+\begin{center}
+    \nImg{dt_example}
+\end{center}
+    We classify each new sample by following the splits in the tree untill we hit a pure subset (or non-pure), and select the label based on the most frequent label in that leaf. 
+}
+
+\nDefinition{Quinlan's ID3 Algorithm}{
+    \begin{itemize}[noitemsep]
+        \item A <- best attribute for splitting  (\textbf{needs a heuristic})
+        \item Decision attribute for this node <- A 
+        \item For each value of A, create new child node
+        \item Split training data at this node into child nodes
+        \item For each child node/subset 
+            \subitem if subset is \textbf{pure}, stop
+            \subitem otherwise repeat on this subnode  
+    \end{itemize}
+}
+
+\nDefinition{Purity measures}{
+    In order to pick the best attribute we need a purity measure
+    
+    Even splits do not give us any information, we want ones biased towards the +'ve or -'ve labels
+
+    i.e. the purity for a pure set (4y/0n) is 100\%
+    but the purity for an impure set (3y/3n) is 50\% (uncertain)
+    
+    \nHeader{Entropy}
+
+    \begin{equation}
+        H(S) = -p_{+}\log_{2}p_{+} -p_{-}\log_{2}p_{-}
+    \end{equation}
+
+    where: 
+    \begin{itemize}[noitemsep]
+        \item S is the subset of training examples
+        \item p's refer to the proportion of positive and negatives in the subset S
+    \end{itemize}
+
+    \begin{center}
+        \nImg{entropy}
+    \end{center}
+
+    we interpret this measure as the number of bits of information needed to tell if a random item in S is a + or a -, we dont need any information at all if the subset is entirely composed of +'s or -'s, and all the information if it's evenly split
+}
+
+\nDefinition{Information gain}{
+    once we have a measure of purity, we can establish the heuristic which will define which split will be the best:
+
+    \begin{equation}
+        Gain(S,A) = H(S) - \sum_{V\in Values(A)}\frac{|S_{v}|}{|S|}H(S_{v})
+    \end{equation}
+
+    where:
+    \begin{itemize}[noitemsep]
+        \item \textbf{S} : subset of data points
+        \item \textbf{A} : attribute we are splitting on
+        \item \textbf{V} : possible values of attribute A
+        \item \textbf{$S_{v}$} : subset of S with data points which have label v  
+    \end{itemize}
+
+    This measures the "information" we gain by performing the split. 
+    Notice how we take a weighted average (weighted by the number of data points) of the entropy of each new subset formed in the split. 
+    If the entropy in the new subsets is on average higher than the entropy in the original subset, 
+    we have lost information (note this is not possible in this scenario) and if it's lower, we have indeed gained information. The split which maximises this quantity is the best.
+    
+    \nHeader{Gain ratio}
+
+    Using this heuristic will lead the algorithm to pick splits which lead to more subsets naturally (if allowed by shape of attributes and data)
+    We can use the entropy of the split itself to counteract this instead:
+    \begin{equation}
+        \begin{aligned}
+            &SplitEntropy(S,A) = - \sum_{V \in Values(A)} \frac{|S_{v}|}{|S|}log \frac{|S_{v}|}{|S|}\\
+            &GainRatio(S,A) = \frac{Gain(S,A)}{SplitEntropy(S,A)}
+        \end{aligned}
+    \end{equation}
+
+    not how the gain will be lower when we have too many or too few subsets, 
+    the split ratio will be the highest with higher information gains which result in 2 subsets that each take half of the data. 
+    }
+
+\nDefinition{Overfitting}{
+    Overfitting happens when the model learns the "noise" in the training data, and becomes too specific.
+
+    Decision trees will always classify training examples perfectly if we make them big enough (because eventually we will split the data into singletons, and those instances will always be labelled as the correct instances)
+
+    This is an example of \textbf{overfitting}, we need to limit the size of the tree in order to counteract this, i.e. force some subsets to end up being non-pure in order to stop the model from becoming too specific to our training data.
+
+
+    \begin{center}
+        \nImg[0.6]{dt_overfitting}
+    \end{center}
+
+    \nHeader{Solutions}
+
+    \begin{itemize}
+        \item Stop splitting when not statistically significant
+        \item Grow the tree fully and then prune in a way which maximises the accuracy (using a validation set)
+            \subitem- \textbf{Sub-tree replacement pruning}: pretend you remove a node and all its children, measure the performance on validation set. Remove node with highest performance gain, repeat untill removal is harmful to performance(greedy)
+    \end{itemize}
+}
+
+\nDefinition{Numeric attributes}{
+    How can we apply this to numeric attributes? Split based on \textbf{thresholds}, threshold can be picked via some process.
+    Easy solution is to take all the values for the attribute we are evaluating a split on, sort them and go through the split on each of those one-by-one.
+}
+
+\nDefinition{Multi-class classification}{
+    We can apply decision trees to multi-class classification by predicting the most frequent class in the subset we land on. 
+    The entropy calculation becomes:
+    \begin{equation}
+        H(S) = - \sum_{c} p_{c} \log_{2}p_{c}
+    \end{equation}
+
+    where $p_{c}$ is the fraction of samples of class c in the subset
+}
+\nDefinition{Regression}{
+    We can also apply this algorithm to regression by taking the average of the training examples in the subset we land on as the predicted output value.
+    In which case instead of maximising gain we grow the tree by minimising variance in the subsets.
+    (pick split which reduces variance in the output the most!)
+    We can also replace the average by linear regression at the leaves.
+
+}
+
+\nDefinition{Random decision forest}{
+    \begin{itemize}[noitemsep]
+        \item Pick a random subset $S_{r}$ of training examples 
+        \item grow a full tree $T_{r}$ (without pruning)
+        \item when splitting pick from $d << D$ random attributes (i.e. hide some attributes for some trees)
+        \item compute gain based on $S_{r}$ instead of full set
+        \item repeat K times to make K trees
+    \end{itemize}
+
+    Given a new data point X we can then:
+    \begin{itemize}[noitemsep]
+        \item classify X using each of the trees $T_{1}\hdots T_{k}$
+        \item use majority vote: class predicted most often as the label!
+    \end{itemize}
+
+    \textit{\color{green} State-of-the-art performance in many domains, very good stuff}
+}
+\nDefinition{Evaluation of decision trees}{
+    \begin{itemize}[noitemsep]
+        \item[+] \textbf{interpretable} - humans can understand the underlying decisions! (ONLY ALGORITHM IN THIS COURSE TO HAVE THIS PROPERTY)
+        \item[+] easilly handles irrelevant attributes (gain = 0)
+        \item[+] can handle missing data 
+        \item[+] very compact: nodes $<<$ D after pruning
+        \item[+] very fast at testing time O(depth)
+        \item[-] only axis-aligned splits are possible (because we split only taking into account one dimension at a step)
+            \nImg[0.4]{dt_axis_aligned} 
+        \item[-] greedy (may not find best tree globally)
+        \item[-] exponentially many possible trees       
+    \end{itemize}
+
+    \nHeader{Why trees?}
+    Can model non-linear, weirdly shaped data which does not realy follow a nice probability distribution (i.e. \textbf{non-monotonic} data!)
+    \begin{center}
+        \nImg{nb_vs_dt}
+    \end{center}
+}
+
 \nSection{Generalisation \& Evaluation}
 \nSection{Linear regression}
 \nSection{Logistic regression}
