@@ -551,14 +551,15 @@
     We can never actually gain the value for $E_{gen}$ but we can estimate it using a previously unseen sample of the data, i.e. the test set.
     This estimate error $E_{test}$ is going to be within some interval of $E_{gen}$.
     We can try to estimate how close to the real error we are using a confidence interval.
-    Stipulate that we are within $\Delta E$ of the generalization error such that 95\% of future test sets fall within interval :
+
+    We can think of the error we measure as a sample from a distribution of all possible errors centered around the true error. From there we want to find an interval around the measured error describing our certainty of how close we are to the true error: 
     \begin{equation}
-        E_{test} \pm \Delta E
+        E_{test} \pm \Delta E_{gen}
     \end{equation}
 
-    E here is the probability that our system will misclassify a random instance (i.e. true error)
+    $E_{gen} = E$ here is the probability that our system will misclassify a random instance (i.e. true error)
 
-    We can estabilish the confidence interval into which p\% of future tests will fall within,  as:
+    The confidence interval with p confidence is the range of values your error will be within p\% of the time
     \begin{equation}
         \begin{aligned}
             &CI = E \pm \sigma \cdot \phi^{-1} \left( \frac{1-p}{2} \right)\\
@@ -590,6 +591,8 @@
                 CI = 0.25 \pm 0.008
             \end{equation}
     \end{itemize}
+
+    \textit{Note: the confidence interval varies roughly with the square root of n (if p is constant)}
     }
 
 \nDefinition{Data set splits}{
@@ -767,6 +770,172 @@
 }
 
 \nSection{Linear regression}
+
+\nDefinition{Linear model}{
+    The idea is to assume the output value is a linear combination of the attributes, i.e.:
+    \begin{equation}
+        \begin{aligned}
+            &y = f(\vec{x}) = w_{0} + w_{1}x_{1} + \hdots + w_{D}x_{D} = \phi(\vec{x})\vec{w} \\
+            &\phi(x) = (1,x_{0},x_{1},\hdots,x_{D})
+        \end{aligned}
+    \end{equation}
+
+
+    where:
+    \begin{itemize}[noitemsep]
+        \item \textbf{w} are the weights, or model parameters (think gradient of the line)
+        \item \textbf{x} is the observation
+        \item \textbf{$\phi(x)$} is just a generalization of x which appends a 1 to the beginning (and performs transformations on the input data)  
+    \end{itemize}
+
+    Once we have the weights vector, we can predict new outputs by simply following the line defined by our model:
+
+    \begin{center}
+        \nImg[0.4]{linear_reg}
+    \end{center}
+
+    \textit{Note: if $\vec{x}$ is the matrix of all input data (i.e. each row is an input data point), $\phi(\vec{x})$ becomes a matrix and $\vec{y}$ becomes a vector or predictions for each data point}   
+}
+
+\nDefinition{Calculating w - least squares}{
+    We need to find the parameters $\vec{w}$ given the \textbf{design matrix} $\phi$ (where each training instance is a row). 
+    Many methods, simplest is to minimise loss function:
+    \begin{equation}
+       O(\vec{w}) = \sum_{i=1}^{n}(y_{i} - \vec{w}^{t}x_{i})^{2}
+    \end{equation}
+
+    i.e. we are finding the weights which give us a model with \textit{the least squared error} - or minimises sum of \textbf{residuals} squared.
+
+    This problem is exactly the same as the problem of finding a solution to tall matrices of equations $Ax = b$ which minimizes $|Ax - b|^{2}$. The standard way of dealing with tall matrices is using the \textbf{pseudo-inverse}:
+    \begin{equation}
+        \vec{w} = (\phi^{T}\phi)^{-1} \phi^{T}\vec{y}
+    \end{equation}
+    \nHeader{Probabilistic intepretation of O(w)}
+
+    This method can be interpreted probabisticially by assuming: $y = \vec{w}^{T}\vec{x} + e$
+    
+    where e is just some arbitrary gaussian noise $N(0,\sigma^{2})$.
+    This means, we are assuming that our data is scattered around the hyperplane of best fit according to some gaussian noise.
+    This implies that $y|\vec{x}_{i} \approx N(\vec{w}^{T}\vec{x}_{i},\sigma^{2}) $
+    So minimising $O(\vec{w})$ is equivalent to maximising the likelihood of this model! (probability output value is drawn from this gaussian)
+    
+    Then $\vec{w}^{T}\vec{x}$ can be seen as the expectation $E(y|\vec{X})$
+    and the squared residuals give us the estimation of the "noise" model:
+    \begin{equation}
+        \sigma^{2} = \frac{1}{n}\sum_{i=1}^{n}(y_{i} - \vec{w}^{T}\vec{x}_{i})^{2}
+    \end{equation}
+    
+    }
+
+\nDefinition{Linear regression with multiple outputs}{
+    what if for each piece of input data we want to predict more than one value ? Introduce a $\vec{w_{y}}$ for each y required and perform \textbf{multiple regression}, i.e. a separate regression for each target.
+}
+
+\nDefinition{Non-linear data}{
+    We can expand linear regression to work with non-linear data, by transforming it first!
+    \begin{equation}
+        \phi = \begin{bmatrix}
+            \phi_{1}(\vec{x}_{1}) & \phi_{2}(\vec{x}_{1}) & \hdots & \phi_{3}(\vec{x}_{1})\\
+            \phi_{1}(\vec{x}_{2}) & \phi_{2}(\vec{x}_{2}) & \hdots & \phi_{3}(\vec{x}_{2})\\
+            \vdots &\vdots & \hdots & \vdots\\
+            \phi_{1}(\vec{x}_{d}) & \phi_{2}(\vec{x}_{d}) & \hdots & \phi_{d}(\vec{x}_{2})\\
+        \end{bmatrix}
+    \end{equation}
+
+    The solution to w stays the same and this way we can establish linear relationships with non-linear transforms of the data!
+
+    \nHeader{Polynomial regression}
+
+    an example of this is polynomial regression of the form (with 1D data):
+    \begin{equation}
+        \begin{aligned}
+            &\phi_{1}(x) = x \\
+            &\phi_{2}(x) = x^{2}\\
+            &\phi = (1,x,x^{2})
+        \end{aligned}
+    \end{equation}
+
+    this would yield solutions of the form:
+
+    \begin{equation}
+        y = w_{0} + w_{1}x + w_{2}x^{2}
+    \end{equation}
+
+    I.e. the model would find a hyperplane in higher dimensional space which actually expresses the polynomial form we're looking for!
+
+    \begin{center}
+        \nImg[0.35]{polynomial_reg}
+    \end{center}
+
+    \nHeader{Radial basis functions}
+
+    Another common transformation is \textbf{RBF} defined as:
+    \begin{equation}
+        \phi_{i}(\vec{x}) = \exp(\frac{-\frac{1}{2}\left| \vec{x} - \vec{c}_{i} \right|^{2}}{\alpha^{2}})
+    \end{equation}
+    
+    where: 
+    \begin{itemize}[noitemsep]
+        \item $\alpha$ is the "width" of the basis function, akin to variance in a gaussian distribution
+        \item $\vec{c_{i}}$ is the "center" of the basis function, akin to the mean in a gaussian distribution
+    \end{itemize}
+    Notice how this is equivalent to a gaussian distribution, just without the normalizer term (i.e. this does not sum to 1)
+
+    Example with 1D data and 2 radial basis:
+    \begin{center}
+        \nImg[0.35]{rbf_functions}
+    \end{center}
+
+    hard to imagine, but this way we express the output as a linear combination of distances to each centre, and this can give us a nice linear relationship.
+    
+    \textit{\color{red} These are really good, but with more dimensions you'll need way too many of them and that probably means overfitting, also hard to learn the rbf parameters}
+}
+
+\nDefinition{one-hot-encoding}{
+    How do we translate categorical features to work with linear regression ? 
+    can we give a different numeric value to each category like so?:
+    \begin{equation}
+        x_{1} = 
+        \begin{cases}
+            1 & \text{if intel}\\
+            2 & \text{if AMD}\\
+            3 & \text{if Apple}\\
+            4 & \text{if Motorola}
+        \end{cases}
+    \end{equation}
+
+    No! HELL NO. EW!
+
+    Think about it, say we have only this attribute and no bias:
+    \begin{equation}
+        y = x_{1}\cdot w_{1}
+    \end{equation}
+    maybe intel produces twice as good processors as AMD (based). We cannot express that in this form, we only get one weight for the attribute, so changing $w_{1}$ equally changes the \textbf{contribution} of each manufacturer to the output (clock speed or whatever).
+
+    We can however split up each value of this attribute into its own attribute:
+    \begin{equation}
+        \begin{aligned}
+            &x_{1} = \text{1 if intel or 0 otherwise}\\
+            &x_{2} = \text{1 if AMD or 0 otherwise}\\
+            \vdots
+        \end{aligned}
+    \end{equation}
+    We can then express the superiority of intel with weights $w_{1} = 1$,$w_{2} = 0.5$ (exact values, scale etc.. irrelevant rn.)like so:
+    \begin{equation}
+        y = x_{1} + x_{2} \cdot 0.5 + \hdots
+    \end{equation}
+
+
+}
+\nDefinition{Evaluation of Linear regression}{
+
+    \begin{itemize}
+        \item[+] very simple yet powerful
+        \item[+] \textbf{invariant to scaling of attributes} (no need for normalization) 
+        \item[-] sensitive to outliers
+            \subitem \nImg[0.2]{linear_reg_outliers}
+    \end{itemize}
+}
 \nSection{Logistic regression}
 \nSection{Optimisation \& Regularisation}
 \nSection{Support Vector Machines}
