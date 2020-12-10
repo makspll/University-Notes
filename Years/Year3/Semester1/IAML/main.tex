@@ -459,7 +459,7 @@
     \end{itemize}
 
     \nHeader{Why trees?}
-    Can model non-linear, weirdly shaped data which does not realy follow a nice probability distribution (i.e. \textbf{non-monotonic} data!)
+    Can model non-linear, weirdly shaped data which does not really follow a nice probability distribution (i.e. \textbf{non-monotonic} data!)
     \begin{center}
         \nImg{nb_vs_dt}
     \end{center}
@@ -467,7 +467,304 @@
 
 \nSection{Generalisation \& Evaluation}
 
-\nDefinition{}{}
+\nDefinition{Over \& Under fitting}{
+    \nHeader{Overfitting}
+    If we can find a model which makes more mistakes on the training data but fewer mistakes on unseen future data, our model has overfitted.
+
+    This can happen for many reasons:
+    \begin{itemize}[noitemsep]
+        \item Predictor is too "complex" (too flexible)
+        \item It fits to the "noise" in the training data
+        \item Captures patterns which will not-re appear in future data
+    \end{itemize}
+
+    \nHeader{Underfitting}
+
+    If we can find another predictor with smaller training error and smaller error on future unseen data, our model has underfitted.
+
+    This can happen for many reasons:
+    \begin{itemize}[noitemsep]
+        \item Predictor is too simplistic (too rigid)
+        \item Not powerful enough to capture salient patterns in data 
+    \end{itemize}
+
+    \nHeader{Examples}
+
+    \begin{center}
+        \nImg[0.7]{under_over_fitting}
+    \end{center}
+}
+
+\nDefinition{Flexible vs Inflexible}{
+    Every dataset requires a different level of flexibility. How much depends on the complexity of the task and the available data. We need a "knob" to vary the "flexibility" of our predictor.
+
+    Most learning algorithms have such knobs:
+    \begin{itemize}[noitemsep]
+        \item Regression: order of the polynomial 
+        \item Naive Bayes: number of attributes, limits on model parameters
+        \item Decision Trees: \#nodes in the tree / prunning confidence
+        \item kNN: number of nearest neighbours
+        \item Support Vector Machines: kernel type, cost parameter  
+    \end{itemize}
+
+    With a small amount of training data we require more rigit models (less chance for overfitting).
+    For simpler tasks we also pick more rigid models. For complex tasks we want a more flexible/complex model
+}
+
+\nDefinition{Training vs Generalization error}{
+    The training error can be defined as the average error over the training data (error here can be any error metric):
+    \begin{equation}
+        E_{train} = \frac{1}{n}\sum_{i=1}^{n} error(f_{D}(\mathbf{X_{i}}),y_{i})
+    \end{equation}
+    The generalization error however, is the general error on future data.
+    Problem is we don't know what the future data will be, we do however know the possible range of input data.
+
+    Generalization error is defined as follows:
+    \begin{equation}
+        E_{gen} = \int error(f_{D}(\mathbf{X}),y)p(y,\mathbf{X}) \; d\mathbf{x}
+    \end{equation}
+
+    i.e. the sum over all possible input values of the error multiplied by the probability of seeing each of those input values given the class.
+
+    We can never compute this as we do not know $p(y,\mathbf{X})$, since that is what we're trying to model!
+
+    We can however estimate the generalization error, by treating the \textbf{testing} error as an estimate of it! (NOTE NOT THE TRAINING ERROR, NEVER USE THE TRAINING ERROR AS YOUR ACCURACY)
+    
+}
+
+\nDefinition{Estimating Generalization error}{
+    The testing error can be used to estimate generalization error:
+    \begin{equation}
+        E_{test} = \frac{1}{n}\sum_{i=1}^{n} error(f_{D}(\mathbf{X_{i}}),y_{i})
+    \end{equation}
+
+    If the testing set is an \textbf{unbiased} sample from the population of input data, i.e. unbiased sample of input values, then the following holds:
+    \begin{equation}
+        \lim_{n\rightarrow \infty}E_{test} = E_{gen}
+    \end{equation}
+
+    I.e. as our sample size grows to infinity, our testing error converges onto the generalization error!
+    How close are the two together ? this depends on n
+
+    \nHeader{Confidence interval}
+
+    We can never actually gain the value for $E_{gen}$ but we can estimate it using a previously unseen sample of the data, i.e. the test set.
+    This estimate error $E_{test}$ is going to be within some interval of $E_{gen}$.
+    We can try to estimate how close to the real error we are using a confidence interval.
+    Stipulate that we are within $\Delta E$ of the generalization error such that 95\% of future test sets fall within interval :
+    \begin{equation}
+        E_{test} \pm \Delta E
+    \end{equation}
+
+    E here is the probability that our system will misclassify a random instance (i.e. true error)
+
+    We can estabilish the confidence interval into which p\% of future tests will fall within,  as:
+    \begin{equation}
+        \begin{aligned}
+            &CI = E \pm \sigma \cdot \phi^{-1} \left( \frac{1-p}{2} \right)\\
+            &\phi^{-1}(x) = \sqrt{2} erf^{-1}(-p)
+        \end{aligned}
+    \end{equation}
+    With phi calculating the number of standard deviations of the normal distribution which covers p\% of the future test sets.
+
+    we can now:
+    \begin{itemize}[noitemsep]
+        \item take a random set of n instances, how many will be miss-classified ?
+        \item flip E-biased coin n times, how many heads will we get ?
+        \item this is the binomial distribution with mean = nE, variance = n E (1-E)
+        \item $E_{future} = \# misclassified / n$, this can be approximated with a gaussian: with mean E, variance E(1-E)/n
+        \item $\frac{2}{3}$ future tests will have error in $E \pm \sqrt{E(1-E)/n} = \sigma^{2}$
+        \item Assuming E = 0.25 the confidence interval for future error will then be:
+            \subitem- for n=100 examples, p=0.95: 
+                \begin{equation}
+                    \begin{aligned}
+                        &CI = 0.25 \pm 1.96 \cdot \sigma = 0.25 \pm 0.08
+                    \end{aligned}
+                \end{equation}   
+            \subitem- for n=1000 samples, p = 0.99
+            \begin{equation}
+                CI = 0.25 \pm 0.11 
+            \end{equation}
+            \subitem- for n=10000, p=0.95
+            \begin{equation}
+                CI = 0.25 \pm 0.008
+            \end{equation}
+    \end{itemize}
+    }
+
+\nDefinition{Data set splits}{
+    The test + training set split may not be enough, we also need a validation set to pick the right algorithm and "fine-tune" its parameters:
+    \begin{itemize}[noitemsep]
+        \item Training set: construct basic classifier (Naive Bayes: count frequencies, DT: pick attributes to split on)
+        \item Validation set: pick the algorithm + fine-tune settings
+            \subitem- select best-performing algorithm
+        \item Testing set: Estimate future error rate. Cannot be same as validation set, since the algorithm would overfit to the validation set after working out the parameters!
+            \subitem- {\color{red} never report best of many runs, run once, or report results of every run} 
+    \end{itemize}
+}
+
+\nDefinition{Holdout method}{
+    The most natural way to split up your data set is to pick a fraction of it as the training set, and the rest as the test/validation set, this is known as the \textbf{holdout} method
+}
+
+\nDefinition{K-fold Cross-validation}{
+    \textbf{Cross-validation} is a technique for dealing with small data set sizes. 
+    Ideally we want to balance many goals:
+    \begin{itemize}[noitemsep]
+        \item We want to estimate future error as accurately as possible - keep $n_{train}$ as big as possible
+        \item We want to learn the classifier as accurately as possible - keep $n_{test}$ as big as possible 
+    \end{itemize}
+
+    But both the training and test sets cannot overlap! 
+    We can however, split and alternate the sets in such a way to cover more ground:
+    \begin{itemize}[noitemsep]
+        \item Split dadta into k sets
+        \item test on each k in turn, while training on k-1 others 
+        \item average the result over k folds (why can we do that? because we never use one instance as both training/testing instance at the same time, also we are not averaging the performance of one model over number of runs, we build k different models!) 
+    \end{itemize}
+    \textit{Note: while we call the sets test/train, we can use them for whatever purposes, the test set is actually likely going to be our validation set, and using cross-validation does not really set aside data for a full test set}
+    }
+\nDefinition{Leave-one-out}{
+    Same thing as cross-validation ,but with K = n, i.e. each data point becomes a test set and the rest the training set.
+
+    \begin{itemize}
+        \item[+] best possible classifier is learned: n-1 training examples
+        \item[-] high computational cost: re-learn everything n times 
+        \item[-] classes are not balanced in training / testing sets  
+            \subitem- extreme example: say we have 2 equ-probable classes and \textbf{zero attributes}, this will lead to training set of n/2 samples of B and n/2 - 1 of A. Then the model must estimate that B is always the most likely, but the instance in the test set is of class A (same thing happens if B is in the test set, model is then biased towards A), so the model will always be wrong.    
+    \end{itemize}
+}
+
+\nDefinition{Stratification}{
+    All the above splitting methods disregard the class balance in the splits, this might be a problem.
+
+    The process of ensuring each split is always populated with equal proportion of class instances, is called \textbf{stratification}
+}
+
+\nDefinition{Basics of classification measures}{
+    \nImg[0.9]{classification_measures}
+}
+
+\nDefinition{Accuracy/Classification Error}{
+    The percentage of correct classifications, or distance from real value to the predicted value in regression.
+    This is not a great measure when the A priori are uneven, i.e. one class is more frequent
+
+    \begin{equation}
+        Acc = \frac{errors}{total} = \frac{FP + FN}{TP + TN + FP + FN}
+    \end{equation}
+
+    \begin{center}
+        \nImg{accuracy_bad}
+    \end{center}
+    
+}
+\nDefinition{Misses and false alarms}{
+    We can devise error metrics which aim to take into account the false positives and negatives more:
+
+    \begin{equation}
+        \begin{aligned}
+            &False Alarm Rate = False Positive Rate = \frac{FP}{FP + TN}\\
+            &\text{\% of negatives we misclassified as positive}\\
+            &Miss rate = False Negative Rate = \frac{FN}{TP+FN}\\
+            &\text{\% of positives we misclassified as negative}\\
+            &Recall = True Positive Rate = \frac{TP}{TP+FN}\\
+            &\text{\% of positives we classified correctly}\\
+            &Precision = \frac{TP}{TP+FP}\\
+            &\text{\% of the things we predicted positive which were actually positive (dummy classifiers could be realy bad here)}\\
+        \end{aligned}
+    \end{equation}
+
+    We can use a combination of these to quantify the performance of a model, depending on what's more important and on the domain.
+    i.e. it's trivial to get 100\% recall or 0\% false alarm () 
+
+}
+
+\nDefinition{Utility and cost}{
+    We can combine these metrics into a single utility measure. If we know the cost of false positives, or negatives (i.e. how costly is it when our system misclassifies something, preventive measures, evacuation, or cost of recovery, reconstruction)
+    We can also evaluate how costly our model is in our domain.
+
+    \begin{itemize}
+        \item Detection cost: weighted average of FP, FN rates, good for event detection (earthquakes)
+            \begin{equation}
+                Cost = C_{FP} * FP + C_{FN} * FN
+            \end{equation}
+        \item F-measure: harmonic mean of recall, precision, good for information retrieval, internet searches (takes out true negatives of the equation)
+            \begin{equation}
+                F1 = 2/ (1/Recall + 1/ Precision)
+            \end{equation}
+        \item Domain-specific measures:
+            \subitem- e.g. observed profit/loss from +/- market prediction
+    \end{itemize}
+}
+
+\nDefinition{Classification thresholds}{
+    Say two systems have the following performance:
+    \begin{itemize}
+        \item A: True positive = 50\%, False Positive = 20\%
+        \item A: True positive = 100\%, False Positive = 60\%
+    \end{itemize}
+
+    which is better ? (assume no-apriori utility)
+    \begin{itemize}
+        \item very misleading question, A and B could be \textbf{THE EXACT SAME SYSTEM} but operating at different \textbf{thresholds}
+    \end{itemize}
+
+    \nHeader{ROC curves}
+    many algorithms computeu "confidence" c(x)
+    i.e. the threshold above which they classify something as a positive. For naive bayes this is naturally 0.5
+
+    this threshold determines the error rates of the model.
+    FP rate = $P(c(x) > t | ham)$, TP rate = $P(c(x) > t| spam)$
+
+    We can evaluate the performance of the model across the entire spectrum of t's using \textbf{Receiver Operating Characteristic} curves.
+    Simply plot the TPR vs FPR as t varies from $\infty $to $-\infty$
+
+    \begin{center}
+        \nImg[0.9]{roc_curves}
+    \end{center}
+
+    The AUC is a good metric for comparing different classifiers which can operate over a variety of thresholds.
+}
+
+\nDefinition{Evaluating regression}{
+    All the above methods deal with discrete, classifiers. How do we evaluate regression ?
+    There are many error measures for regression:
+
+    \nHeader{Mean Squared Error}
+    \begin{equation}
+        \frac{1}{n}\sum_{i=1}^{n}f(x_{i}-y_{i})^{2}
+    \end{equation}
+
+    \textit{popular, well understood, differentiable but {\color{red}sensitive to outliers, asingle prediction which is off by 10, is equivalent to 100 predictions off by 1.}}
+    \textit{\color{red}also sensitive to mean and scale}
+
+    \begin{center}
+        \nImg[0.4]{error_offset}
+    \end{center}
+    \begin{center}
+        here orange predictor is not as bad, but will yield high error
+    \end{center}
+
+    \nHeader{Mean Absolute Error}
+    \begin{equation}
+        \frac{1}{n}\sum_{i=1}^{n}|f(x_{i}-y_{i})|
+    \end{equation}
+    \textit{less sensitive to outliers, many small errors = one large error. {\color{red}Sensitive to mean and scale}}
+
+    \nHeader{Median Absolute Deviation}
+    \begin{equation}
+        median(|f(x_{i}-y_{i})|)
+    \end{equation}
+
+    \textit{robust, completely ignores outliers. {\color{red} difficult to wor with - cannot take derivatives, sensitive to mean and scale}}
+    \nHeader{Correlation coefficient}
+    \begin{equation}
+        \frac{n \sum_{i=1}^{n}f(x_{i}-\mu_{f})(y_{i}-\mu_{y})}
+        {\sqrt{n \sum_{i=1}^{n}f(x_{i}-\mu_{f})^{2}(y_{i}-\mu_{y})^{2}}}
+    \end{equation}
+    Basically ignores the "position" of your prediction function and likes predictors of similar shape to the data (without considering mean and scale)
+    \textit{insensitive to mean \& scale, good for ranking tasks. Intuition: is your output small as target is small and vice-versa?}
+}
 
 \nSection{Linear regression}
 \nSection{Logistic regression}
