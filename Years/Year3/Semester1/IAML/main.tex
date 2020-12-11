@@ -937,6 +937,133 @@
     \end{itemize}
 }
 \nSection{Logistic regression}
+
+\nDefinition{Binary classification}{
+    While the machine learning mafia would like you to believe this algorithm is used for regression, this is shockingly not the case, we use it to perform binary classificatin like so:
+    \begin{equation}
+        y = f(\vec{x}) =
+        \begin{cases}
+            1 & \text{if} \quad \vec{w}^{T}\vec{x} + w_{0} > 0\\ 
+            0 & \text{otherwise}
+        \end{cases}
+    \end{equation}
+    where:
+    \begin{itemize}[noitemsep]
+        \item $\vec{w}$ is the weight vector perpendicular to the decision boundary (pointing to the "side" of class 1)
+        \item $w_{0}$ is the bias term (extracted from w for convenience)
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.3]{logistic_decision}
+    \end{center}
+
+    I.e. we model the decision boundary instead of the distributions of the classes (\textbf{discriminative} model)
+    Decision boundary (hyperplane) is defined as $\vec{w}^{T}\vec{x} + w_{0} = 0$ (think with $w_{0} = 0$ dot product of x with w must be zero if x is on the line, $w_{0}$ offsets this linearly)
+
+    \nHeader{Probabilistic version}
+    We can do a bit better, and give ourselves the benefit of a probability value so we can say how confident we are in our prediction, by "squashing" the distances from the hyperplane so that they form probabilities:
+    $P(y=1|\vec{x}) = \vec{w}^{T}\vec{x}$ does not work, because the value is unbounded and breaks probability axioms, instead we use a sigmoid:
+    \begin{equation}
+        \begin{aligned}
+            & P(y=1|\vec{x}) = f(\vec{w}^{T}\vec{x})\\
+            & P(y=0|\vec{x}) = 1 - P(y=1|\vec{x})\\
+            &f(z) = \sigma(z) = \frac{1}{1 + \exp(-z)}\\  
+        \end{aligned}
+    \end{equation}
+
+    The sigmoid function maps extreme distance values to the range [0,1]:
+       
+    % \begin{center}
+    %     \nImg[0.3]{sigmoid}
+    % \end{center}
+
+    since $\sigma(z) = 0.5$ when $z = 0$, the \textbf{decision boundary} is given by $\vec{w}^{T}\vec{x} = 0$
+
+    The scale of $\vec{w}$ affects the shape of the sigmoid, larger $\vec{w}$ inflate the values, scaling the sigmoid on the x axis by the scale factor effectively "squashing" it.
+    \begin{itemize}
+        \item larger $\vec{w} \rightarrow$ probabilties increased (mostly near decision boundary)
+        \item smaller $\vec{w} \rightarrow$ probabilities decreased (mostly near decision boundary)
+    \end{itemize}
+    \begin{center}
+        \nImg[1]{sigmoid_variations}
+    \end{center}
+}
+
+\nDefinition{Calculating w}{
+    To find the model parameters we derive probabilistic expression for likelihood and maximise it.
+
+    Let dataset $D = \{ (\vec{x}_{1},y_{1}),(\vec{x}_{2},y_{2}), \hdots , (\vec{x}_{n},y_{n})\}$ 
+    Then the likelihood of our data (probability of seeing this data with w being the weight vector) is:
+    \begin{equation}
+        \begin{aligned}
+            &p(D|\vec{w}) = \prod_{i=1}^{n} p(y = y_{i}|\vec{x}_{i})\\
+            &= \prod_{i=1}^{n}p(y = 1 |\vec{x}_{i})^{y_{i}}(1- p(y=1|\vec{x}_{i}))^{1-y_{i}} \quad \text{\#split by cases}\\
+            &L(\vec{w}) = \sum_{i=1}^{n} y_{i}\log p(y = 1 |\vec{x}_{i}) + (1 - y_{i})\log(1 - p(y = 1 |\vec{x}_{i})) \quad \text{\#log likelihood}\\
+            &L(\vec{w}) = \sum_{i=1}^{n} y_{i}\log \sigma(\vec{w}^{T}\vec{x}_{i}) + (1 - y_{i})\log(1 - \sigma(\vec{w}^{T}\vec{x}_{i}))
+        \end{aligned}
+    \end{equation}
+
+    Now to maximise we find gradient, and find maxima, cannot do that \textbf{analytically} however, need to use a \textbf{numerical} technique.
+    The gradient (worked out by simple application of multivariate calculus) is:
+    \begin{equation}
+        \nabla L = 
+        \begin{bmatrix}
+            \frac{\partial L}{\partial w_{1}} \\
+            \vdots \\
+            \frac{\partial L}{\partial w_{d}} \\
+        \end{bmatrix}
+        \quad
+        \frac{\partial L}{\partial w_{j}} = \sum_{i=1}^{n}(y_{i} - \sigma(\vec{w,x}^{T}\vec{x}_{i}))x_{ij}
+    \end{equation} 
+
+    The gradient points in direction of steepest ascent, i.e. direction of change to w which will increase likelihood 
+
+    \nHeader{Gradient descent}
+    We can apply \textbf{gradient descent} to find the local maximum - which turns out to be the global maximum because the gradient is a \textbf{convex} function!
+    \begin{equation}
+        \vec{w}_{t+1} = \vec{w}_{t} + \alpha \nabla L(\vec{w_{t},\vec{x}})
+    \end{equation}
+    with $\alpha$ here standing for the learning parameter which balances the accuracy vs speed of the descent
+}
+
+\nDefinition{Multi class classification}{
+    To apply this algorithm to a multi-class classification problem:
+    \begin{itemize}[noitemsep]
+        \item Introduce a weight vector $\vec{w}_{k}$ for each class k, which does k vs not-k classification.
+        \item Apply softmax to pick the most probable class:
+            \begin{equation}
+                p(y = k | \vec{x}) = \frac{\exp(\vec{w}_{k}^{T}\vec{x})}{\sum_{j=1}^{C}\exp(\vec{w}_{j}^{T}\vec{x})}
+            \end{equation}
+    \end{itemize}
+    Note that: $0 \leq p(y = k | \vec{x}) \leq 1$ and $\sum_{j=1}^{C}p(y=j|\vec{x}) = 1$, i.e. this is another probability distribution but over all the classes.
+    \textbf{softmax} is a natural generalization of the sigmoid function to more than 2 classes, and will "split" the probability between classes. We could simply take the sigmoid outputs for each class if our classes are not \textbf{mutually exclusive} (for example, if classes are: \{has leg, has arm\}) 
+}
+\nDefinition{Linear Separability}{
+    Logical regresion, divides the space by a hyper plane and therefore can only perform well on problems which are linearly separable (classes can be divided by a plane).
+    i.e. problems where we can find a $\vec{w}$ such that:
+    \begin{equation}
+        \begin{aligned}
+            &\vec{w}^{T}\vec{x} + w_{0} > 0 \quad \text{for all postitive classes} \\
+            &\vec{w}^{T}\vec{x} + w_{0} \leq 0 \quad \text{for all negative classes} 
+        \end{aligned}
+    \end{equation}
+
+    However, we can apply \textbf{non-linear} transformations to the input data (similarly as in linear regression), to make the data \textbf{linearly separable}.
+    \begin{center}
+        \nImg[0.6]{non_linearly_separable}
+    \end{center}
+    }
+
+\nDefinition{Evaluation of logical regression}{
+    \begin{itemize}[noitemsep]
+        \item[+] \textbf{discriminative advantage}: avoids spending time on generating probability model, models boundary directly (models $p(y|\vec{x})$ directly vs $p(\vec{x}|y)$)
+        \item[+] handles outliers better than linear regression
+            \nImg[0.6]{logistic_vs_linear_reg} 
+        \item[+] less assumptions about data (doesn't assume any distribution or underlying model) apart from separability
+        \item[+] handles correlation relatively well
+        \item[-] doesn't handle missing data as gracefuly as NB (generative advantage) 
+    \end{itemize}
+}
 \nSection{Optimisation \& Regularisation}
 \nSection{Support Vector Machines}
 \nSection{Ethics}
