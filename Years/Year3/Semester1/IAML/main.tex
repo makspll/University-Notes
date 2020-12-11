@@ -1065,6 +1065,128 @@
     \end{itemize}
 }
 \nSection{Optimisation \& Regularisation}
+
+\nDefinition{Error function}{
+    We can think of optimising the weight vector in terms of the error function defined against the weights: $E(\vec{w})$ which defines a surface:
+
+    \begin{center}
+        \nImg[0.8]{error_surface}
+    \end{center}
+
+    Learning = descending this curve
+}
+
+\nDefinition{Role of smoothness}{
+    If E is completely unconstrained, minimization is impossible, best we could do is search through all possible values of $\vec{w}$
+
+    \begin{center}
+        \nImg[0.5]{not_smooth_error}
+    \end{center}
+    }
+
+\nDefinition{Role of derivatives}{
+    The gradient of the error function tells us the direction we need to push $\vec{w}$ in to increase error:
+    \begin{equation}
+        \frac{\partial E}{\partial \vec{w}}=
+        \nabla E = \begin{pmatrix}
+            \frac{\partial E}{\partial w_{1}}\\
+            \frac{\partial E}{\partial w_{2}}\\
+            \vdots \\
+            \frac{\partial E}{\partial w_{d}}\\
+        \end{pmatrix}
+    \end{equation} 
+
+    Multi-variate calculus is cool, think of each partial derivative as "wiggling" that component of w and seeing how it affects the function, each direction of wiggling is independent when it comes to the gradient!
+}
+
+\nDefinition{Numerical optimization}{
+    Numerical optimization tries to solve the general problem:
+    \begin{equation}
+        \min_{\vec{w}}E(\vec{w})
+    \end{equation}
+
+    Most commonly this is dune using the gradient (sometimes using more information, like higher order derivatives)
+
+    Most basic optimization algorithm is:
+    
+    \begin{enumerate}[noitemsep]
+        \item Initialize $\vec{w}$
+        \item while $E(\vec{w})$ too high, calculate gradient $\vec{g} = \nabla E$
+        \item pick direction d based on $\vec{g}$,$\vec{w}$,$E(\vec{w})$
+        \item set $\vec{w} = w - n\vec{d}$. Repeat from 2.
+    \end{enumerate}
+
+    note $n$ is the learning rate or step size.
+    }
+
+\nDefinition{Choice of direction}{
+    Simplest choise for $\vec{d}$ is the current gradient $\nabla E$ (because we are moving in direction of -d)
+}
+
+\nDefinition{Gradient descent}{
+    Numerical optimizatio where at each step we choose $\vec{d} = \nabla E$.
+
+    If the \textbf{step size} is too small, the algorithm will be slow, and if too large, it won't be stable
+    
+    \nHeader{Bold Driver gradient descent}
+
+    Simple heuristic for choosing n which you can use if desperate:
+    \begin{itemize}[noitemsep]
+        \item Perform gradient descent but: we repeat while n is greater than zero
+        \item At each step if the error has increased from the previous step, we set $n = n /2$
+        \item If the error has not increased, we increase n (say by factor of $1.01$) 
+    \end{itemize}
+    }
+\nDefinition{Batch vs Online learning}{
+    \nHeader{Batch}
+    \textbf{Batch} learning uses all patterns in the training set, and updates the weights after
+    \begin{equation}
+        \nabla E = \sum_{i} \nabla E_{i}
+    \end{equation}
+    \textit{Note $E_{i}$ signifies the error due to $i$'th sample}.
+
+    Batch methods are easier to analyze and more powerful.
+    \nHeader{Online learning}
+    \textbf{Online} learning uses a single instance at each iteration and updates weights after each
+    \begin{equation}
+        \nabla E = \nabla E_{i}
+    \end{equation}
+    Online methods are more feasible for huge or continually growing datasets.
+    Online learning allows the possibility of jumping over local optima ocasionally
+    }
+
+\nDefinition{Problems with gradient descent}{
+    \nHeader{Shallow valleys}
+    gradient descent can be made very slow if the shape of the error function looks like a valley:
+    The algorithm will travel very slowly once it hits the valley.
+
+    \begin{center}
+        \nImg{valley}
+    \end{center}
+
+    One solution is to use momentum in place of the gradient:
+    \begin{equation}
+       \vec{d}_{t} = \beta \vec{d}_{t-1} + (1- \beta)n \nabla E(\vec{w}_{t})  
+    \end{equation}
+    Here $\beta$ varies how much momentum we inherit from the previous iteration.
+    But this increases the complexity of the algorithm, and you have to find both optimal values for $n$ and $\beta$
+
+    \nHeader{Curved error surfaces}
+
+    The gradient always points in the direction of steepest ascent, but this might not actually be any local maximum due to curvature. This means gradient descent is not always very fast.
+
+    We can measure local curvature using the hessian matrix:
+    \begin{equation}
+        H_{ij} = \frac{\partial^{2}E}{\partial w_{i}w_{j}}
+    \end{equation}
+
+    \nHeader{Local minima}
+
+        While following the gradient guarantees that we hit a local maximum, this maximum is not necessarily global. Meaning that we can get stuck in a solution which is sub-optimal.
+        If the error function is not \textbf{convex} we are not guaranteed to find the global maximum.
+
+        Best you can do is run the algorithm from different points and pick best run.
+    }
 \nSection{Support Vector Machines}
 \nSection{Ethics}
 \nSection{Nearest Neighbours}
