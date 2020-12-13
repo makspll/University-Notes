@@ -1649,9 +1649,102 @@ Just be a good boi
 }
 
 \nSection{Perceptrons}
+
+\nDefinition{Perceptron}{
+    A "neural" inspired model, single neuron with an activation function, predict as follows:
+
+    \begin{equation}
+        y = 
+        \begin{cases}
+            1 & \text{if } \vec{w}^{T}\vec{x} + w_{0} \geq 0\\
+            -1 & \text{otherwise} \\
+        \end{cases}
+    \end{equation}
+
+    \nHeader{Learning rule}
+    Cannot differentiate the step function above so we use a training algorithm similar to gradient descent:
+
+    \begin{center}
+        \nImg[0.7]{perceptron_rule}
+    \end{center}
+    Each time we move the boundary to face more towards the "real" label of the each data point.
+
+
+    If the data is linearly separable, 
+    the above algorithm always converges to a weight vector that separates the data.
+    }
 \nSection{Neural networks}
+\nDefinition{Neural Networks}{
+    Neural networks are feature extractors. Multilayer networks are a \textbf{nonlinear} model.
 
+    \begin{center}
+        \nImg[0.6]{summary_techniques}
+    \end{center}
 
+}
+
+\nDefinition{Artificial Neural Networks}{
+    Inspired by the brain. \textbf{Feed forward} networks don't have cycles.
+
+    \nHeader{Single neuron}
+    Each neuron takes the dot product of its weights with the input from the previous layer or directly from the input data, and as output produces the result of its activation function:
+    \begin{center}
+        \nImg[0.8]{single_neuron}
+    \end{center}
+    Notice with the sigmoid activation function, this is just logistic regression.
+
+    \nHeader{Multilayer}    
+    When we connect the outputs of one layer to the inputs of another, we create multi-layer neural networks. These can get really complex
+    \begin{center}
+        \nImg[0.8]{multi_layer}
+    \end{center}
+    Each unit neuron gets its own weight vector (including bias)
+    We can refer to all the weights stacked as one vector as $\vec{w}$
+    }
+
+\nDefinition{Regression}{
+    We can also perform regression with neural networks by simply taking the final output of the network directly instead of using an activation function
+}
+\nDefinition{Multi-class classification}{
+    We can simply have more output neurons each corresponding to a class (could use a softmax layer to pick the class)
+
+    \begin{center}
+        \nImg[0.8]{multi_class_network}
+    \end{center}
+    }
+\nDefinition{Parameters}{
+    Neural networks are a black art, so many parameters, how many hidden layers, which activation functions, how many neurons in each layer ?
+
+    \begin{center}
+        \nImg[0.8]{black_art}
+    \end{center}
+    
+    \textit{Note: using less hidden units than features, is analogous to dimensionality reduction}
+    }
+\nDefinition{Representation power}{
+    Any function can be represented by a neural network with one to two hidden layers (Although for some they might need immensely many units).
+    For boolean functions think CNF expressions.
+    \begin{center}
+        \nImg[0.8]{representation_power_nns}
+    \end{center}
+}
+
+\nDefinition{Training}{
+    How do we find the weights for each unit? Create an error function compute gradient, akin to gradient descent but this time much more complex.
+
+    Can use \textbf{backpropagation}, a clever recursive algorithm which computes the derivatives of error using the chain rule (weighing the contribution of each unit to the error).
+    With the gradient we can use any optimization routine to minimize E, we can adjust the weights as we please.
+
+    \textit{Note: this is absolutely non-convex, hitting the global optimum will reuqire starting the training with different starting weights}
+}
+
+\nDefinition{Evaluation of NNs}{
+    \begin{itemize}
+        \item[+] non-linear, can model really complex functions
+        \item[+] can be used to extract features to be used elsewhere (each hiden layer contains some sort of highly non-linear feature based on the input)
+        \item[-] converge to non-optimal weights
+    \end{itemize}
+}
 
 
 
