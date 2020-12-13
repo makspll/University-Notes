@@ -1611,6 +1611,47 @@ Just be a good boi
 
 
 \nSection{Principal components analysis}
+
+\nDefinition{Curse of dimensionality}{
+    The more dimensions we use for our data, the more sparse our space becomes with data.
+
+    \begin{center}
+        \nImg[0.8]{curse_dimensionality}
+    \end{center}
+    }
+\nDefinition{Dimensionality reduction}{
+    We can try to reduce useless dimensions which don't bring much to the data.
+    either pick a subset of dimensions or construct new dimensions from old ones which somehow combine their useful properties.
+}
+\nDefinition{PCA}{
+    We can pick the dimensions of greatest variance, as the new dimensions. Highset variance since this reduces cases when two points are close in original space but far in the new space!
+    
+    \begin{center}
+        \nImg[0.8]{pca_nutshell}
+    \end{center}
+}
+
+\nDefinition{Linear Discriminant Analysis}{
+    For classification we might want to consider other techniques:
+
+    \begin{center}
+        \nImg[0.8]{LDA_PCA}
+    \end{center}
+    This however assumes that classes are unimodal gaussians, if the discriminatory information is not the mean but variance then LDA sucks
+}
+\nDefinition{Evaluation of PCA}{
+    \begin{itemize}[noitemsep]
+        \item[+] reflects intuitions about data (eigen faces)
+        \item[+] allows estimating probabiltiies in high-dimensional data (removes need to use naive assumption for example if we have way less dimensions)
+        \item[+] dramatic reduction in size of data  
+        \item[-] too expensive for many applications
+        \item[-] need to understand assumptions behind the methods (linearity etc)  
+        \item[-] does not necessarily have to make classification easier, since new space might make it harder to discriminate between classes 
+        \item[-] assumes subspace is linear (can use basis transformations to use non-linear spaces - manifolds)
+        \item[-] variant to scale, requires normalization  
+    \end{itemize}
+}
+
 \nSection{Hierarchical Clustering}
 \nDefinition{Hierarchical clustering}{
     Picking k is a difficult task for clustering, why not simply find all possible clusters in a hierarchical structure ? This way you can evaluate the clusters at different granularities.
