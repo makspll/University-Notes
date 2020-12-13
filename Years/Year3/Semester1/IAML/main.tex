@@ -1378,9 +1378,97 @@
     \end{itemize}
 }
 \nSection{Ethics}
-Lol
+Just be gucci
 \nSection{Nearest Neighbours}
+\nDefinition{Nearest neighbour classification}{
+    \begin{itemize}
+        \item Compute distance D of new instance $\vec{x}$ to every training example
+        \item select k closest instances and their labels 
+        \item output the label/class most frequent in those labels
+    \end{itemize}
+    That's it. Makes real complex boundaries for such simple algorithm (voronoi tesselation): 
+    \begin{center}
+        \nImg[0.4]{knn}
+    \end{center}
 
+    \nHeader{Regression}
+    You want numbers ? have numbers, take the average of the k neighbour labels instead of their labels.
+
+    Works worse for \textbf{extrapolation}
+
+    \begin{center}
+        \nImg[0.4]{extrapolation}
+    \end{center}
+
+
+    \nHeader{Choosing k}
+
+        Value of k is strongly coupled to performance of this algorithm.
+        if k = n, the output is simply the mean of the dataset.
+        if k is too small we get unstable decision boundaries and overfit (+ small changes in training set = large changes in classification).
+
+        There isn't really a trick to picking k, just set aside a validation set and pick k which works best on it.
+        
+        \textit{It is CRITICAL that the validation set is different from the training set, or otherwise k=1 is the most optimal always, since then there is always one example near each instance with the correct label}
+
+    \nHeader{Ties}
+    Sometimes we have equal number of positive/negative neighbours.
+    Many ways we can handle this:
+    \begin{itemize}[noitemsep]
+        \item use an odd K (doesn't solve multi-class classification)
+        \item choose neighbour label at random
+        \item use the nearest neigbhour
+        \item pick class in neighbours with greatest prior
+    \end{itemize}
+    }
+
+\nDefinition{Parzen windows and kernels}{
+    Alternative is to fix a region of space around each new sample and pick most common class/value there
+    \begin{center}
+        \nImg[0.9]{parzen_windows}
+    \end{center}
+    note how this is very blocky and can introduce a lot of \textbf{variance} to the model, with small changes in R we can affect the classifications drastically. We can smooth this out by using a smoother function which weights the neighbour label's by their distance. 
+    The kernelised version is extremely similar to SVM's but here we use all data points to make the decision whereas the SVM uses the support vectors only.
+    }
+
+\nDefinition{Optimising kNN}{
+    There are some ways which can speed up the kNN algorithm
+    \nHeader{K-D trees}
+    binary tree hierarchy where each two children corespond to a split on one of the axis (think decision trees)
+
+    \begin{center}
+        \nImg[0.4]{k_d}
+    \end{center}
+    time complexity of knn with this: $O(dlg(n))$, better for lower dimensional data, \textbf{\color{red}can miss local neighbours}. Works best when n is much larger than $2^{d}$ 
+}
+
+\nDefinition{Locality-sensitive hashing}{
+    Divides space via k hyper planes, into $2^{k}$ regions (each divides space in two)
+
+    \begin{center}
+        \nImg[0.4]{lsh}
+    \end{center}
+    time complexity of knn with this: $O(kd + \frac{dn}{2^{k}}) \approx O(d \log n)$, \textbf{\color{red} can miss local neighbours, but can remedy it by repeating with different hyperplanes}. Regions only tied to k hyperplanes not all the dimensions, better if data as a low-dimensional manifold structure (i.e. does not realy use all dimensions)
+}
+\nDefinition{kNN evaluation}{
+    \begin{itemize}
+        \item[+] model-free, almost zero assumptions about the data apart from:
+            \subitem- smoothness: nearby regions imply same class
+            \subitem- assumptions implied by distance function locally 
+        \item[-] need to handle missing data: perhaps fill in with mean or create a special distance
+        \item[-] sensitive to class-outliers (mislabeled training instances, perhaps by human error)
+        \item[-] sensitive to lots of irrelevant attributes (irrelevant attributes will affect the distance)
+        \item[-] very expensive computationally: space - all training samples, time - O(nd)
+        \item[-] expense is at testing not training (which doesn't exist)    
+    \end{itemize}
+}
+
+\nDefinition{Inverted list}{
+    \begin{center}
+        \nImg[0.9]{inverted_list}
+    \end{center}
+    Only really works for sparse data, otherwise list grows as big as the number of data points and is useless
+}
 \nSection{K-Means}
 \nSection{Gaussian mixture models}
 \nSection{Principal components analysis}
