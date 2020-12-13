@@ -1469,7 +1469,103 @@ Just be gucci
     \end{center}
     Only really works for sparse data, otherwise list grows as big as the number of data points and is useless
 }
+
 \nSection{K-Means}
+\nDefinition{Clustering}{
+    Clustering is the process of discovering the underlying structures in the data. It is an \textbf{unsupervised} task
+    
+    \begin{center}
+        \nImg[0.2]{clustering}
+    \end{center}
+    \nHeader{Types of clustering}
+    \begin{itemize}[noitemsep]
+        \item Goal:
+            \subitem Monothetic: cluster based on some common property (i.e. all males aged 20-35)
+            \subitem Polythetic: cluster members are similar to each other (i.e. based on distance)
+        \item Overlap:
+            \subitem hard clustering: clusters do not overlap
+            \subitem soft clustering: clusters may overlap
+        \item Structure:
+            \subitem flat: clusters do not have any structure
+            \subitem hierarchical: clusters have parent clusters and form taxonomies
+    \end{itemize}
+    }
+
+    \nDefinition{Evaluating clustering algorithms}{
+        \begin{itemize}
+            \item Extrinsic - helps us solve another problem. examples:
+                \subitem- represent images with cluster features
+                \subitem- train different classifier for each sub-population
+                \subitem- identify and eliminate outliers
+            \item Intrinsic - useful in and of itself
+                \subitem- helps understand the makeup of our data
+                \subitem- clusters correspond to classes
+                \subitem- compare to human judgements  
+        \end{itemize}
+
+        \nHeader{Intrinsic Evaluation}
+        \begin{center}
+            \nImg[0.8]{intrinsic_eval}
+        \end{center}
+        \begin{center}
+            \nImg[0.8]{intrinsic_eval_2}
+        \end{center}
+    }
+
+\nDefinition{Application in image classification}{
+    We can divide image into a set of patches, put all their features in a bag, and perform clustering on those bags, similar bags end up in similar clusters, name those something and use these as features for another algorithm!
+
+    \begin{center}
+        \nImg[0.8]{image_clustering}
+    \end{center}
+}
+
+\nDefinition{K-means clustering}{
+    Minimizes intra-cluster distance:
+    \begin{equation}
+        \sum_{j}\sum_{x \rightarrow c_{j}}D(c_{j},x)^{2}
+    \end{equation}
+    (same as variance if euclidian distance is used)
+
+    Always converges to a local minimum (meaning different starting points produce different results)
+
+    \nHeader{Algorithm}
+    \begin{itemize}[noitemsep]
+        \item place centroids at random locations 
+        \item untill convergence:
+            \subitem- assign each point to nearest centroid
+            \subitem- re-calculate each centroids position based on the mean of the positions of points assigned to it now 
+    \end{itemize}
+    \begin{center}
+        \nImg[0.6]{k-means}
+    \end{center}
+    O(\#iterations * \#clusters * \#instances * \#dimensions)
+    
+    \nHeader{Picking k}
+        
+        \begin{itemize}
+            \item No great algorithm for it, bad question to ask, you likely should know this.
+            \item class labels may suggest it
+            \item Optimize the total distance of points to their centers against k
+            \item visually from scree plot (where the mountain ends and rubble begins) 
+            \item even if you use a validation set and try to pick best k, samples are still representative and so a clustering with higher k will likely end up with a lower distance in all cases
+        \end{itemize}
+        \begin{center}
+            \nImg[0.4]{scree}
+        \end{center}
+
+        
+    }
+
+\nDefinition{K-means evaluation}{
+        \begin{itemize}[noitemsep]
+            \item[+] fast, iterative method
+            \item[-] converges to local minimum
+            \item[-] need to pick K
+            \item[-] need to pick distance function
+            \item[-] nearby points may end up in different clusters     
+        \end{itemize}
+}
 \nSection{Gaussian mixture models}
 \nSection{Principal components analysis}
 \nSection{Hierarchical Clustering}
