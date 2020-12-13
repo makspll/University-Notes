@@ -1185,15 +1185,202 @@
         While following the gradient guarantees that we hit a local maximum, this maximum is not necessarily global. Meaning that we can get stuck in a solution which is sub-optimal.
         If the error function is not \textbf{convex} we are not guaranteed to find the global maximum.
 
-        Best you can do is run the algorithm from different points and pick best run.
+        The best you can do is run the algorithm from different points and pick best run.
     }
 
     \nDefinition{Regularization}{
-        The process of limiting complexity of parameters or extreme values. For example in linear regression we can add a secondary objective to the optimization problem i.e. $\vec{w}$ being as small as possible (perhaps via lagrange multipliers)
+        The process of limiting the complexity of parameters or extreme values. For example in linear regression we can add a secondary objective to the optimization problem i.e. $\vec{w}$ being as small as possible (perhaps via lagrange multipliers)
+
+        \textbf{Ridge regression} is a good example of a regularized model - here we modify linear regression and try to introduce a secondary goal, i.e. minimizing the complexity of the model $\vec{w}$
     }
+
 \nSection{Support Vector Machines}
+
+\nDefinition{Support Vector Machine}{
+    \textbf{Support vector machines} are \textbf{discriminative} predictors, they find the decision boundary by maximising the size of the margin (distance between boundary and closest training sample)
+
+    Classification is done with:
+    \begin{equation}
+        f(\vec{x}) 
+        = \text{sign}(\vec{w}^{T}\vec{x} + w_{0})
+        = \text{sign}(\sum_{i=1}^{n}\alpha_{i}y_{i}(\vec{x}_{i}^{T}\vec{x}) + w_{0})
+    \end{equation}
+
+    where:
+    \begin{itemize}[noitemsep]
+        \item $\alpha_{i}$ is non-zero only for support vectors
+        \item $y_{i}$ is the label (1 for points on the side of hyperplane to which $\vec{w}$ points, and -1 for the other side)
+        \item $\vec{w}$ is the weight vector pointing towards label 1
+        \item $\vec{x}$ is the new data point 
+        \item $\vec{x}_{i}$ are the training data points
+    \end{itemize}
+
+    if you look at this you'll see that essentially, you are summing "dot-similarities" to the support vectors on one side as positives and the "dot-similiarities" to the support vectors on the other sides as negatives, meaning that if your data is more "similar" to the positive side the output will be positive and negative otherwise.
+}
+\nDefinition{Scalar projection on a unit vector}{
+    If $\vec{w}^{T}$ is a unit vector then $\vec{w}^{T}\vec{x}$ is the length of the projection of $\vec{x}$ onto $\vec{w}$
+
+    \begin{center}
+        \nImg{scalar_projection}
+    \end{center}
+    }
+
+\nDefinition{Separating hyperplane}{
+    The decision boundary between classes is called the separating hyperplane, for SVM's the labels on the opposite sides of a hyperplane are (1,-1) as opposed to the standard (1,0) for mathematical convenience.
+
+    If $\vec{w}^{T}$ is the vector perpendicular to the hyperplane then the decision boundary is defined with $\vec{w}^{T}\vec{x} + w_{0} = 0$
+
+    \begin{center}
+        \nImg[0.6]{crap_vs_good_plane}
+    \end{center}
+
+
+    
+    Bad decision boundaries should be as general as possible, i.e. have \textbf{highest margin}.
+    }
+
+\nDefinition{Margin}{
+    the \textbf{margin} is the distance between the decision boundary and the closest training point
+
+    this distance can be found geometrically via:
+    \begin{equation}
+        \min_{i} \frac{1}{||\vec{w}||}|\vec{w}^{T}\vec{x}_{i} + w_{0}|
+    \end{equation}
+    
+    Because an infinite amount of $(\vec{w}^{T},w_{0})$'s describe the same hyperplane (all vectors parallel to $\vec{w}^{T}$ have same direction), and since we can always multiply $(\vec{w}^{T},w_{0})$ by any scalar, we impose an additional constraint:
+    \begin{equation}
+        \min_{i} |\vec{w}^{T}\vec{x}_{i} + w_{0}| = 1
+    \end{equation}
+
+    which means the margin is always defined as (assuming the constraint is upheld):
+    
+    \begin{equation}
+        m =\frac{1}{||\vec{w}||}
+    \end{equation}
+    }
+
+\nDefinition{Finding maximum margin}{
+    We can define the optimisation problem as :
+    \begin{equation}
+        \begin{aligned}
+            &\max_{\vec{w}} \frac{1}{||\vec{w}||} \\
+            & \quad \text{subject to:}\\
+            & y_{i}(\vec{w}^{T}\vec{x}_{i} + w_{0}) \geq 1 \quad \text{for all } i
+        \end{aligned}
+    \end{equation}
+
+    Which is really just saying, maximise the margin but keep my boy $\vec{w}$ nice and unique, and them data points on the right sides of the hyperplane.
+
+    This problem is equivalent to:
+    \begin{equation}
+        \begin{aligned}
+            &\min_{\vec{w}} ||\vec{w}||^{2} \\
+            & \quad \text{subject to:}\\
+            & y_{i}(\vec{w}^{T}\vec{x}_{i} + w_{0}) \geq 1 \quad \text{for all } i
+        \end{aligned}
+    \end{equation}
+
+    Of course the spooky maths required (quadratic programming, lagrangian multipliers or something) is not covered so we are not shown how to solve this, 
+    but using proof by professor, the optimal parameters are:
+    \begin{equation}
+        \vec{w} = \sum_{i} \alpha_{i}y_{i}\vec{x}_{i}
+    \end{equation}
+    where:
+    \begin{itemize}[noitemsep]
+        \item $\alpha_{i}$ which states which vectors are support vectors - it is non-zero only for support vectors (data points on the margin)
+        \item $y_{i} \in {-1,1}$ is the label (or side of hyperplane)
+    \end{itemize}
+}
+
+\nDefinition{Non-separable data sets}{
+    The above work for linearly separable data sets, otherwise we have to allow the boundary to mis-classify some points, we use \textbf{slack} for that (constraint which stops the optimisation from miclassifying all points, since that's allowed):
+    
+    \begin{center}
+        \nImg[0.4]{slack}
+    \end{center}
+
+    Optimisation problem becomes, minimizing:
+    \begin{equation}
+        \begin{aligned}
+            &||\vec{w}||^{2} + C (\sum_{i=1}^{n}\epsilon_{i})^{k} \\
+            &\quad \text{subject to:}\\
+            &\vec{w}^{T}\vec{x}_{i} + w_{0} \geq 1 - \epsilon_{i} \quad \text{for } y_{i} = +1\\
+            &\vec{w}^{T}\vec{x}_{i} + w_{0} \leq -1 + \epsilon_{i} \quad \text{for } y_{i} = -1
+        \end{aligned}
+    \end{equation}
+
+    k is usually set to 1 and C is a trade-off parameter, larger C's allow less error (more penalty for errors)
+    The solution to this is exactly the same as previously, but this time more vectors are support vectors (even ones for which $\epsilon \neq 0$).
+
+    Notice how this is very similiar to ridge regression (minimizing $||y_{i} - \vec{x}^{T}||^{2} + \lambda||\vec{w}||^{2}$)
+    The penalty term measures how well we fit the data, and the w term penalizes weight vectors with large norm. So C can be seen as a regularization term since it increases or decreases the complexity of the model just like $\lambda$.
+
+    \begin{center}
+        \nImg{slack_regression}
+    \end{center}
+
+    We can solve this by rewriting this as the following:
+    \begin{equation}
+        \min _{\vec{w} \in \mathbb{R}^{d}} ||\vec{w}||^{2} + C\sum_{i}\max(0,1 - y_{i}f(\vec{x_{i}}))
+    \end{equation}
+
+    where the bit in the summation is called the \textbf{hinge loss}
+}
+
+\nDefinition{Non-linear SVM's}{
+    SVM's are normally linear, but can be made non-linear by applying basis transformations on the input vectors as usual. 
+}
+
+\nDefinition{Kernel trick}{
+    Normally when applying a non-linear transformation on x we transform x to the new space and then perform calculations on the new data. However if we are only interested in some sort of "similarity" of vectors in new spaces, we can apply the kernel trick:
+
+    \begin{equation}
+        k(\vec{x}_{i},\vec{x}_{j}) = \phi(\vec{x}_{i})^{T} \phi(\vec{x}_{j})
+    \end{equation}
+
+    i.e. we can take a shortcut and instead of transforming and then taking the dot product, we can take the dot product straight away!
+
+    Example:
+    \begin{equation}
+        \begin{aligned}
+            &\phi(\vec{x}) = 
+                \begin{bmatrix}
+                    \vec{x}_{1}^{2} \\
+                    \sqrt{\vec{x}_{1}} \vec{x}_{2}\\
+                    \vec{x}_{2}^{2}
+                \end{bmatrix} \\
+            &k(\vec{x_{1}},\vec{x_{2}}) = (\vec{x}_{1}^{T},\vec{x}_{2})^2        
+        \end{aligned}
+    \end{equation}
+    here the kernel computes the dot product of 2D vectors which are to be transformed to the above 3D space, without actually transforming them!
+
+    \nHeader{Distance}
+    we can define a distance measure using the dot product in any space which is another benefit:
+
+    \begin{equation}
+        d(\vec{x}_{1},\vec{x}_{2}) = k(\vec{x}_{1},\vec{x}_{1}) - 2kk(\vec{x}_{1},\vec{x}_{2}) + k(\vec{x}_{2},\vec{x}_{2})
+    \end{equation}
+
+    \nHeader{Infinite spaces}
+
+    the kernel:
+    \begin{equation}
+        k(\vec{x}_{i},\vec{x}_{j}) = \text{exp} - \frac{||\vec{x_{i} - \vec{x}_{j}||^{2}}}{\alpha^{2}}
+    \end{equation}
+    actually corresponds to the dot product in an \textbf{infinite dimensional} space! Ain't that trippy.
+}
+
+\nDefinition{SVM Evaluation}{
+    \begin{itemize}[noitemsep]
+        \item[+] Great results in many problems
+        \item[+] Hard to overfit (especially in high dimensional spaces) i.e. better for generalization than for example logistic regression
+        \item[+] Solution is sparse, fast to calculate 
+    \end{itemize}
+}
 \nSection{Ethics}
+Lol
 \nSection{Nearest Neighbours}
+
 \nSection{K-Means}
 \nSection{Gaussian mixture models}
 \nSection{Principal components analysis}
