@@ -1567,6 +1567,49 @@ Just be a good boi
         \end{itemize}
 }
 \nSection{Gaussian mixture models}
+
+\nDefinition{Mixture models}{
+    Maximizes likelihood of the data $P(x_{1} \hdots x_{n})$
+    \nHeader{2 Gaussians}
+    \begin{itemize}[noitemsep]
+        \item start with two randomly placed gaussians (random parameters)
+        \item calculate the probability P(b|x) that each data point comes from one of the gaussians (the other probability is 1-that)
+        \item assign the points to the gaussians they're most likely from
+        \item re-calculate the parameters of the gaussians from points assigned to them (MLE)
+        \item repeat untill convergence
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.8]{1d_mixtures}
+    \end{center}
+
+    \nHeader{Multiple gaussians}
+    \begin{center}
+        \nImg[0.8]{nd_mixtures}
+    \end{center}
+    \textit{the a-priori are the mixing coefficients, i.e. the proportions of each gaussian (these can be arbitrarilly set)}
+}
+\nDefinition{How to pick K}{
+    \begin{itemize}[noitemsep]
+        \item Maximize the total likelihood based on k ($L = logP(x_{1}\hdots x_{n}) = \sum_{i=1}^{n} \sum_{k=1}^{k} P(x_{i}|k)P(k)$)
+        \item K = n ? may not work well for new data points
+        \item Pick best parameters on validation set ({\color{red} same issue as with k-means, k=n might still be best on a separate validation set if representative})
+        \item Ocam's razor, pick simplest model that fits (Bayes inf. criterion)
+    \end{itemize}
+}
+
+\nDefinition{Evaluation of mixturem models}{
+    K-means is a soft clustering algorithm - an instance can come from many different clusters, we can decide what to do in between gaussians. 
+    \begin{itemize}[noitemsep]
+        \item[-] converges to local minimum
+        \item[-] need to pick k
+        \item[~] robust but slowe
+        \item[+] k-means can only create circular boundaries while this can have arbitrary distributions (full covariance matrices)
+        \item If you remove the co-variance result will be very similar to k-means   
+    \end{itemize}
+}
+
+
 \nSection{Principal components analysis}
 \nSection{Hierarchical Clustering}
 \nSection{Perceptrons}
