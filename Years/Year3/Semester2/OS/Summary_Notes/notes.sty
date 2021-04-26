@@ -1,0 +1,39 @@
+\ProvidesPackage{notes}
+
+\usepackage{xcolor}
+\usepackage{amsthm}
+\usepackage{tcolorbox}
+
+
+\definecolor{titleColor}{RGB}{0,0,0}
+
+\newtcolorbox{theoremBox}[1]{colback=red!5!white,colframe=red!75!black,fonttitle=\bfseries,title=#1}
+\newtcolorbox{definitionBox}[1]{colback=blue!5!white,colframe=blue!75!white,fonttitle=\bfseries,title=#1}
+
+\newcommand\invisiblesection[1]{%
+  \refstepcounter{section}%
+  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
+  \sectionmark{#1}}
+
+
+\newcommand\invisiblesubsection[1]{%
+  \refstepcounter{subsection}%  
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}#1}%
+  \sectionmark{#1}}
+
+\newcommand{\nDefinition}[2]{\begin{definitionBox}{\bf{#1}}#2\end{definitionBox} }
+\newcommand{\nTheorem}[2]{\begin{theoremBox}{\bf{#1}}#2\end{theoremBox} }
+\newcommand{\nSection}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{#1}\end{center}} \invisiblesubsection{#1}}
+\newcommand{\nChapter}[1]{\par\noindent \color{titleColor}{ \begin{center}\Huge{\textbf{#1}}\end{center}} \invisiblesection{#1}}
+
+\newcommand{\nHeader}[1]{\tcbsubtitle[before skip=\baselineskip]{#1}}
+\newcommand{\nImg}[2][0.5]{\includegraphics[width=#1\columnwidth]{#2}}
+\newcommand{\nImgs}[3][0.45]{    
+\begin{center}
+    \begin{tabular*}{\columnwidth}{m{0.5\columnwidth}m{0.5\columnwidth}}
+        \includegraphics[width=#1\columnwidth]{#2}&
+        \includegraphics[width=#1\columnwidth]{#3}
+    \end{tabular*}
+\end{center}}
+
+\newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
