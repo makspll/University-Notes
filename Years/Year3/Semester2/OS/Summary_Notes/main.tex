@@ -1061,4 +1061,1292 @@
         \item[-] deadlock - priority inversion - happens when a low priority task has lock needed by high priority task (busy waiting) 
     \end{itemize}
 }
+
+
+\nSection{Memory}
+
+
+\nDefinition{Why use abstraction}{
+    In the case that a program sees the physical memory directly,
+    the program can mess with the OS and BIOS code, whether intentionally or unintentionally.
+    There is a need for a protection system.
+    \\
+
+    The situation gets worse when multiple programs are running with access 
+    to direct physical memory. In which case each program can alter all the other running programs.
+    The total number of programs that can be run is then limited by the memory size!
+
+    \begin{center}
+        \nImg{OS-35}
+    \end{center}
+}
+
+
+\nDefinition{Protection - Base and Limit registers}{
+    A simple solution to prevent bad memory accesses, is to use base and limit registers.
+
+    This requires hardware support, but is enough to allow multiple \textbf{relocatable} programs to be run on the same physical address space.
+
+    \begin{center}
+        \nImgs[0.45]{OS-36}{OS-37}
+    \end{center}
+
+}
+
+\nDefinition{Address Space}{
+    Abstraction from physical memory space. Defines the set of memory addresses that a process can use independently from other processes.
+    \\ 
+
+    To make it easier to manage memory of multiple processes, we can make 
+    processes use \textbf{logical addresses} instead of physical ones! 
+
+    These logical addresses are independent of physical addresses, yet the data lives in physical memory, so the OS manages the data location in the physical memory.
+    Logical addresses are \textbf{translated by hardware} with the OS' aid.
+    \\ 
+
+    \begin{center}
+        \nImg[0.8]{OS-38}
+    \end{center}
+    }
+
+\nDefinition{Memory-Management Unit (MMU)}{
+    A hardware component which translates CPU generated addresses to physical addresses.
+    \\ 
+
+    Programs deal with logical addresses and never see the physical ones.
+    \\ 
+
+    Can be implemented in many ways (paging, relocation+limit registers, segmentation etc.)
+
+
+    \begin{center}
+        \nImg{OS-39}
+    \end{center}
+
+    \nDefinition{Relocation register}{
+        \centering
+        \nImg{OS-40}
+
+        \raggedright
+        \begin{itemize}
+            \item[-] no protection, nothing checks if address is outside of range  
+        \end{itemize}
+    }
+    \nDefinition{Relocation + limit registers}{
+        \centering
+        \nImg{OS-41}
+
+        \begin{itemize}
+            \item[+] program doesn't have to be relocatable (it operates on "fake" physical memory) = simpler loader and faster load time
+            \item[+] protection - each program has its own private address space 
+            \item[+] each program can have a different partition size (amount of physical memory allocated)
+        \end{itemize}
+    }
+}
+
+
+
+\nDefinition{Memory allocation}{
+    The process of allocating physical memory to programs requiring it. 
+
+    We want efficient and fast allocation with smallest memory waste. Allocation is done with hardware support (MMU)
+}
+
+\nDefinition{Contigious Allocation}{
+    All techniques above allocate memory in 
+    contigious chunks.
+
+    \nDefinition{Multiple-partition allocation}{
+        Allocation of contigious block of physical memory of various sizes (to minimize loss)
+        \\ 
+
+        Hole: a block of available memory; holes have various sizes.
+        When a process arrives, OS allocates memory from a hole large enough to accomodate it.
+        On process exiting, the partition is returned to OS, and adjacent holes are merged. 
+        OS keeps information about allocated partitions and free partitions.
+
+        \begin{itemize}
+            \item[-] degree of multiprogramming limited by number of partitions used
+        \end{itemize}
+
+        \centering 
+        \nImg{OS-42}
+        \raggedright
+
+        Many possible policies:
+        \nDefinition{First-fit}{
+            Allocate the \textbf{first} hole that is big enough
+        }
+
+        \nDefinition{Best-fit}{
+            Allocate the \textbf{smallest} hole that is big enough; must search entire list, unless ordered by size
+            - produces the smallest leftover hole 
+        }
+
+        \nDefinition{Worst-fit}{
+            Allocate the \textbf{largest} hole; must also search entire list 
+            - produces the largest leftover hole
+        }
+
+        First and best fit better than worst fit in terms of speed and storage utilization.
+    }
+}
+
+\nDefinition{Swapping}{
+    What to do when we run out of memory? 
+    We have to keep some programs in the backing storage.
+    To do this we need to be able to swap in and out programs from memory.
+
+    \centering 
+    \nImg{OS-43}
+}
+
+\nDefinition{Growing programs problem}{
+
+    Programs are not actually static! They can allocate memory dynamically, and hence grow in memory.
+
+    Two solutions possible:
+    \begin{itemize}
+        \item[a)] Allocate more space than needed, if more needed, relocate
+        \item[b)] Allocate space for growing program in its address space
+    \end{itemize}
+
+    \centering 
+    \nImg[0.6]{OS-44}
+
+    Both of these aren't ideal
+}
+
+\nDefinition{Memory fragmentation}{
+    Processes create memory holes, which might not be convieniently sized for other programs to occupy:
+
+    \centering 
+    \nImg{OS-45}
+
+    \raggedright
+
+    \textbf{External fragmentation} - you allocate the exact amount of memory requested, total memory space exists to satisfy a request, but it is not contiguous.
+    
+    \textbf{Internal fragmentation} - you allocate more than what required, allocated memory may be slightly larger than requested memory
+
+    \textit{First fit analysis - N blocks allocated = 0.5 N blocks lost to fragmentation, 1/3 may be unusable}
+}
+
+\nSection{Paging}
+
+\nDefinition{Non-Contigious Allocation}{
+    Issues with Contigious allocation:
+    \begin{itemize}
+        \item loads the entire program at once into memory when needed
+        \item[-] external fragmentation 
+        \item[-] long swap times 
+        \item[-] long \textbf{compaction} times (tight reallocation)
+    \end{itemize}
+
+    Presenting Non-contigious allocation:
+    \begin{itemize}
+        \item request physical space for each program's chunk when required
+        \item split logical address space in chunks 
+        \item contigious in logical memory, non-contigious on physical memory
+        \item segmentation + paging 
+    \end{itemize}
+}
+
+\nDefinition{Segmentation}{
+    Partition an address space into \textbf{variable size} chunks/units.
+    \textbf{Logical units} = stack,heap,data,code,subroutines .. 
+    \\
+
+    A logical address is split into (segment\#, offset)
+    \\
+    The logical address space is divided in \textbf{variable size} chunks
+
+    \begin{center}
+        \nImg[0.7]{OS-46}
+    \end{center}
+
+
+    \nDefinition{Hardware support}{
+        Segment table:
+        \begin{center}
+            \nImg[0.7]{OS-47}
+        \end{center}
+
+        Multiple base/limit pairs, one for each part of the program (segment)
+        the segment number is used as the index into the segment table
+        
+        The segments can roughly be associated with addresses based on conventions.
+    
+    
+    }
+
+    \begin{itemize}
+        \item[+] allows non-contiguous physical addresses 
+        \item[+] reduces fragmentation by exploting varying sized holes
+        \item[+] allocated chunks are smaller than the entire program address space 
+        \item[+] enables sharing (same segment can be shared across processes, think threads)
+        \item[-] process view and physical memory are extremely different 
+        \item[+] protection, process can only access its own memory        
+        \item[-] external fragmentation still occurs
+    \end{itemize}
+}
+
+
+\nDefinition{Paging}{
+    Similar to segmentation, but logical address space divided in \textbf{fixed size} chunks
+    Here we \textbf{combine} base address with offset instead of adding to entire address by single offset, this establishes
+    a mapping. Each process might have its own page table, or a single one can be used.
+    \\ 
+
+    Pages mapped to \textbf{frames}, page size = frame size 
+    \\
+
+    \begin{center}
+        \nImg[0.7]{OS-48}
+    \end{center}
+
+    Logical address is (page \#, page offset). page \# is used as index into \textbf{page table} which again contains base addresses,
+    page offset is \textbf{combined} with base address to create physical memory address.
+
+    \begin{center}
+        \nImg{OS-49}
+    \end{center}
+
+    \textit{logical address space size = $2^m$ bytes. Page and frame size = $2^n$ bytes}
+
+    \nDefinition{Hardware Support}{
+        \begin{center}
+            \nImg[0.8]{OS-50}
+        \end{center}
+    }
+
+    \begin{itemize}
+        \item[+] no external fragmentation!
+        \item[-] internal fragmentation depends on page size, if program "overflows" when dividing by page size. 
+        \item[-] translations may require memory accesses (costly)
+        \item[-] different page sizes available on every system 
+        \item \textit{average fragmentation = .5 frame size, worst case = frame size - 1 byte}
+        \item[-] page tables get huge, require more complex arrangements to cut size down
+    \end{itemize}
+    }
+
+\nDefinition{Translation look-aside buffers (TLB)}{
+    In order to avoid wasteful memory lookups, a TLB cache is used when paging.
+
+    If translation exists in TLB, use it (free), otherwise fetch translation from memory (expensive)
+
+        \begin{center}
+            \nImg[0.7]{OS-51}
+        \end{center}
+
+
+
+    \textbf{Memory access time} - time the CPU waits to access main memory directly 
+    
+    \textbf{Hit ratio ($\alpha$)} - percentage of times taht a page number is found in TLB 
+    
+    \textbf{Miss ratio} - 1 - Hit ratio 
+
+    \textbf{Effective access time (EAT)} - the average experienced access time:
+    \\ 
+
+    with $\alpha = 80\%$, 100ns access times = $0.8 * 100 + 0.2 * 200 = 120ns$
+
+    with $\alpha = 99\%$, 100ns access times = $0.00 * 100 + 0.01 * 200 = 101ns$
+    }
+
+\nDefinition{Memory protection}{
+    Page table entries (PTEs) can contain more information:
+
+    \begin{itemize}
+        \item protection bits - read-only, read-write,execute-only
+        \item valid bits - valid = translation exists and is in the logical address space of process otherwise not in process' space (when more frames than logical pages)
+        \item violations result in traps
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.6]{OS-52}
+    \end{center}
+}
+
+\nDefinition{Multi level TLBs}{
+    Consider 32-bit logical address space, with page size of 4kB ($2^{12}$).
+    The entire address space is divided into 1 million frames ($2^{32}/2^{12}$)
+    Each entry is 32 bits and so we need 4MB in total for the page table
+
+
+    We can create a table for the page table itself, to reduce the amount of "page translations" held in memory, we would only need to store the outer table entries:
+
+    So the first half of the address gets split according to the hierarchy,
+    i.e. 22 bit page number can be divided into 12 bits for the outer and 10 for the inner tables.
+    this means we only have to store the $2^{12}$ entries of the page table
+    \begin{center}
+        \nImg{OS-54}
+    \end{center}
+    }
+
+\nDefinition{Hashed page tables}{
+    The logical page number can be hashed to generate the page table index,
+    then the elements at that index need to be searched against (each entry would have the logical page number, the page frame, and the pointer to the next element)
+
+    \begin{center}
+        \nImg{OS-53}
+    \end{center}
+
+    Advantages: speed, fast access times
+}
+
+\nDefinition{Inverted Page table}{
+    Instead of each process having a page table and keeping track of all possible logical pages,
+    track all physical pages 
+
+    each physical page = one entry 
+
+    each entry has the virtual address owning that memory location along with the pid of the process whose virtual memory that is
+
+    this requires less memory for translations, but much more time is needed to search through the table,
+    we can use hash tables to limit the search to one/few page-table entries
+
+    Shared memory requires OS intervention
+    \begin{center}
+        \nImg{OS-55}
+    \end{center}
+}
+
+\nDefinition{Advantages of paging}{
+    \begin{itemize}
+        \item inter-process memory protection
+        \item prevents code being rewritten (protection bits)
+        \item detects null pointer dereferencing at runtime 
+        \item reduce memory usage (shared libraries) - one copy of a library only necessary, not one per process
+        \item generalizes use of "shared memory"
+        \item can implement \textbf{copy-on-write(CoW)} mechanics easilly with read only pages and page faults 
+        \item memory-mapped files - can load a file on demand into logical addresses
+    \end{itemize}
+}
+\nSection{Virtual Memory}
+
+\nDefinition{Overlays}{
+    What if the logical address space is greater than the available physical memory ?
+    Can a program correctly execute even if it is not all in memory at all times?
+
+    One solution is to simply divide the program into \textbf{overlays}, which are smaller than the physical memory,
+    then load and unload them as needed via some root overlay manager (user program) which determines when a new overlay needs to be loaded.
+
+    This is something you'd need to use when really constrained on physical memory. However there are better solutions
+}
+
+\nDefinition{Virtual memory}{
+    fully decouples address space from physical memory, allows larger logical address space than physical memory.
+
+    We've already seen an example: \textbf{Paged virtual memory}!
+
+    We can simply keep some of the pages out of the main memory and on the disk, and swap pages into memory when needed.
+    This requires the \textbf{eviction} of older pages.
+
+    Main memory becomes a \textbf{cache} for pages!
+
+    \begin{center}
+        \nImg{OS-56}
+    \end{center}
+}
+
+\nDefinition{Page Fault}{
+    \begin{enumerate}
+        \item Software accesses a page that is not in memory 
+        \item Hardware triggers a \textbf{page fault}
+        \item Operating system checks internal data structures:
+            \begin{itemize}
+                \item If invalid reference, abort the original program
+                \item If not in main memory currently, continue
+            \end{itemize}
+        \item Operating system finds a free frame - swaps page into frame via disk operation 
+        \item Operating system sets internal data structures to indicate page now in memory + set valid bit in page table 
+        \item Operating system restarts the instruction that caused the page fault 
+    \end{enumerate}
+
+    \begin{center}
+        \nImg[0.7]{OS-57}
+    \end{center}
+}
+
+\nDefinition{Demand paging}{
+    Pages brought into memory \textbf{when accessed first}
+
+    Few systems try to anticipate future needs, 
+    pages may be clustered - OS can anticipate which pages usually get used together and bring them all in when one is accessed
+
+    \begin{itemize}
+        \item[-] expensive heavilly depends on storage latency 
+    \end{itemize}
+}
+
+\nDefinition{Page allocation and replacement}{
+    When there are no more free frames, we must \textbf{evict} unfortunate 
+    pages in memory.
+    
+    \begin{center}
+        \nImg[0.7]{OS-58}
+    \end{center}
+}
+
+\nDefinition{Page replacement policies}{
+    What page to evict ?
+
+    Reduce page-fault rate by selecting \textbf{best victim page} - one that we will never touch again or in the near future.
+    \\
+
+    \textbf{Belady's Theorem} - evicting the page that won't be used for the longest period of time minimizes page fault rate
+    \\
+
+    evict \textbf{unmodified} pages first - since don't have to write them back to disk 
+
+    \nDefinition{First-in-First-Out (FIFO)}{
+        replace page that has been inserted the longest time ago
+
+        \begin{itemize}
+            \item[+] simple, just a linked list or queue
+            \item Belady's anomaly, more page frames do not guarantee less page faults!
+        \end{itemize}
+
+        \begin{center}
+            \nImg{OS-59}
+        \end{center}
+    }
+
+
+    \nDefinition{Least Recently Used (LRU)}{
+        Replace page that has not been used in the most amount of time
+
+        \begin{itemize}
+            \item[+] uses past knowledge rather than predictions
+            \item[+] does not suffer from Belady's anomaly (stack algorithm) 
+            \item[-] requires substantial \textbf{hardware assistance} - keeping track of last usage of each page
+        \end{itemize}
+
+        Need the following page table entry bits (\textbf{hardware}):
+        \begin{itemize}
+            \item Page referenced (if accessed or not)
+            \item Page modified (if access was in write)
+        \end{itemize}
+
+        and need to keep track of a history for each page in the kernel.
+    }
+
+    \nDefinition{Second chance}{
+        Variant of FIFO, makes use of page usage data.
+        use circular queue and \textbf{reference bits}, keep "victim" pointer,
+        if the victim was referenced, set reference bit to 0, and move pointer along by one, if not
+        replace that page with new one, and move pointer along.
+        \begin{center}
+            \nImg[0.8]{OS-60}
+        \end{center}
+        }
+}
+
+\nDefinition{Frames as resources}{
+    We can decide to limit the number of physical frames available 
+    for certain processes.
+    Frame Allocation can be:
+    \begin{itemize}
+        \item Equal: an equal share for all processes
+        \item Proportional: a share based on the program size or other factors
+    \end{itemize}
+
+    Frame Replacement can be:
+    \begin{itemize}
+        \item Local: each process is given a limit of pages it can use (pages against itself, i.e. evicts its own pages):
+            \begin{itemize}
+                \item[+] doesn't affect other processes 
+                \item[-] poor overall utilization of frames, and long access times   
+            \end{itemize}
+        \item Global: the "victim" is chosen from all available frames regardless of owner
+            \begin{itemize}
+                \item[-] risk of global \textbf{thrashing}
+                \item[+] processes' page frame allocation can vary dynamically  
+            \end{itemize}
+    \end{itemize}
+}
+
+\nDefinition{Working set}{
+
+    let t be the time, k the working set \textbf{window} (measured in page refs) then
+    
+    WS(k,t) = \textbf{Working set} in time interval t,t-k.
+    \\ 
+
+    Then a page is in the WS, iff it was referenced in the last k references by the process.
+
+    \begin{center}
+        \nImg[0.6]{OS-61}
+    \end{center}
+
+    The size of the working set changes with program locality - when program has poor locality, more pages are referenced and the working set grows
+
+    The working set must be wholly in memory, otherwise heavy faulting - \textbf{thrashing} 
+    }
+
+\nDefinition{Page-Fault Frequency Allocation}{
+    We can make use of the working set to come up with a great allocation algorithm.
+
+    Notice: there is a relationship between the size of the working set and the page-fault rate of a process.
+
+    Use a local replacement algorithm (i.e. process pages against itself, with limited number of pages)
+
+    The higher the page fault frequency (PFF), the more the process is struggling to keep its working set in memory.
+    
+    set an acceptable PFF range (lower and upper bound), if actual frequency higher than upper bound, increase the number of frames allocated to the process,
+    if frequency lower than lower bound, remove one of the process' frames.
+
+    \begin{center}
+        \nImg[0.6]{OS-62}
+    \end{center}
+}
+
+\nDefinition{Thrashing}{
+    When system spends most of its time servicing page faults, little time spent doing useful work.
+
+    Reasons:
+    \begin{itemize}
+        \item Could be that there is enough memory but replacement algorithm is not working well - it's incompatibile with the program behaviour
+        \item Could be that memory is over-committed - OS sees CPU poorly utilized and adds more processes
+        
+        \nImg[0.4]{OS-63}
+    \end{itemize}
+}
+
+\nDefinition{Buddy system}{
+    A contiguous power of 2 memory allocator for kernel structures. Satisfies request in units sized in powers of 2.
+    all requests are rounded up to nearest power of 2.
+
+    \begin{center}
+        \nImg{OS-64}
+    \end{center}
+}
+
+\nDefinition{Slab allocation}{
+    Contiguous memory allocator for kernel structures.
+    Slabs are made up of one or more physically contiguous pages.
+    A cache consists of one or more slabs. There is a cache for each \textbf{unique kernel data structure}.
+    Each cache populated with objects If there are any \textbf{free slabs}, the allocation is immediate (no search for memory space)
+
+    \begin{center}
+        \nImg{OS-65}
+    \end{center}
+    }
+
+\nSection{Secondary Storage}
+
+
+\nDefinition{Magnetic Disk}{
+    Traditional cheap HDD storage. 
+    Addressed either geometrically (Cylinder, head, sector)
+    or more recently using \textbf{Logical block addresses (LBA)}
+
+    \begin{center}
+        \nImgs[0.45]{OS-66}{OS-67}
+    \end{center}
+
+    Performance depends on:
+    \begin{itemize}
+        \item \textbf{Seek time} - moving the disk arm to the correct cylinder. Depends on arm speed, does not diminish quickly due to physics
+        \item \textbf{Rotation (latency)} - waiting for the sector to rotate under head. Depends on RPM of disk, rates are slowly increasing 
+        \item \textbf{Transfer time} - transferring data from surface to disk controller. Depends on density of bytes on disk, increasing relatively quickly
+    \end{itemize}
+
+    OS tries to minimise disk usage, mostly the seeking and rotation time.
+
+    OS can inflate file block size , or co-locate "related items" to reduce seeking (blocks of the same file, data and metadata for a file)
+    
+    OS may keep data or metadata in memory to reduce physical disk access.
+    
+    OS may fetch blocks into memory before requested (to hide slow disk accesses)
+}
+
+\nDefinition{Block scheduling}{
+    Applications request data accesses to the OS, OS maintains \textbf{request queues} and generates 
+    \textbf{transfer commands} to/from the disk(s) (seeks,waits for rotations, data transfers, all the low level commands)
+
+    App waiting time can be reduced by modifying the order of blocks requested:
+    This of course brings up a number of factors that need to be considered as with any scheduling:
+    \begin{itemize}
+        \item fairness
+        \item efficiency
+        \item speed
+    \end{itemize}
+
+    Many block scheduling algorithms exist.
+    }
+
+\nDefinition{First come first served (FCFS)}{
+    Simply keep a queue.
+
+    \begin{center}
+        \nImg[0.7]{OS-68}
+    \end{center}
+
+    \begin{itemize}
+        \item[+] reasonable when load is low 
+        \item[-] long waiting time for long request queues   
+    \end{itemize}
+}
+
+\nDefinition{Shortest seek time first (SSTF)}{
+    Order requests according to seek time, and serve them in that order
+
+    \begin{center}
+        \nImg[0.7]{OS-69}
+    \end{center}
+
+    \begin{itemize}
+        \item[+] minimizes seek time, and therefore maximizes request rate
+        \item[-] unfairly favors middle (clustered) blocks  
+    \end{itemize}
+    
+}
+
+\nDefinition{SCAN}{
+    Disk arm starts at one end of the disk, then moves toward the other end, at which the direction is reversed and this repeated
+
+    \begin{center}
+        \nImg[0.7]{OS-70}
+    \end{center}
+
+    \begin{itemize}
+        \item[+] simple, easy to understand 
+        \item[+] no starvation
+        \item[+] better than FCFS
+        \item[+] good under heavy load
+        \item[-] not fair - long waiting time for cylinders just visited by the head   
+        \item[-] bad when all requests are uniformly spaced out ()
+        \item[-] skews wait times non-uniformly
+    \end{itemize}
+}
+
+\nDefinition{C-SCAN}{
+    Same as SCAN, but once other side is reached, it returns to start position and repeats.
+
+    \begin{center}
+        \nImg[0.7]{OS-71}
+    \end{center}
+
+    \begin{itemize}
+        \item[+] more uniform wait times than SCAN
+        \item[+] good under heavy load  
+    \end{itemize}
+}
+
+\nDefinition{Selecting an algorithm}{
+    All algorithms behave like FCFS with one request.
+
+    Performance usually depends on number and type of requests
+
+    Requests for disk service can be influenced by file-allocation methods and the metadata layout.  
+}
+
+\nDefinition{Solid state drives (SSD)}{
+    A version of storage with no moving parts. More expensive, more robust.
+    \begin{center}
+        \nImg{OS-72}
+    \end{center}
+
+    Read access time is mostly independent of the device geometry - block scheduler is not needed.
+
+    Unit of read/write is a page (typically 4kB).
+
+    Usually lower write vs read speed.
+    Higher write lag than read lag.
+    write usually lower throughput than read
+
+    Flash media must be \textbf{erased before you can write to them}
+
+    Unit of erase is typically 64-256 pages.
+    Limited number of times before unusable (10,000 - 1,000,000 times)
+
+
+    \begin{itemize}
+        \item[-] higher cost per GB 
+        \item[+] more energy efficient than HDD 
+        \item[+] much more physicaly robust    
+    \end{itemize}
+}
+
+\nDefinition{Storage device management}{
+    Storing data is not enough - need metadata 
+
+    Before storing data, device needs to be initialized 
+
+    \begin{center}
+        \nImg[1]{OS-73}
+    \end{center}
+}
+\nSection{File System}
+
+\nDefinition{File System}{
+    \textbf{Abstracts} away secondary storage. \textbf{Files} are unit of abstraction, organized into \textbf{directories}.
+
+    Enables \textbf{sharing} of data between:
+
+    \begin{itemize}
+        \item Processes
+        \item People
+        \item Machines
+        \item etc.
+    \end{itemize}
+
+    Provides additional:
+    \begin{itemize}
+        \item Access control 
+        \item Consistency
+        \item Reliability
+        \item etc.
+    \end{itemize}
+}
+
+
+\nDefinition{File}{
+    A \textbf{named collection of related information} with some properties:
+    
+    \begin{itemize}
+        \item Content 
+        \item Size
+        \item Owner
+        \item Protection
+        \item Last read/write time
+    \end{itemize}
+
+    File \textbf{types} are understood by \textbf{file system}:
+    \begin{itemize}
+        \item Directories, symbolic links, \textbf{devices}
+        \item Programs, Data
+    \end{itemize}
+
+    Types need to be encoded into file name on windows, not on linux (.com,.exe etc..)
+    
+}
+
+\nDefinition{File access methods}{
+    File systems provide different \textbf{access methods}
+
+    \begin{itemize}
+        \item \textbf{Sequential} - read/write bytes one at a time, in order
+        \item \textbf{Direct} - random access given by a byte \# 
+        \item \textbf{Record} - file is an array of fixed- or variable-sized records
+        \item \textbf{Indexed} - One file contains an index to a record in another file
+    \end{itemize}
+}
+
+\nDefinition{Directory structures}{
+    \nDefinition{Single-level}{
+        Files must have unique names
+
+        \centering 
+        \nImg[0.6]{OS-74}
+    }
+
+    \nDefinition{Two-level}{
+        Sharing requires path abstraction 
+
+        \centering 
+        \nImg[0.6]{OS-75}
+    }
+
+    \nDefinition{Tree structured}{
+        Eventual replication of files 
+
+        \centering 
+        \nImg[0.6]{OS-76}
+    }
+
+    \nDefinition{Acyclic graph}{
+        Links as a solution to avoid duplication 
+
+        \centering 
+        \nImg[0.6]{OS-77}
+    }
+}
+
+\nDefinition{Directories}{
+    Directories provide way for users to \textbf{organize their files} under conenient \textbf{file name spaces} for user and FS 
+
+    Most file systems support \textbf{multi-level directories} (/,/usr,/usr/local,/usr/local/bin)
+
+    Most file systems also support notion of \textbf{current directory}
+    \\ 
+
+    \textbf{Absolute names} - fully-qualified starting from root of FS 
+    
+    \textbf{Relative names} - specified with respect to current directory
+
+
+    \nDefinition{Internals}{
+        Usually just a \textbf{file} with special metadata.
+
+        Organized as a \textbf{symbol table} - list/hash table of name \& file references
+
+        Contains \textbf{attributes} such as:
+        \begin{itemize}
+            \item Size
+            \item Protection
+            \item Location on disk
+            \item Creation time
+            \item Access time
+        \end{itemize}
+
+        Usually unordered ('ls' sorts the results)
+    }
+}
+
+\nDefinition{File protection}{
+    File system implements protection system:
+    \begin{itemize}
+        \item Control \textbf{who}(user/group) can access \textbf{what} (file/directory)
+        \item Control \textbf{how} the file can be accessed (read/write/exec)
+    \end{itemize}
+
+    \textbf{Objects} - the \textbf{what}
+
+    \textbf{Principals} - the \textbf{who}
+    
+    \textbf{Actions} - the \textbf{how}
+    
+    Protection system dictates whether a given action performed by a given principal on a given object should be allowed.
+
+}
+
+
+\nDefinition{Protection models}{
+    Two different models:
+    \begin{itemize}
+        \item Access Control Lists (ACLs) - for each \textbf{object} keep list of \textbf{principal's} allowed actions
+        \item Capabalities - for each \textbf{principal}, keep list of \textbf{objects} and \textbf{principal's} allowed actions
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.7]{OS-78}
+    \end{center}       
+    
+    \textbf{Principals} usually summarised as groups:
+    \begin{itemize}
+        \item Owner
+        \item Group (customized lists of users)
+        \item Other
+    \end{itemize}
+
+}
+
+
+\nDefinition{Data Structures}{
+    Some metadata is needed for a file system:
+
+    \nDefinition{In backing storage}{
+        \begin{itemize}
+            \item Boot control block - information needed to boot an OS
+            \item A per file File Control Block (FCB) - details about each file, unique ID 
+            \item Volume control block - volume details, number of blocks, size of blocks, free-block count and pointers, free-FCB count and pointers
+            \item Directory structure - used to organise files
+        \end{itemize}
+    }
+
+    \nDefinition{In memory}{
+        \begin{itemize}
+            \item Mount table - information about each currently mounted volume
+            \item Directory-structure cache - information about most recently accessed directories (for speeding up queries)
+            \item The system-wide open-file table - contains copies of FCB's for each open file with other information
+            \item The per-process open-file table - contains pointers to the appropriate entries in the system-wide open-file table for all files that the process has opened
+            \item Buffers - hold file-system blocks when they are being read/written to a FS 
+        \end{itemize}
+    }
+
+}
+
+\nDefinition{Disk allocation strategies}{
+    \begin{center}
+        \nImgs[0.20]{OS-79}{OS-80}
+        \nImgs[0.20]{OS-81}{OS-82}
+    \end{center}
+
+    \nDefinition{Contiguous Allocation}{
+        Each file is required to occupy a contiguous part of the disk. A file entry contains 
+        \textbf{Address of starting block} and \textbf{length of file in blocks}
+
+        \begin{itemize}
+            \item[-] External fragmentation, holes that cannot be occupied due to size
+            \item[+] reading file is quick 
+            \item[+] most resilient to file damage (know when there is memory errors) 
+        \end{itemize}
+    }
+
+    \nDefinition{Linked Allocation}{
+        Each file entry contains pointer to the next block, each directory entry contains the first and last block of a file.
+
+        \begin{itemize}
+            \item[+] no external fragmentation 
+            \item[+] files can grow as long as there is space
+            \item[+] only really good for sequential access  
+            \item[-] no random access, need to traverse all of previous blocks - O(N)
+        \end{itemize}
+    }
+        
+    \nDefinition{Indexed Allocation}{
+
+        Each file has a corresponding index block, which contains the indices of all the blocks which make up the file in order.
+        Directory entries tie files to their index blocks.
+
+        \begin{itemize}
+            \item[-] wastes a lot of space if files are made up of few blocks (internal fragmentation) 
+            \item[+] no external fragmentation, files can grow as long as there is space
+            \item[+] fast random access unlike linked allocation 
+        \end{itemize}
+    }
+
+    \nDefinition{File allocation table (FAT)}{
+        FAT table directly correlates entries to sectors, with each entry pointing to next sector of owning file.
+        directories contain sector numbers of start of each file.
+        
+        \begin{itemize}
+            \item[+] more resistant to damage than linked allocation, can store multiple FAT tables easilly 
+            \item[+] allows random access, but not too fast still need to traverse FAT table (but this is more localized and smaller) 
+            \item[+] only FAT needs to be traversed for each file operation (not various parts of disk)  
+            \item[-] FAT might be spacious and depends on number of entries
+            \item[-] internal fragmentation depending on block size 
+        \end{itemize}
+    }
+                        
+}
+
+
+\nDefinition{INodes - Indexed allocation}{
+    Every file and directory is represented by an inode with a unique id (\textbf{index node})
+    
+    every inode contains:
+    \begin{itemize}
+        \item Metadata - file owner, access rights etc. 
+        \item Location - of file blocks on disk
+    \end{itemize}
+
+    \begin{center}
+        \nImg{OS-83}
+    \end{center}
+
+    \nDefinition{Directories}{
+        A directory is a flat file of fixed-size entries.
+        Each entry links filename to inode ID
+
+        \begin{center}
+            \nImg{OS-84}
+        \end{center}
+    
+        To resolve a pathname, e.g. "/etc/passwd", start at root and walk down chain of nodes:
+
+        \begin{center}
+            \nImg[0.8]{OS-85}
+        \end{center}
+        
+        Multiple directories can contain the same file! (hard link in unix)
+        }
+}
+
+\nDefinition{Inode file systems - data layout}{
+    The data on the disk contains different areas:
+
+    \begin{itemize}
+        \item Superblock - specifies boundaries of other areas, contains head of freelists of inodes and file blocks 
+        \item Inode area - contains inodes for each file on the disk (each the same size)
+        \item File contents area - fixed-size blocks referenced by inodes
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.8]{OS-86}
+    \end{center}
+
+    To find any inode, simply use their ID as index to the inode area! Can do this since they are fixed size.
+
+    \begin{itemize}
+        \item[-] filesystem has fixed number of potential inodes - set when FS is created 
+    \end{itemize}
+}
+
+
+\nDefinition{Inode file system - block list}{
+    Each inode contains metadata and the \textbf{block list}.
+    
+    To be able to store very small and very large files, the block pointers contain a number of direct pointer slots
+    (i.e. ones that point directly to data blocks) and a number of single, double and triple indirect pointers which point to blocks containing more pointers!
+
+    \begin{center}
+        \nImg{OS-87}
+    \end{center}
+
+    \nDefinition{Example}{ters and if each inode contains 10 direct pointers, one single, double and triple indirect pointers (13 in total), then:
+        With 512B data block sizes,32b(4B) poin
+
+        \begin{itemize}
+            \item Can access files as large as $10 \cdot 512B = 5120B$ with direct pointers 
+            \item The single indirect pointer, can link to a block containing $512B/4B = 128$ direct pointers, each pointing to a block: this lets us access $128 \cdot 512B = 64kB$
+            \item The double pointer points to 128 single pointers which point to 128 blocks of data each, this lets us access $128 * 128 * 512B = 8MB$
+            \item Similarly, we can access $128^{3} * 512B = 1GB$ with a triple indirect pointer
+            \item In total: $5120B + 64kB + 8MB + 1GB \approx 1GB$ 
+        \end{itemize}
+    }
+
+}
+
+\nDefinition{Inode file system - overview}{
+    The file system is simply just a huge data structure:
+
+    \begin{center}
+        \nImg[0.9]{OS-88}
+    \end{center}
+
+    An important part of a file system is to lay all this data out on a disk efficiently, also keeping in mind the physical constraints of the disk,
+    i.e. trying to keep locality within a directory, and allowing sequential access to many files for when seek times are expensive.
+
+}
+\nSection{Synchronization}
+
+\nDefinition{Synchronisation}{
+    Cooperating tasks access the same data:
+    \begin{itemize}
+        \item Two or more threads of the same process share \textbf{data} and code
+        \item Two or more processes can share data with \textbf{shared memory}
+    \end{itemize}
+
+    \textbf{Concurrent or parallel} access to shared data is either virtually done at the same time or actually at the same time for parallel access. This may result in \textbf{data inconsistency} (two processes may overwrite some data in a way which makes it invalid).
+
+    How to ensure \textbf{ordered} execution of cooperating tasks?
+
+    }
+
+\nDefinition{Ordered execution}{
+    Instructions executed by a single thread/process are \textbf{totally ordered}: $A < B < C$. i.e. A happens before B and C etc.. 
+    \\ 
+
+    Without synchronization, instructions executed by a distinct thread/process must be considered \textbf{unordered/simultaneous}: cannot guarantee any of: $X < X'$ or $X' < X$ or C == A' or C == B'
+    \\
+    Creation relations always hold: $A < B < A' < B'$
+    
+    \begin{center}
+        \nImg[0.8]{OS-89}
+    \end{center}
+}
+
+\nDefinition{Race condition}{
+    When the result of concurrent or parallel execution is non-deterministic and depends on which thread runs precisely when.
+}
+
+\nDefinition{Example Race condition}{
+    Race conditions happen when two \textbf{interleaved} sections of the same code, execute in a harmful way.
+
+    The below code shows a case where the bank account does not register one of the transactions!
+    \begin{center}
+        \nImg[0.8]{OS-90}
+    \end{center}
+}
+
+\nDefinition{Example Race condition \# 2}{
+    Race conditions can also happen between \textbf{seemingly} atomic instructions, in reality $count++$ would be executed as multiple 
+    assembly instructions: 
+    \begin{center}
+        \nImg[0.6]{OS-91}
+        \nImg[0.6]{OS-92}
+    \end{center}
+}
+
+
+
+\nDefinition{Critical region}{
+    Critical regions are the areas of code which write/read to shared state, and can cause non-determinism:
+
+    \begin{center}
+        \nImg[0.8]{OS-93}
+        \nImg[0.8]{OS-94}
+    \end{center}
+
+
+}
+\nDefinition{Avoiding race conditions}{
+    Many factors need to ideally be taken under consideration:
+    \begin{itemize}
+        \item \textbf{Mutual exclusion} - at most one thread/process is in one critical region 
+        \item \textbf{Progress} - No process running outside its critical region may block other processes 
+        \item \textbf{Bounded waiting} - No process should have to wait forever to enter its critical region 
+        \item \textbf{Performance} - Overhead of entering and exiting critical section should be small wrt to work done inside it
+    \end{itemize}
+}
+\nDefinition{Locks}{
+    Locks are ways of ensuring mutual exclusion in critical parts of the code.
+
+    When one thread holds a lock, other threads wait untill this lock is released.
+
+    \nDefinition{Example}{
+        \begin{center}
+            \nImg[0.9]{OS-95}
+        \end{center}
+    }
+
+    \nDefinition{Bad implementation}{
+        Still has critical region itself!
+        \begin{center}
+            \nImg[0.9]{OS-96}
+        \end{center}
+    }
+    \nDefinition{Good implemetation}{
+        need \textbf{atomic} instruction ideally:
+
+        \begin{center}
+            \nImg[0.7]{OS-97}
+        \end{center}
+    }
+
+    \begin{itemize}
+        \item[+] simple easy to use and do the job effectively 
+        \item[-] burn a lot of CPU cycles for no reason 
+    \end{itemize}
+}
+
+\nSection{Semaphores and Monitors}
+
+\nDefinition{sleep() and wakeup()}{
+    sleep() - caller guves up CPU for some time, untill a thread/process wakes it up 
+    \\ 
+
+    wakeup() - caller wakes up some sleeping thread/process 
+
+    in practice sleep() might just be calling yield() (giving up CPU scheduling priority), signals might be used for waking up etc..
+}
+
+\nDefinition{Semaphore}{
+    A sleep/wakeup version of a lock, which prevents the burning of CPU cycles!
+
+    \nDefinition{Implementation}{
+        \begin{center}
+            \nImg[0.55]{OS-98}
+        \end{center}
+
+        \textit{note: the tread objects might be TCB's as either user or kernel level constructs. \color{red}{Each function must be executed atomically! (spinlocks)}}
+    }
+
+
+    \begin{itemize}
+        \item threads/processes are blocked at the level of program logic
+        \item[+] no busy-waiting (burning cpu)
+        \item[+] scheduler is aware about thread/process waiting, other tasks can execute  
+        \item[-] still use spinlocks so some cpu cycles are still burned
+        \item[-] easy to make mistakes, more complex problems can be solved but require more complex control
+        \item[-] no guarantee of proper usage, signal() call is not enforced
+    \end{itemize}
+
+    \nDefinition{Binary semaphore}{
+        Value initialzied to 1. Protects single resource 
+    }
+
+    \nDefinition{Counting semaphore}{
+        Value initialized to \# of protected resources. Positive means resource available, negative or zero = number of waiting for resources or no resources available
+    }
+
+    \nDefinition{Synchronisation semaphore}{
+        Value initialized to 0, 0 means no events pending, \textbf{positive} value means there are events pending (waiting in sleep).
+        
+        \textit{If you have a routine S1 which needs to happen before S2, you call \textbf{signal} after S1, and \textbf{wait} before S2.
+            This means that any process wanting to execute S2, will have to wait (value = -1) untill S1 is executed by some process which reduces value to 0. 
+        }
+    }
+}
+
+\nDefinition{Semaphore example}{
+    \begin{center}
+        \nImg[0.7]{OS-99}
+    \end{center}
+    
+    \textit{note: semaphores here are used to limit burning of CPU when buffer is full or empty, but we still need another semaphore on the actual buffer operations}
+}
+
+\nDefinition{Semaphore example - reading}{
+    Sometimes we want to let multiple reading threads in, but only one writer:
+    \begin{center}
+        \nImg[0.9]{OS-100}
+    \end{center}
+
+    \textit{note: how the first reader blocks the write semaphore, and the last releases it, while every writer does the same. We still need to lock the manipulation of the shared variables}
+}
+
+\nDefinition{Semaphore example - forever blocked}{
+    \begin{center}
+        \nImg[0.9]{OS-101}
+    \end{center}
+
+    \textit{note: order of locks is important! bug prone}
+}
+
+\nDefinition{Monitor}{
+    Address key usability issues with semaphores, a \textbf{programming language construct}.
+    An \textbf{abstract data type/class} in which every method automatically acquires a lock on entry and releases it on exit. 
+
+    includes: 
+    \begin{itemize}
+        \item \textbf{shared data} structures 
+        \item \textbf{procedures} that operate on the shared data 
+        \item \textbf{synchronisation} between concurrent execution flows that invoke those procedures
+    \end{itemize}
+
+    data is encapsulated from within:
+    \begin{itemize}
+        \item protects the data from unstructured access
+        \item prevents ambiguity about synchronisation
+    \end{itemize}
+
+    \textbf{Automatic} mutual exclusion
+    \begin{itemize}
+        \item Only \textbf{one thread} can be executing inside at any time 
+        \item Synchronization is implicitly associated with the monitor (free)
+        \item If a second thread tries to execute a monitor procedure it \textbf{blocks} untill the first has left the monitor 
+        \item more restrictive than semaphores but easier to use 
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.8]{OS-102}
+    \end{center}
+}
+
+\nDefinition{Deadlock problems}{
+    Not as flexible, what to do in deadlocks ?
+    \begin{center}
+        \nImg{OS-103}
+    \end{center}
+
+    \nDefinition{Condition variables}{
+        \begin{itemize}
+            \item \textbf{cond\_wait(c)}
+                \begin{itemize}
+                    \item Release monitor lock, so somebody else can get in 
+                    \item Wait for someone else to call \textbf{cond\_signal(c)}
+                    \item Condition variables have associated wait queues
+                \end{itemize}
+            \item \textbf{cond\_signal(c)}
+                \begin{itemize}
+                    \item Wake up at most one waiting thread 
+                    \item Wake up immediately, signaller steps outside 
+                    \item If no waiting threads, signal is lost (difference from semaphores, no history)
+                \end{itemize}
+            \item  \textbf{cond\_broadcast(c)}
+                \begin{itemize}
+                    \item Wake up all waiting threads (for c)
+                \end{itemize}
+        \end{itemize}
+    }
+
+}
+
+\nDefinition{Monitor example}{
+    The compiler can be made to insert enter and exit monitor calls wheerever the programer uses wait and signal calls:
+    \begin{center}
+        \nImg[0.8]{OS-104}
+    \end{center}
+}
+
+\nSection{Deadlocks}
+\nSection{Virtualization}
+\nSection{Data-center technologies}
+
 \end{document}
