@@ -8,6 +8,8 @@
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage{textcomp}
+\usepackage{cancel}
+
 \usepackage[hidelinks]{hyperref}
 \usepackage[a4paper,margin=0.5in]{geometry}
 \renewcommand\vec{\mathbf}
@@ -2346,7 +2348,370 @@
 }
 
 \nSection{Deadlocks}
+
+\nDefinition{Deadlock}{   
+    A situation in which every process/thread in a set of processes/threads is \textbf{waiting for an event} that can be \textbf{caused only by another process/thread in the same set}
+    \begin{center}
+        \nImg[0.7]{OS-105}
+    \end{center}
+    }
+
+\nDefinition{Livelock}{   
+    Similar to deadlock but occurs when a thread/process \textbf{continuously attempts} an action that fails
+    
+    \begin{center}
+        \nImg[0.7]{OS-106}
+    \end{center}
+    }
+
+    \nDefinition{Necessary conditions for deadlock}{
+        
+        {\color{red}{without any of the below conditions, a deadlock is not possible}}
+
+        \begin{itemize}
+            \item[A)] \textbf{Mutual exclusion} - each resource is either currently assigned to exactly \textbf{one} process/thread or is available 
+            \item[B)] \textbf{Hold and wait} - process/threads currently holding resources that were granted earlier can request new resources 
+            \item[C)] \textbf{No preemption} - Resources previously granted cannot be forcibly taken away from a process/thread   
+            \item[D)] \textbf{Circular wait} - there must be a circular list of two or more processes/threads each waiting for a resource held by the next member of the chain
+        \end{itemize}
+
+        
+    }
+
+\nDefinition{System model}{
+    A system consists of a \textbf{finite number of resources}, paritioned into several types/classes, to be 
+    \textbf{distributed among a number of competing threads/processes}.
+    
+    \begin{itemize}
+        \item Resource types/classes (\textbf{m}) - \textbf{$R_{1},R_{2},R_{m}$}
+        \item Each resource type has \textbf{$E_{i}$} instances
+        \item assume serially reusable resources (request -> use -> release)
+        \item Processes/threads (\textbf{n}) -  \textbf{$P_{1},P_{2},P_{m}$}
+    \end{itemize}
+
+    Let \textbf{(V,E)} be the directed graph representing the \textbf{current state} (snapshot) of resource usage.
+    
+    Then $$V = \{P | \textit{P is a process}\} \cup \{R | R \textit{is a resource type}\}$$
+    And $$E = \{E | \textit{E is a directed request edge } (P_{i},R_{i})\} \cup \{E | \textit{E is an assigment edge } (R_{i},P_{i})\}$$
+    
+    \begin{center}
+        \nImg[0.7]{OS-107}
+    \end{center}
+}
+
+
+\nDefinition{Allocation graph - no deadlock}{
+    \begin{center}
+        \nImg[0.55]{OS-108}
+    \end{center}
+
+    \textit{note: \color{red}  No cycles $\longrightarrow$ thread/process is not deadlocked}
+}
+\nDefinition{Allocation graph - deadlock}{
+    \begin{center}
+        \nImg[0.55]{OS-109}
+    \end{center}
+
+    \textit{note: \color{red}  cycles $\longrightarrow$ thread/process \textbf{may} be deadlocked}
+}
+\nDefinition{Allocation graph - no deadlock cycle}{
+    \begin{center}
+        \nImg[0.55]{OS-110}
+    \end{center}
+    
+    
+    Only if each resource involved in a cycle has \textbf{exactly one instance}, then the processes are deadlocked iff they are a part of such a cycle.
+
+
+    \textit{note: cycle $\neq$ deadlock}
+}
+\nDefinition{Handling deadlocks}{
+    \begin{itemize}
+        \item \textbf{Prevention} - Negate one of the four necessary conditions
+        \item \textbf{Avoidance} - Each resource request is analyzed and denied if it may deadlock
+        \item \textbf{Detection and recovery} - detect deadlock after it happens, recover from it 
+        \item \textbf{Do nothing}(ye olde ostrich algorithm) - ignore the problem and pretend deadlocks never occur since they're so rare (actually done in some OS)
+    \end{itemize}
+}
+
+\nDefinition{Attacking - Mutual exclusion}{
+    \begin{itemize}
+        \item Avoid assigning a resource unless absolutely unnecessary 
+        \item Try to make sure that as few processes as possible may actually claim the resource
+        \item Practically - don't assign resources to a single processes for reads, and for writes use a mediator which serializes the write (spooler deamon in case of spooler)
+        \item \textbf{Problem} - process may deadlock filling up the mediator
+    \end{itemize}
+}
+
+\nDefinition{Attacking - Hold and wait}{
+    \begin{itemize}
+        \item Prevent processes that hold resources from waiting for more resources 
+        \item Require all processes to request all their resources before "executing"
+        \item If everything is available, the process will be allocated whatever it needs and can run to completion
+        \item If one or more resources are busy, nothing will be allocated and the process will just wait - then reallocate everything again
+        \item \textbf{Problem} - processes don't always know all the resources they require
+    \end{itemize}
+}
+
+\nDefinition{Attacking - No preemption}{
+    \begin{itemize}
+        \item If a process is holding some resources and requests another resource which is not available, then all resources the process is currently holding are preempted (released)
+        \item Practically, can only be applied to resources whose state can be easilly saved and restored (CPU registers, memory space, etc..)
+        \item \textbf{Problem} - Not all resources can be virtualized
+    \end{itemize}
+}
+
+\nDefinition{Attacking - Circular wait}{
+    \begin{itemize}
+        \item All requests of resources must be made in numerical order by process
+        \item \textbf{May be impossible to find an ordering to satisfy everyone}
+    \end{itemize}
+
+    \begin{center}
+        \nImg[1]{OS-111}
+    \end{center}
+}
+
+\nDefinition{Deadlock avoidance}{
+    The OS/runtime needs to be given \textbf{additional information} in advance:
+    \begin{itemize}
+        \item What resources a thread/process will \textbf{request and use} during lifetime
+        \item Complete \textbf{sequence of requests and releases} of each thread/process
+        \item \textbf{Decide for each request} if a thread/process waits, considering the \textbf{resource-allocation state}
+        \item Algorithm dynamically examines resource-allocation state for \textbf{circular-wait condition} existence
+    \end{itemize}
+}
+
+\nDefinition{Safe state}{
+    When the system \textbf{can allocate all leftover resources} to each thread/process (up to maximum) \textbf{in some order} and still avoid \textbf{deadlocks}
+
+    A system is in a safe state iff there exists a \textbf{safe sequence}
+    \begin{itemize}
+        \item A sequence ($p_{1},p_{2},p_{3}..p_{n}$) of \textbf{ all the processes in the systems}
+        \item such that for each p, the resources that p can still request, can be satisfied by:
+            \begin{itemize}
+                \item Currently \textbf{available resources} +
+                \item \textbf{Resources held} by all the p's before it in the sequence
+            \end{itemize}
+        \item In this situation if $p_{i}$ needs some resource which is not immediately available:
+            \begin{itemize}
+                \item $p_{i}$ can wait untill all $p_{j}$ s.t. $j < i$ are done
+                \item Then $p_{i}$ can obtain the needed resources, execute and return allocated resources then terminate 
+                \item when $p_{i}$ terminates $p_{i+1}$ can obtain its needed resources and so on
+            \end{itemize}
+    \end{itemize}
+
+    Because of all the other neccessary conditions:
+    
+    \textbf{safe state = non deadlocked state}
+    
+    \textbf{deadlocked state $\longrightarrow$ unsafe state}
+    
+    \textbf{unsafe state $\cancel{\longrightarrow}$ deadlock}
+
+    \begin{center}
+        \nImg[0.34]{OS-112}
+    \end{center}
+
+    \begin{itemize}
+        \item In a \textbf{safe state} - OS can avoid  \textbf{unsafe states}
+        \item In an \textbf{unsafe satet} - OS cannot prevent resource allocations resulting in deadlocks
+    \end{itemize}
+    }
+
+\nDefinition{Banker's algorithm}{
+    Algorithm used to avoid deadlocks.
+
+    Requires:
+    \begin{itemize}
+        \item Set of \textbf{controlled resources}
+        \item \textbf{Number of units} of each resource is known 
+        \item Each application declares \textbf{maximum possible requirement} of each resource type
+    \end{itemize}
+
+    Before approving any resource allocation request, check if it leads to a safe state, if not reject it.
+
+}
+
+\nDefinition{Deadlock detection}{
+    Maintain a different directed graph - the \textbf{wait-for} graph, where processes are nodes, and directed edges (P1,P2) imply P1 is waiting for P2.
+
+    Periodically search for cycles in this graph, because \textbf{cycle $\longrightarrow$ deadlock!}
+
+    Search is $O(n^{2})$.
+
+    
+    \begin{center}
+        \nImg[0.4]{OS-113}
+    \end{center}
+
+    \textit{note:\color{red} does not work with multiple instances of each resource type}
+
+    }
+
+\nDefinition{Recovery from deadlock}{
+    \begin{itemize}
+        \item Abort \textbf{all} deadlocked processes or just one at a time untill deadlock is eliminated
+        \item this may leave resources in an incorrect state
+        \item Alternatively, preempt resources:
+            \begin{itemize}
+                \item Select victim - resource and process to preempt 
+                \item Rollback - return resource to safe state, restart process for that state 
+                \item Starvation - avoid same process/thread as victim
+            \end{itemize} 
+    \end{itemize}
+}
 \nSection{Virtualization}
+
+\nDefinition{Virtualisation}{
+    Process of creating a \textbf{virtual} version of a \textbf{physical} object
+
+    \textbf{Hardware virtualisation} - process of creating \textbf{virtual} version of real hardware
+    Virtual hardware can be used to run a complete OS 
+}
+
+\nDefinition{Virtual machine}{
+    A virtual representation of a physical machine
+}
+
+\nDefinition{Virtual machine monitor/Hypervisor}{
+    A software application that monitors and manages running virtual machines
+}
+
+\nDefinition{Host machine}{
+    The physical machine that a virtual machine is running on
+}
+
+\nDefinition{Guest machine}{
+    The virtual machine running on the host machine
+}
+
+\nDefinition{Virtualisation diagram}{
+    \begin{center}
+        \nImg[1]{OS-114}
+    \end{center}
+}
+
+\nDefinition{VMM/Hypervisor types}{
+    \begin{itemize}
+        \item \textbf{Native hypervisors (bare metal)} - run directly on the host machine, and share out resources (memory and devices) between guest machines (Oracle VM server)
+        \item \textbf{Hosted hypervisors} - run as an application inside an operating system, and support virtual machines running as individual processes (QUEMU, VBox)
+    \end{itemize}
+
+    \begin{center}
+        \nImg[1]{OS-115}
+    \end{center}
+}
+
+\nDefinition{Uses of virtualisation}{
+    \begin{itemize}
+        \item \textbf{Personal} - running multiple OS on one host, without rebooting. Running windows inside OX X 
+        \item \textbf{Technical} - OS/hardware design, kernel debugging/testing
+        \item \textbf{Commercial} - Data centre server consolidation, high availability/migration
+    \end{itemize}
+}
+
+\nDefinition{Types of virtualisation}{
+    \begin{itemize}
+        \item \textbf{Software emulation} - maximum flexibility, but very slow
+        \item \textbf{Containers/namespaces} - isolate processes/ groups of processes within a single OS (Docker)
+        \item \textbf{Full system/Hardware virtualisation} - isolate multple OS from each other, within a single physical machine
+        \item \textbf{Same-architecture virtualisation} - guest machine is the same architecture as host machine (ARM or x86)
+        \item \textbf{Cross-architecture virtualisation} - Guest machine has different architecture (requires software emulation)
+    \end{itemize}
+}
+
+\nDefinition{Popek and Goldberg requirements for virtualisation}{
+    \begin{itemize}
+        \item \textbf{Efficiency} - the majority of guest instructions are executed directly on the host machine
+            \begin{itemize}
+                \item Normal guest machine instructions should be execute directly on the processor.
+                \item System (kernel) instructions need to be emulated by the VMM
+            \end{itemize}
+        \item \textbf{Resource control} - VMM must remain in control of all machine resources
+            \begin{itemize}
+                \item VM cannot be able to arbitrary take control of any resources (security)
+            \end{itemize}
+        \item \textbf{Equivalence} - the VM must behave in a way that is indistinguishable from if it was running as a physical machine
+            \begin{itemize}
+                \item OS running inside VM, needs to believe it's running on physical machine (it shouldn't be able to detect it's on a VM)
+                \item exceptions include: \textbf{temporal latency} (some instruction sequences will take longer to run), and \textbf{resource availability} (less resources available due to sharing between VM's)
+            \end{itemize}
+    \end{itemize}
+}
+
+\nDefinition{Methods of virtualisation}{
+    \begin{itemize}
+        \item \textbf{Full software emulation} 
+                \begin{itemize}
+                    \item violates efifciency property, but this no longer holds due to advent of \textbf{efficient binary translation}
+                    \item Required for cross-architecture virtualisation, as guest instructions cannot execute natively on the host
+                \end{itemize}
+        \item \textbf{Trap-and-Emulate}
+                \begin{itemize}
+                    \item The guest OS system runs "de-priviliged", all non-privileged instructions execute natively on the host.
+                    \item All privileged instructions trap to the VMM
+                    \item VMM emulates these privileged operations
+                    \item Guest resumes execution after emulation
+                \end{itemize}
+    \end{itemize}
+}
+
+\nDefinition{Virtualising x86}{
+    \begin{itemize}
+        \item Originally x86 was not "classically" virtualisable
+        \item Some privileged instructions did not "trap", and so could not be emulated correctly 
+        \item \textbf{Interpretation} is too slow (violates efficiency)
+        \item \textbf{Code patching} (editing code after to re-write privileged instructions) leaves traces of virtualisation (violates equivalency)
+        \item \textbf{Binary translation} better but still incurs overhead
+        \item since 2005, x86 support virtualisation in hardware (intel-VT,AMD-V)
+        \item this enables trap-and-emulate style virtualisation at the hardware level
+        \item Unmodified OS can run natively on host machines
+    \end{itemize}
+
+    \begin{center}
+        \nImg[1]{OS-116}
+    \end{center}
+
+}
+
+\nDefinition{Hardware acceleration for Virtualisation}{
+    \begin{itemize}
+        \item Modern processes include hardware support for running VM's
+        \item Hardware extensions allow all guest instructions (including system instructions) to run natively on the processor
+        \item This works by providing an isolated view of the processor to virtual machines.
+        \item OS can then run directly on the processor, believing they are running on real hardware
+        \item Certain privileged instructions "trap" back to the hypervisor
+    \end{itemize}
+}
+
+\nDefinition{Resource access}{
+    \begin{itemize}
+        \item VM's need:
+            \begin{itemize}
+                \item Memory
+                \item Storage
+                \item Networking
+                \item Graphics
+            \end{itemize}
+        \item VMM shares out these resources 
+        \item Access to physical memory is managed by the VMM 
+        \item For an unmodified OS, expecting a "real" storage device (such as HDD), the VMM must emulate its interface!
+        \item Some devices may be passed straight through to the VM, e.g. dedicated network cards.
+    \end{itemize}
+}
+
+\nDefinition{Paravirtualisation}{
+    \begin{itemize}
+        \item Guest operating systems are \textbf{aware} they are being virtualised
+        \item They co-operate with the hypervisor to enable increased memory and device performance 
+        \item They no longer "trap-and-emulate", but instead request privileged operations from the hypervisor (API)
+        \item They can co-operate with the hypervisor so that host memory can be more efficiently distributed
+        \item Instead of providing an emulated storage device, the hypervisor can provide a paravirtualised implementation 
+        \item Typically used in \textbf{data centres} for large-scale virtualisation 
+    \end{itemize}
+}
+
 \nSection{Data-center technologies}
 
 \end{document}
