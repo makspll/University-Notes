@@ -1,0 +1,391 @@
+\documentclass{article}
+
+\usepackage{notes}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{textcomp}
+\usepackage{cancel}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage[a4paper,margin=0.5in]{geometry}
+\renewcommand\vec{\mathbf}
+
+\graphicspath{{./Images/}}
+
+\everymath{\displaystyle}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\begin{document}
+
+\title{ST Condensed Summary Notes For Quick In-Exam Strategic Fact Deployment }
+\author{Maksymilian Mozolewski}
+\maketitle
+\tableofcontents
+
+\pagebreak
+
+\nChapter{ST}
+
+\nSection{Introduction}
+
+\nDefinition{Validation}{
+    Checking that the software specification adheres to the requirements of the customer. Are we building the right product?
+}
+\nDefinition{Verification}{
+    Checking that the software adheres to the software specification. Are we building the product right ?
+}
+
+\nDefinition{Software Specification}{
+    Defines the product being created, includes:
+    \begin{itemize}
+        \item \textbf{Functional requirements} - describe features of a product
+        \item \textbf{Non-Functional requirements} - constraints on the product (e.g. security, reliability etc.)
+    \end{itemize}
+}
+
+\nDefinition{Software bug}{
+    A software bug occurs when one of the following occurs:
+    \begin{itemize}
+        \item The software does not do something that the true specification says it should do.
+        \item The software does something that the specification says it should not do.
+        \item The software does something that the specification does not mention.
+        \item The software does not do something that the product specification does not mention but should.
+        \item The software is difficult to understand, hard to use, slow, etc..
+    \end{itemize}
+}
+
+\nDefinition{Phases of Software Testing}{
+    \begin{itemize}
+        \item Test generation - Writing tests, Automatic test generation etc.
+        \item Test Execution - Actually executing tests, build tools etc.
+        \item Test Oracle - determining what the output for each test \textbf{should} be
+        \item Test Adequacy - determining the effectiveness of the test suite.
+    \end{itemize}
+}
+
+\nDefinition{Software Fault}{
+    A static defect in software 
+}
+
+\nDefinition{Software Error}{
+    An incorrect internal state that is the manifestation of some \textbf{fault}
+}
+
+\nDefinition{Software Failure}{
+    External, incorrect behaviour with respect to the requirements, or other description of expected behaviour. (The actual moment the software fails, for some input space)
+}
+
+\nSection{Unit Testing}
+
+\nDefinition{Unit Testing}{
+    Looking for errors in a subsystem in isolation:
+
+    \begin{itemize}
+        \item Generally a class or object
+        \item Junit in Java
+    \end{itemize}
+}
+
+\nDefinition{Junit 4}{
+    \begin{center}
+        \nImg[1]{ST-1}
+    \end{center}
+}
+
+\nDefinition{Unit Testing Tips}{
+    \begin{itemize}
+        \item Tests need to be \textbf{atomic} - the failure of a test should pinpoint the location of the fault 
+        \item Each test name should be clear, long and descriptive 
+        \item Assertions should always have clear messages to know what failed 
+        \item Write many small tests, not one big one ($\approx 1$ assertion per test)
+        \item Test for expected errors/exceptions too
+        \item Choose descriptive assert method (not always assertTrue, i.e. prefer more specific methods)
+        \item Choose representative test cases for equivalent input classes 
+        \item Avoid complex logic in test methods if possible 
+        \item Use helpers, @Before to reduce redundancy between tests
+        \item Never rely on test execution order, or call other test fixtures (apart from helpers)
+        \item Dont share state between tests 
+    \end{itemize}
+}
+
+
+\nSection{Functional Testing}
+
+\nDefinition{Functional Testing (Black-box testing)}{
+    Deriving tets cases from program specifications. Functional refers to the source of information used in test case design, not to what is tested 
+    Also known as \textbf{specification-based} testing.
+
+    Functioal specification = description of intended program behaviour. We act as if we didn't know anything about the code (hence black-box)
+    
+    Example:
+    \begin{center}
+        \nImg[0.95]{ST-2}
+    \end{center}
+
+    \begin{center}
+        \nImg[0.8]{ST-3}
+    \end{center}
+
+
+    \begin{itemize}
+        \item[+] Often reveals ambiguities and inconsistency in specifications 
+        \item[+] Useful for assesing testability
+        \item[+] Useful explanation of specification (test cases outline the specification)
+        \item[+] does not require any code to write tests (TDD)
+        \item[+] Ideal for missing logic (if we only test what's there - white box testing, we won't identify what's missing!)
+    \end{itemize}
+    }
+
+
+\nDefinition{Random Testing}{
+    Pick possible inputs uniformly. 
+    \begin{itemize}
+        \item[+] avoids designer bias (test designer can make logical mistakes and bad assumptions)
+        \item[-] treats all inputs as equally valuable
+        \item[-] Real faults are distributed non-uniformly (think finding roots, 3 important cases, rest is same class)
+        \item[-] input space is often extremely large    
+    \end{itemize}
+}
+\nDefinition{Systematic Functional Testing}{
+    Try to select inputs that are especially valuable (non-uniform selection)
+
+    Usually by choosing representatives of classes that are apt to fail often or not at all.
+
+    Functional Testing \textbf{IS} systematic testing
+    \begin{center}
+        \nImg[0.9]{ST-4}
+    \end{center}
+}
+
+\nDefinition{Partition Testing}{
+    Exploit some knowledge to choose input samples more likely to include "special" or trouble-prone regions of input space.
+    Failures are sparce in the whole input space but we may find regions in which they are dense
+
+    Ideally want \textbf{Equivalance classes} of inputs - for example, the positive numbers might be equivalent with respect to the program, i.e. 1 and 2 will cause the same general behaviour.
+
+    Then we only really need one value from each partition, since if one condition/value in a partition passes, all others will also pass and vice-versa!
+
+    \begin{center}
+        \nImg[0.9]{ST-5}
+    \end{center}
+    }
+
+\nDefinition{Quasi-Partition testing}{
+    Separate the input space into classes, whose union is the entire space, where the classes can overlap
+}
+
+\nDefinition{Boundary Value Analysis}{
+    Testing of the inputs on the boundaries between equivalence partitions (both \textbf{valid and invalid})
+    \begin{center}
+        \nImg[0.8]{ST-6}
+    \end{center}
+    }
+
+\nDefinition{Functional vs Structural (White-box testing)}{
+    Functional testing applies at all granuality levels: Unit, Integration, System and Regression testing.
+
+    Structural testing applies to a relatively small part of the system: Unit and Integration testing.
+}
+
+\nDefinition{Functional Testing Process}{
+    \begin{enumerate}
+        \item Decompose the specification into \textbf{Independently testable features} (think functions: Airport connection check etc. )
+        \item Select representative values of each input, or behaviours of a model (which part of the input space are interesting ?)
+        \item Form test specifications (input/output values, model behaviours etc)
+        \item Produce and execute actual tests
+    \end{enumerate}
+}
+
+\nSection{Combinatorial Testing}
+
+\nDefinition{Combinatorial Testing}{
+    Identify distinct attributes that can be varied:
+    \begin{itemize}
+        \item Environment - characterized by combination of hardware and software (IE, Firefox, XP, OSX, 10GB Ram etc.)
+        \item Input Parameters 
+        \item State Variables
+    \end{itemize}
+    \textbf{Equivalence partitioning} and \textbf{boundary value analysis} can be used to identify values of each attribute.
+
+    Systematically generate combinations of values for different attributes to be tested (combinations of attributes)
+
+    It's often impractical to test all of the combinations of distinct attributes, so we can pick certain subsets according to combination strategies.
+    }
+
+\nDefinition{Key ideas}{
+    \begin{itemize}
+        \item Category-partition testing  - identification of values that characterise the input space, done manually, the actual combinations of attributes are generated automatically.
+        \item Pairwise testing - systematically test interactions among attributes of the program input space with a relatively small number of test cases 
+        \item Catalog-based testing - aggregate and synthesize the experience of test designers in a particular organization or applciation domain, to aid in identifying attribute values (automates the manual parts too) 
+    \end{itemize}
+}
+
+
+\nDefinition{Category Partitioning (manual)}{
+    \begin{enumerate}
+        \item Decompose the specification into ITF's (Independently testable features)
+        \item For each feature identify:
+            \begin{itemize}
+                \item Parameters (i.e. Arriving flight, Departing flight)
+                \item Environmental elements (State of airport database) 
+            \end{itemize}
+        \item For each parameter and environment element identify \textbf{elementary characteristics} or \textbf{categories} (arrival destination matches departure origin, origin and destination airports exist in the base, database is available)
+        \item Identify relevant values, For each characteristic (\textbf{category}) identify \textbf{classes of} values, e.g.:
+            \begin{itemize}
+                \item normal values (1,2,3)
+                \item boundary values  (0,-1)
+                \item special values (INF)
+                \item error values (' ',"","CHEESE")
+            \end{itemize}
+        
+        \item Introduce constraints ("[error]" cases are tested once, [property if-property] run only in combination with if-property, [single] run once)
+    \end{enumerate}
+}
+
+
+\nDefinition{Constraints}{
+
+    \begin{itemize}
+        \item[-] [error], value class which corresponds to erroneous values, only needs to be tested once, with all the other parameters and environments set to any valid values
+        \item[-] [property] [if-property] mark a value class as a property to be referenced by others
+        \item[-] [if-property] only include this property in combinations combined with value classes marked with the given property     
+        \item[-] [single], same as error, but difference in semantics - rationale
+        
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.8]{ST-7}
+    \end{center}
+}
+
+\nDefinition{Pairwise Combinatorial Testing}{
+    Generate combinations that efficently cover all pairs of classes. Most failures are triggered by single 
+    values or combinations of a few values. Covering pairs, reduces the number of test cases, but reveals most faults.
+
+    \begin{center}
+        \nImg[0.9]{ST-9}
+    \end{center}
+
+    When designing test cases, we set all irrelevant values (not included in the pair) with valid values.
+
+    In this case we want test cases which cover, all combinations of values between Display Mode and Language, Display Mode and Fonts, Fonts and Color and so on and so on.
+    
+    This would yield 136 pairs in total for this example ($3 \cdot 4 + 3 \cdot 3 ...$)
+    }
+ 
+
+\nDefinition{Catalog Based Testing}{
+    Deriving value classes requires human judgement. Gathering experience in a systematic collection can:
+    \begin{itemize}
+        \item Speed up the test design process
+        \item Routinize many decisions, better focusing human effort 
+        \item Accelerate training and reduce human error 
+        \item Catalaogs \textbf{capture the experience of test designers} by listing important cases for each possible type of variable
+    \end{itemize}
+
+    Process:
+    \begin{enumerate}
+        \item Analyze the initial specification to identify simple elements:
+            \begin{itemize}
+                \item Pre-conditions
+                \item Post-conditions
+                \item Definitions
+                \item Variables
+                \item Operations
+            \end{itemize}
+        \item Derive a first set of test case specifications from pre-conditions, post-conditions and definitions 
+        \item Complete the set of test case specifications using test catalogs
+    \end{enumerate}
+
+    \begin{center}
+        \nImg{ST-8}
+    \end{center}
+    }
+
+\nSection{Finite Models}
+
+    \nDefinition{Properties of models}{
+        \begin{itemize}
+            \item Compact: representable and manipulable in a reasonably compact form 
+            \item Predictive: must represent some salient characteristics of the modelled artifact well enough to distinguish between good and bad outcomes of analysis
+            \item Semantically meaningful: it is usually necessary to interpret analysis results in a way that permits diagnosis of the causes of failure
+            \item Sufficiently general: models intended for analysis of some important characteristic must be general enough for practical use in the intended domain of application
+        \end{itemize}
+    }
+
+    \nDefinition{Intraprocedural Control Flow Graph}{
+        Nodes represent regions of source code (not necessarily lines), each block of code in a node has a single entry and exit point.
+        Edges represent posibility that control flow transitions from end of one block to beginning of another
+        
+        \begin{center}
+            \nImg[0.9]{ST-10}
+        \end{center}
+        }
+
+    \nDefinition{Call Graph}{
+        Similiar to control flow graph, but at higher level, nodes represent functions, and edges the possibility of a call from one call to another.
+
+        \begin{center}
+            \nImg[0.9]{ST-11}
+        \end{center}
+
+        \textit{Note: the 'calls' relation represented by the edges, is overestimated via call graphs, some calls are simply impossible in real execution due to state}
+    }
+
+    \nDefinition{Context Insensitive Call Graphs}{
+        Each edge represents any call to a procedure with any context
+        \begin{center}
+            \nImg[0.9]{ST-12}
+        \end{center}
+    }
+
+    \nDefinition{Context Sensitive Call Graphs}{
+        Each edge represents a unique \textbf{call stack} as well as function call (different calls have different edges)
+        \begin{center}
+            \nImg[0.9]{ST-13}
+        \end{center}
+    }
+
+
+    \nDefinition{Context exponential growth}{
+        The call stacks grow exponentially making context sensitive call graphs very large:
+
+        \begin{center}
+            \nImg[0.9]{ST-14}
+        \end{center}
+    }
+
+    \nDefinition{Finite State Machines}{
+        Each node is a state, and each edge is a possible transition, can be used to model high-level program behaviour
+
+        \begin{center}
+            \nImg[0.6]{ST-15}
+        \end{center}
+    }
+
+    \nDefinition{Models and System properties}{
+        Models might be easier to validate against program specifications, and if the program satisfies some model which satisfies 
+        the program specification, then those specifications are met by the program.
+
+        \begin{center}
+            \nImg[0.7]{ST-16}
+        \end{center}
+    }
+
+\nSection{Structural Testing}
+\nSection{Data Flow Models}
+\nSection{Data Flow Testing}
+\nSection{Test Selection and Adequacy}
+\nSection{Mutation Testing}
+\nSection{Test Driven Developement}
+\nSection{Regression Testing}
+\nSection{Security Testing}
+\nSection{Integration and Component Based Testing}
+\nSection{System and Acceptance Testing}
+\nSection{Concurrency Testing}
+
+\end{document}

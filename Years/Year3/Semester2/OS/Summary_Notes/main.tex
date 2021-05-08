@@ -2531,6 +2531,50 @@
 
     Before approving any resource allocation request, check if it leads to a safe state, if not reject it.
 
+    Pseudocode:
+
+    Let n be the number of processes, and m the number of resources available, the below is done before any allocations are made
+    \begin{itemize}
+        \item Initialize n x m matrix \textbf{Max},defined as  
+            defined as \textit{$Max_{ij} = $ \textbf{maximum} possible requirement of resource type j to process i}
+        \item Initialize n x m matrix \textbf{Allocation}, defined as $Alloc_{ij} = $ 
+            \textit{\textbf{initial} assignment count of resource type j to process i (the count of resources process i owns of type j)}
+        \item Initialize n x m matrix \textbf{Need},defined as 
+            \textit{$Need_{ij} = Max_{ij} - Allocation_{ij}$ } i.e. the maximum possible leftover allocations of each resource type to each process
+        \item Initialize m x 1 matrix \textbf{Available}, defined as
+            \textit{$Available_{i} = $ the number of leftover resources of type i}    
+        \item The above structures form the \textbf{state} of the algorithm, we only allow \textbf{safe-states}
+    \end{itemize}
+    This state initially must be safe!
+
+    Next, given a request by process $p$ for $r$ the $m x 1$ vector of resources for the next allocation cycle , which will mutate the state if allocated, we do the following:
+
+    \begin{itemize}
+        \item[a)] If the request cannot physically be granted, i.e. if $Available - r$ or $Max_{p} - r^{T}$ have any negative entries - Reject the request
+        \item[b)] Otherwise, assume the request is granted, and determine if the new state is safe by running the below algorithm, on a new instance of the state structure initialized to the hypothetical state, if r was approved. This new state is formed by:
+            \begin{itemize}
+                \item[i)] Removing the allocated resources from the $Available$ resources : $Available -= r$
+                \item[ii)] Accounting for the new $Allocation$ of resources: $Allocation_{p} += r^{T}$ 
+                \item[iii)] Re-calculating the $Need$ matrix : $Need_{i} -= r^{T}$ 
+            \end{itemize} 
+        \item[c)] if the state is safe, approve the request, otherwise decline it.    
+    \end{itemize}
+
+    Given a hypothetical state, determine if it's safe with the following:
+    \begin{itemize}
+        \item[a)] Initialize the $m x 1$ vector \textbf{Work}, to be: $Work = Available$. This will represent the mutation of Available resources over time as, requests are tried in order
+        \item[b)] Initialize the $n x 1$ boolean vector \textbf{Finish}, to: $\forall i. Finish_{i} = False $ 
+        \item[c)] Now find a process $p$ such that both:
+            \begin{itemize}
+                \item[i)] $Finish_{p} = False$, i.e. a process which has not "had its turn yet"
+                \item[ii)] $\forall j. Need_{pj} \leq Work^{T}_{j}$, and one which can in the current state, "fully stock up" its resources to its maximum 
+            \end{itemize}    
+                if none satisfy this condition, go to step g)
+        \item[d)] "Free" the resources previously allocated to p : $Work += Allocation_{p}^{T}$
+        \item[e)] Set p's status to finished: $Finish_{p} = True$
+        \item[f)] repeat from c), and add p to the end of the "safe sequence" $S$ 
+        \item[g)] if $\forall x. Finish_{x} = True$ holds, the system is in a safe state and the safe sequence is in S, otherwise the state is not safe 
+    \end{itemize}
 }
 
 \nDefinition{Deadlock detection}{
