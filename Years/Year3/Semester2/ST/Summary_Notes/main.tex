@@ -377,6 +377,149 @@
     }
 
 \nSection{Structural Testing}
+
+    \nDefinition{Structural Testing (White-box testing)}{
+        Type of testing based on the structure of the program itself, still testing product functionality against the specification but the throughness measures are changed.
+
+        Ansers the question "what is missing in our test suite?" - If a part of a program is not executed by any test case in the suite, faults in that part cannot be exposed - different types of structural testing define \textbf{part} differently. 
+        
+        \begin{itemize}
+            \item[-] Executing all control flow elements does not guarantee fidning all faults - might depend on state
+            \item[+] Increases confidence in thoroughness of testing, removes obvious inadequacies  
+            \item[+] Coverage criteria can be automated fully
+        \end{itemize}
+        }
+
+    \nDefinition{Statement Testing}{
+        Adequacy criterion: each statement (or node in CFG) must be executed at least once
+        $$\frac{\textit{executed statements}}{\textit{statements}}$$
+    
+
+        \begin{center}
+            \nImg[1]{ST-17}
+        \end{center}
+       
+        \begin{itemize}
+            \item[-] can miss some cases (if branches without an else case for example)
+        \end{itemize}
+        \textit{Note: no essential differences between statement granuality, 100\% CFG node coverage iff 100\% statement coverage}    
+    
+
+    }
+
+    \nDefinition{Branch Testing}{
+        Adequacy criterion: each branch (edge in the CFG) must be executed at least once 
+        $$\frac{\textit{executed branches}}{\textit{branches}}$$
+    
+        In above example:
+        \begin{center}
+            \nImg[0.7]{ST-18}
+        \end{center}
+
+        \begin{itemize}
+            \item[+] subsumes statement testing
+            \item[-] can still miss some states (compound logical expressions such as $A | B$, can lead to both branches with only A being varied)  
+        \end{itemize}
+        }
+    
+    \nDefinition{Basic condition testing}{
+        Adequacy criterion: each atomic condition must be executed once when it's true and once when it's false. i.e. $A | B$ requires that A,B be False and True in some test (not all combinations though).
+    
+        $$\frac{\textit{truth values taken by all basic conditions}}{2\cdot \textit{basic conditions}}$$
+        
+        \begin{itemize}
+            \item does not imply branch coverage (not realy comparable)
+        \end{itemize}
+        }
+    
+    \nDefinition{Compound condition testing}{
+        Adequacy criterion: each compound condition must have all possible combinations of its atomic conditions executed.
+        $$\frac{\textit{combinations of compound conditions executed}}{\textit{compound conditions cases}}$$
+
+        \begin{itemize}
+            \item[+] subsumes branch testing
+            \item[-] $2^{n}$ cases arising from each condition with n atomic conditions  
+        \end{itemize}
+    }
+
+    \nDefinition{Modified condition/decision (MC/DC)}{
+        Adequacy criterion: all \textbf{important} combinations of conditions are tested, i.e. each basic condition shown to independently affect the outcome of each compound condition.
+
+        \begin{itemize}
+            \item For each basic condition C, two test cases are required 
+            \item In each case, the values of all the other basic conditions must stay the same, and only C must vary
+            \item The whole condition must evaluate to true in one case, and false in another 
+            \item[+] n+1 test cases for n basic conditions (for minimal test suite)
+            \item[+] subsumes statement, basic condition and branch testing
+            \item[+] good balance of thoroughness and test size (widely used)
+            
+        \end{itemize}
+
+        \begin{center}
+            \nImg[0.9]{ST-19}
+        \end{center}
+    }
+
+
+    \nDefinition{Path adequacy}{
+        Adequacy criterion: each path must be executed at least once. I.e. a path is just a walk over the CFG (along the directed edges)
+        $$\frac{\textit{executed paths}}{\textit{paths}}$$
+        \begin{itemize}
+            \item[-] number of paths is infinite if any loops are present in the CFG
+            \item[-] usually impossible to satisfy 
+            \item[+] very thorough   
+        \end{itemize}
+        }
+
+    \nDefinition{Boundary interior path testing}{
+        Adequacy criterion: Requires the set of paths from the root of the tree to each leaf is the required set of subpaths for boundary/interior coverage.
+        $$\frac{\textit{paths}}{\textit{unique paths reaching a leaf}}$$
+    
+        \begin{center}
+            \nImg[0.9]{ST-20}
+        \end{center}
+
+        \begin{itemize}
+            \item[-] Still number of leaf paths can grow exponentially (parallel if statements N statements = $2^N$ paths that must be traversed)
+            \item[-] some paths might not be reachable since some conditions are not independent 
+            \item[+] more managable 
+        \end{itemize}
+        }
+
+    \nDefinition{Loop boundary adequacy}{
+        Adequacy criterion: for every loop:
+            \begin{itemize}
+                \item In at least one test case, the loop body is iterated zero times
+                \item In at least one test case, the loop body is iterated once 
+                \item In at least one test case, the loop body is iterated more than once
+            \end{itemize}
+    }
+
+    \nDefinition{LCSAJ Adequacy}{
+        Adequacy criterion: A test suite satisfies LCSAJ adequacy, if all the LCSAJ segments are executed in some test.
+
+        $$\frac{\textit{LCSAJ's executed}}{all LCSAJ's}$$
+        LCSAJ stands for Linear Code Sequence and Jump, i.e. a node in the CFG followed by a branch.
+
+        Various "thoroughness" levels:
+        \begin{itemize}
+            \item $TER_{1}$ = statement coverage
+            \item $TER_{2}$ = branch coverage
+            \item $TER_{n+2}$ = coverage of n consecutive LCSAJs 
+        \end{itemize}
+    }
+
+    \nDefinition{Cyclomatic adequacy}{
+        Adequacy criterion: number of "linearly independent" paths (if you treat each node as an entry in a vector signifying the presence of an edge in the given path) is equal to cyclomatic number of the CFG.
+
+        The cyclomatic number can be calculates as: $e - n + 2$
+    }
+
+    \nDefinition{Subsumption relation}{
+        \begin{center}
+            \nImg[0.9]{ST-21}
+        \end{center}
+    }
 \nSection{Data Flow Models}
 \nSection{Data Flow Testing}
 \nSection{Test Selection and Adequacy}
