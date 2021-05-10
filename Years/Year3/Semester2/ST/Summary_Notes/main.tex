@@ -521,10 +521,389 @@
         \end{center}
     }
 \nSection{Data Flow Models}
+
+    \nDefinition{Def-Use Pairs}{
+        Associates a point in a program where a value is produced with a point where it is used. 
+
+        Definition - where a variable gets a value assigned:
+        \begin{itemize}
+            \item Variable declaration
+            \item Variable initialization
+            \item Assignment
+            \item Values received by a parameter
+        \end{itemize}
+
+        Use - extraction of a value from a variable:
+        \begin{itemize}
+            \item Expression
+            \item Conditional statement
+            \item Parameter passing 
+            \item Return
+        \end{itemize}
+
+        \begin{center}
+            \nImg[1]{ST-22}
+        \end{center}
+    }
+
+    \nDefinition{Definition-Clear path}{
+        A definition-clear path is a path along the CFG from a definition to a use of the same variable without another definition of the variable between. (If such a definition occurs, it is said to \textbf{kill} the former definition)
+
+        Def-use pairs are formed iff there exist definition-clear paths between the definition and the use of the variable.
+    }
+
+    \nDefinition{Data dependence graph}{
+        Nodes just like in a CFG, but edges represent def-use relationships:
+
+        \begin{center}
+            \nImg[1]{ST-23}
+        \end{center}
+    }
+
+    \nDefinition{Calculating def-use pairs}{
+        There is an association (d,u) between a definition of variable v at d and its use at u iff:
+        \begin{itemize}
+            \item There is at least one control flow path from d to u
+            \item With no intervening definition of v
+            \item $v_{d}$ reaches u ($v_{d}$ is a reaching definition at u)
+            \item If a control flow path passes through another definition e of the same variable v, $v_{e}$ kills $v_{d}$ at that point
+        \end{itemize}
+        Even if we consider only loop-free paths, the number of paths in a graph can be exponentially larger than the number of nodes and edges. In practice, don't search all paths, summarize the reaching definitions at a node over all the paths reaching it.
+    
+        \nDefinition{DF Algorithm}{
+            The data flow algorithm is a flexible tool which can be applied over any CFG's to find out some properties of the given graph.
+            
+            The algorithm is based on the following set of equations, where b is some block of code (usually enough to carry out analysis on granuality of CFG node's or the edges of those nodes):
+            \begin{align}
+                out_{b} = trans_{b}(in_{b}) \\
+                in_{b} = join_{p\in pred_{b}}(out_{p}) 
+            \end{align}
+
+            Here $trans_{b}$ is the \textbf{transfer} function, of the block b. It works on the entry state $in_{b}$ yielding the exit state $out_{b}$.
+            The $join$ operation combines the exit statuses of the predecessors p, of b, yielding the \textbf{entry} state of b.
+
+            I.e. join works out the state of some "data-based property" at the start of our block, by looking at the predecessor nodes, whereas the transfer function, works out how this property gets altered by the current block.
+
+            Each particular type of data-flow analysis has its own specific transfer function and join operation. Some require backward analysis which is very similar except the transfer function is applied to the exit state, and yields the entry state, while the join operation works 
+            on the entry states of the successors to yield the exit state, i.e.:
+
+            \begin{align}
+                out_{b} = join_{s\in succ_{b}}(in_{s})\\
+                in_{b} = trans_{b}(out_{b}) 
+            \end{align}
+
+            The \textbf{entry point} (in forward flow, backward flow this would be the \textbf{exit point}) plays an important role, since it has no predecessors, its entry state is well defined at the start, if there are no cycles (no loops), solving the equations is straight forward, since we can simply work out the out states of nodes in \textbf{topological order} of the CFG.
+
+            If \textbf{cycles are present}, an iterative approach is required
+            \begin{center}
+                \nImg[0.75]{ST-27}
+            \end{center}
+            }
+    }
+
+
+
+    \nDefinition{Reaching definition analysis}{
+        Reaching definition analysis is a type of forward analysis which calculates for each program block, a set of definitions which may potentially reach this program point
+
+        The DF equations for this analysis are:
+        \begin{align}
+            out_{b} = gen(b) \cup (in_{b} - kill(b)) \\
+            in_{b} = \bigcup_{p \in pred_{b}}(out_{p}) 
+        \end{align}
+
+        in other words:
+
+        \begin{align}
+            trans_{b} = gen(b) \cup (in_{b} - kill(b)) \\ 
+            join_{b} = \bigcup
+        \end{align}
+
+        where:
+        $$
+            gen(b) = \textit{set of definitions/modifiations locally available in block}         $$
+
+        $$
+            kill(b) = \textit{set of definitions, killed by definitions in the block (not locally available, but in the rest of the program)}
+        $$
+            }
+    \nDefinition{Available expression analysis}{
+        A forward analysis, which determines the set of available expressions, i.e. those which need to be recomputed (in compiler design) at a program point. An expression is available if the operands of the expression are not modified on any path from the occurence of that expression to the program point.
+        This analysis uses the following DF equations:
+
+        \begin{align}
+            out_{b} = gen(b) \cup (in_{b} - kill(b)) \\
+            in_{b} = \bigcap{p \in pred_{b}}(out_{p}) 
+        \end{align}
+
+        in other words:
+
+        \begin{align}
+            trans_{b} = gen(b) \cup (in_{b} - kill(b)) \\ 
+            join_{b} = \bigcap
+        \end{align}
+
+        where: 
+        $$
+        gen(b) = \textit{set of expressions computed at b} $$
+        $$
+        kill(b) = \textit{set of expressions which whose variables are modified at b}
+        $$
+    }
+
+    \nDefinition{Liveness analysis}{
+        An example of \textbf{backward} analysis, which finds the set of live variables, i.e. those which hold a value which may be needed in later parts of a program at point p.
+
+        in the example below:
+
+        b = 3;
+        c = 5;
+        a = f(b * c);
+
+        the set of live variables after line 2 is \{b,c\}, since they are used in the next line, and after line 1, this set is only \{b\}
+
+        the DF equation used in this analysis are as follows:
+        \begin{align}
+            out(b) = 
+                \begin{cases}
+                    \bigcap{s \in succ_{b}}(in_{s}) \; \textit{ if b $\neq$ exit}  \\
+                    \emptyset \; \textit{ otherwise }
+                \end{cases}    \\
+            in(b) = gen(b) \cup (out(b) - kill(b))
+        \end{align}
+
+        where:
+        $$
+        gen(b) = \textit{set of variables that are used in b, before any assignment} $$
+        $$
+        kill(b) = \textit{set of variables that are modified in s}
+        $$
+
+    }
+
+    \nDefinition{Iterative solution of dataflow equations}{
+        Cycles in a CFG complicate dataflow analyses, and necessitate a more complex approach. 
+        We can deal with cycles with the following iterative algorithm:
+
+        \begin{enumerate}
+            \item Approximate the $in$ state of \textbf{each} block (for $\bigcap$ transfer functions, first guess is the union of all "gen" sets, for analyses using $\bigcup$ first guess is the empty set, i.e. the most \textbf{conservative} option).
+            \item Compute the $out$ states bu applying the transfer function on the $in$ states.
+            \item Now update the $in$-states are updated with the join operations
+            \item Repeat steps 2-3 untill reaching a \textbf{fixpoint}, i.e. the point of convergence in which the in-states do not change (and so the out-states)
+        \end{enumerate}
+
+        The order in which we update the nodes matters, usually apply the most \textbf{natural} order, i.e. in forward analysis, you'd use \textbf{reverse postorder} - visit a node before any of its successors, unless when the successor is reached by a back edge (think loop start nodes).
+        Or in the case of backward analysis, you'd want to use \textbf{postorder} i.e. visit a node after all its successor nodes have been visited (DFS) 
+    }
+    \nDefinition{Classification of analyses}{
+        DF algorithm analyses can be classified based on:
+        \begin{itemize}
+            \item if a node's set depends on that of its predecessors/successors (\textbf{Forward or backward})
+            \item if a node's set contains a value iff it is coming from any/all of its inputs (\textbf{any/all path})
+        \end{itemize}
+
+        \begin{center}
+            \begin{tabular}{|c|c|c|}
+                \hline 
+                -& Any-path ($\bigcup$)&  All-paths ($\bigcap$)\\ \hline
+                Forward (pred) & Reach & Avail \\ \hline 
+                Backward (succ) & Live & "inevitable" \\ \hline 
+            \end{tabular}   
+        \end{center}
+
+    }
+
+    \nDefinition{Scope of DF analysis}{
+        \begin{itemize}
+            \item Intra-procedural - within a single method or procedure 
+            \item Inter-procedural - across severall methods or classes
+        \end{itemize}
+
+        Cost/precision trade-offs for inter-procedural analysis are critical, and difficult. 
+        Two main trade-offs:
+        \begin{itemize}
+            \item Context-sensitivity
+            \item Flow-sensitivity
+        \end{itemize}
+    }
+
+    \nDefinition{Context sensitivity}{
+        \begin{center}
+            \nImg[1]{ST-28}
+        \end{center}
+    }
+
+    \nDefinition{Flow sensitivity}{
+        Reach, Avail etc. were all \textbf{flow-sensitive}:
+        \begin{itemize}
+            \item They considered ordering and control flow decisions
+            \item Within a single procedure or method, this is fairly cheap: $O(n^3)$ for n CFG nodes 
+            \item Many inter-procedural flow analyses are \textbf{flow-insensitive} 
+            \item $O(n^{3})$ would not be acceptable for all the statements in a program
+            \item Often flow-insensitive is good enough (i.e. type checking)
+        \end{itemize}
+    }
+
+    \nDefinition{Summary}{
+        DF algorithms:
+        \begin{itemize}
+            \item[+] Can be implemented by efficient iterative algorithms 
+            \item[+] Widely applicable (not just for "classic data flow" properties)
+            \item[-] Unable to distinguish feasible from infeasible paths
+            \item[-] Analysies spanning whole programs (e.g. alias analysis) must trade off precision against computational cost    
+        \end{itemize}
+    }
+
 \nSection{Data Flow Testing}
+
+\nDefinition{Def-Use pair testing}{
+    Adequacy criteria: Each DU \textbf{pair} is exercised by at least one test case 
+}
+
+\nDefinition{Def-Use path testing}{
+    Adequacy criteria: Each DU \textbf{clear path} (simple and non looping) is exercised by at least one test case 
+}
+
+\nDefinition{Def testing}{
+    Adequacy criteria: Each Definition has at least one test case which exercises a DU pair containing that definition 
+}
+
+\nDefinition{DF with complex structures}{
+    Problem of aliases - which references are (always or sometimes) the same?
+    
+    Arrays and pointers are critical for data flow analysis:
+    \begin{itemize}
+        \item Under-estimation of aliases may fail to include some DU paris
+        \item Over-estimation, on the other hand, may introduce unfeasible test obligations
+    \end{itemize} 
+
+    For testing, it may be preferable to accept under-estimation
+}
+
+\nDefinition{Infeasibility}{
+    \begin{center}
+        \nImg[0.9]{ST-29}
+    \end{center}
+
+    \begin{itemize}
+        \item In practice, reasonable coverage, is often but not always achievable
+        \item All DU paths is more often impractical
+    \end{itemize}
+}
+
 \nSection{Test Selection and Adequacy}
+
+\nDefinition{Test suite adequacy}{
+    A real way of measuring effective testing is impossible, provably undecidable.
+
+    What we can do is define \textbf{inadequacy} criteria:
+    \begin{itemize}
+        \item If the specification describes different treatment in two cases, but the test suite does not check that the two cases are in fact treated differently,
+         we may conclude that the test suite is inadequate to guard against faults in the program logic 
+        \item If no test in the test suite executes a particular program statement, the test suite is inadequate to guard against faults in that statement.
+        \item If a test suite fails to satisfy some criterion, the obligation that has not been satisfied may provide some useful information about improving the test suite 
+        \item If a test suite satisfies all the obligation by all the criteria, we do not know definitively that it is an effective test suite, but we have some evidecnce of its thorougness
+    \end{itemize}
+}
+
+\nDefinition{Unsatisfiability}{
+    Sometimes no test suite can satisfy a criterion for a given program (defensive programming - can't happen checks for example)
+    
+    We can either exclude unsatisfiable obligations from the criterion or measure the extent to which a test suite approaches an adequacy criterion (percentage).
+
+    An adequacy criterion is satisfied or not, acoverage measure is the fraction of satisfied obligations
+}
+
+
+\nDefinition{Comparing criteria}{
+    We can try to distinguish stronger from weaker adequacy criteria. 
+
+    Best way to do that is by describing conditions under which one adequacy criterion is provably stronger than another - 
+    i.e. gives stronger guarantees
+}
+
+\nDefinition{Subsumption}{
+    Test adequacy criterion A subsumes B iff, for every program P, every test suite satisfying A with respect to P also satisfies B with respect to P.
+
+    Example: branch coverage subsumes statement coverage
+}
+
+\nDefinition{Uses of adequacy criteria}{
+    We shouldn't blindly rely on coverage criteria as infallible measure of success of a test suite. Ideally use it to guide improvement to a test suite,
+    not as the primary motivation behind test design!
+}
+
 \nSection{Mutation Testing}
+
+\nDefinition{Mutation testing}{
+    Adequacy criteria: A test suite satisfies the criteria, iff every generated mutant is killed by the suite.
+
+    I.e. a mutant is a program with a small random modification. 
+    A mutant is killed if the test suite fails on incorrect behaviour introduced by the mutant.
+    Mutants might produce equivalent behaviour, which is not useful from a testing perspective. Want mutants which should mess up the program in weird ways
+
+    \begin{itemize}
+        \item[+] measures quality of test cases nicely 
+        \item[+] provides tester with a clear target (mutants to kill)
+        \item[-] computationally intensive, a lot of mutants
+        \item[-] equivalent mutants are a practical problem - determining which mutants are equivalent is un-decidable!
+        \item[-] really only useful at unit testing level     
+    \end{itemize}
+    }
+
+\nDefinition{Mutation operators}{
+    predefined program modification rules corresponding to a fault model.
+
+    Ideally we would like mutation operators which are representative of all realistic types of faults that could occur in practice (be made by a real programmer).
+
+    In general operator set is large, and can capture all syntactic variations in a program.
+}
+
+\nDefinition{Mutation coverage}{
+    
+    \begin{itemize}
+        \item Complete coverage equals the killing of all non-equivalent mutants (or random sample, not necessarily all possible modifications)
+        \item The amount of coverage is called the \textbf{mutation score}
+        \item The number of mutants depends on definition of mutation operators and structure of software
+        \item Random sampling used since this set of mutants can be large.
+    \end{itemize}
+
+}
+
+\nDefinition{Assumptions}{
+    \begin{itemize}
+        \item Competent programmer assumption - they write programs which are nearly correct
+        \item Coupling effect assumption - test cases that distinguish all programs differing from a correct one by only simple errors are so sensitive that they also implicitly distinguish more complex errors 
+    \end{itemize}
+
+    Some empirical evidence of the above
+}
+
 \nSection{Test Driven Developement}
+
+\nDefinition{TDD}{
+    Never write a single line of code unless you have a failing automated test.
+
+    \begin{center}
+        \nImg[0.5]{ST-30}
+    \end{center}
+}
+
+\nDefinition{Summary}{
+    \begin{itemize}
+        \item[+] Confidence in change - can change code without shitting your pants 
+        \item[+] Documents requirements via tests 
+        \item[+] Discovers usability issues or problems with requirements early 
+        \item[+] Regression testing = stable software = quality software
+        \item[+] Major quality improvement for minor time investment
+        \item[-] Programmers like to code, not test 
+        \item[-] Test writing is consuming 
+        \item[-] Test completeness is difficult to judge 
+        \item[-] May not always be suitable
+        \item Only really relevant to Functional testing          
+    \end{itemize}
+}
+
 \nSection{Regression Testing}
 \nSection{Security Testing}
 \nSection{Integration and Component Based Testing}
