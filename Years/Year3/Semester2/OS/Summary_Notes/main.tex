@@ -1049,10 +1049,10 @@
         \hline
         Process & CPU time & Turnaround time \\ \hline
         P1 & 100 & 102 \\ \hline 
-        P2 & 2 & 3 \\ \hline 
+        P2 & 2 & 5 \\ \hline 
     \end{tabular}
 
-    Execution order: P1(1s),P2(1s),P1(2s),P2(1s),P1(4s),P1(16s),P1(37s)
+    Execution order: P1(1s),P2(1s),P1(2s),P2(1s),P1(4s),P1(8s),P1(16s),P1(32s),P1(39s)
     \\
 
     Avg. Turnaround time: $\frac{102 + 3}{2} = 52.5$
@@ -2223,7 +2223,7 @@
 
     \nDefinition{Implementation}{
         \begin{center}
-            \nImg[0.55]{OS-98}
+            \nImgs[0.40]{OS-98}{OS-117}
         \end{center}
 
         \textit{note: the tread objects might be TCB's as either user or kernel level constructs. \color{red}{Each function must be executed atomically! (spinlocks)}}
