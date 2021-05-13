@@ -905,9 +905,576 @@
 }
 
 \nSection{Regression Testing}
+
+\nDefinition{Regression testing}{
+    Testing which tries to identify \textbf{regressions} in code, i.e. breaking changes introduced by modifications made to code.
+
+    \begin{center}
+        \nImg{ST-31}
+    \end{center}
+
+    Tests must be re-run after any change:
+    \begin{itemize}
+        \item Adding new features
+        \item Changing or adapting software to new conditions
+        \item Fixing bugs
+    \end{itemize}
+
+    Otherwise code may break.
+
+    \begin{itemize}
+        \item[-] takes a long time, after each change new tests pile up
+        \item[-] difficult to tell which test cases should be removed or replaced/added
+        \item[-] it often takes a while to run all the tests   
+    \end{itemize}
+}
+
+\nDefinition{Test case maintenance}{
+    Some maintenance is inevitable,
+    Some maintenance should be avoided.
+    Test suites should be modular.
+
+    \textbf{Obsolete} - test cases which are obsolete are no longer valid and should be removed 
+    \textbf{Redundant} - test cases which do not contribute significantly to the test suite (perhaps with coverage) may be removed since they're inlikely to find faults missed by similar test cases
+}
+
+\nDefinition{Test optimisation}{
+    \begin{itemize}
+        \item Re-test all - always running all tests in the test suite. Good when you want 100\% certainty the new version works on all tests developed for previous
+        \item Test selection - Only select subset of test cases whose execution is relevant to changes - a test case cannot find a fault in code it doesn't execute - only execute test cases that execute changed or new code
+        \item Test set minimisation - Identifying and removing redundant test cases to reduce test suite's size
+        \item Test set prioritisation - Sort test cases in order of increasing cost per additional coverage - run n tests in that order untill max cost is reached
+    \end{itemize}
+}
+
+\nDefinition{Control-flow and Data-flow Test Selection}{
+    \begin{itemize}
+        \item Re-run test cases only if they include changed elements
+        \item Elements may be modified control flow nodes and edges, or DU pairs in data flow 
+        \item Record elements touched by each test case in database to automate this process
+    \end{itemize}
+}
+\nDefinition{Specification based test selection}{
+    \begin{itemize}
+        \item Pick test cases that test new and changed functionality
+        \item No guarantee of independence - a test case that isn't for changed or added feature X might find a bug in feature X anyway 
+        \item Typical approach: execute all tests, but start with those that related to changed and added features by specification 
+    \end{itemize}
+}
+
+\nDefinition{Test set minimization}{
+    \begin{itemize}
+        \item Maximize coverage with minimum number of test cases
+        \item The minimization algorithm can be exponential in time 
+        \item Does not occur in our experience 
+        \item Stop after a pre-defined number of iterations
+        \item Obtan an approximate solution by using a greedy heuristic
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.7]{ST-32}
+    \end{center}
+}
+
+\nDefinition{Test set prioritisation}{
+    \begin{center}
+        \nImg{ST-33}
+    \end{center}
+
+    \begin{itemize}
+        \item Execute all test cases, eventually
+        \item Execute some sooner than others 
+        \item Possibly prioritize using RR scheduling, Run tests which detected more faults in the past first, or based on the structure of the tests or code
+    \end{itemize}
+}
+
 \nSection{Security Testing}
+
+\nDefinition{Security testing}{
+    \begin{itemize}
+        \item Normal testing aims to ensure program meets customer requirements in terms of features and functionality
+        \item Security testing aims to ensure the program fulfills security requirements - more interested in misuse cases, weird "corner" cases 
+    \end{itemize}
+}
+
+\nDefinition{Common security testing approaches}{
+    \begin{itemize}
+        \item Test for known vulnerability types
+        \item Attempt directed or random search of program state space to uncover the corner cases 
+    \end{itemize}
+}
+
+\nDefinition{Penetration testing}{
+    \begin{itemize}
+        \item Manually try to "break" software
+        \item Relies on human intuition and experience 
+        \item Typically involves looking for known common problems 
+        \item Can uncover problems that are impossible or difficult to find using automated methods - results completely dependent on skill of tester
+    \end{itemize}
+}
+
+\nDefinition{Fuzz testing}{
+    idea: send semi-valid input to a program and observe behaviour.
+
+    \begin{itemize}
+        \item Black-box testing - System treated as a "black box"
+        \item The only feedback is the output and/or externally observable behaviour
+        \item First proposed in a 1990 paper where completely random data was sent to 85 common Unix utilities in 6 different systems. 24-33\% crashed.
+        \item Remember: crash implies memory protection errors, often signs of exploitable flaws in the program
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.6]{ST-34}
+    \end{center}
+
+    \begin{itemize}
+        \item Simplest method: completely random imput - wont work well in practice - input deviates too much from expected format, rejected early in processing 
+        \item Mutation based fuzzing
+        \item Generation based fuzzing 
+    \end{itemize}
+}
+
+\nDefinition{Mutation based fuzzing}{
+    Start with valid seed input, and mutate it:
+    \begin{itemize}
+        \item Flip some bits, change value of some bytes
+        \item Programs that have highly structured input, e.g. XML, may require "smarter" mutations
+    \end{itemize}
+
+    How do we select appropriate input?:
+    \begin{itemize}
+        \item If official test suites are available, these can be used 
+        \item Generally mostly used for programs that take files as input
+        \item Trickier to do when interpretation of inputs depends on program state, e.g. network protocol parsers 
+    \end{itemize}
+
+    \begin{itemize}
+        \item[+] easy to get started - little knowledge required of specific input format needed 
+        \item[-] typically yields low code coverage, inputs tend to deviate too much from expected format - rejected early by sanity checks  
+        \item[-] hard to reach "deeper" parts of program by random guessing (i.e. unlikely to guess magic constants correctly in switch cases etc.)
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.8]{ST-35}
+    \end{center}
+}
+
+\nDefinition{Generation based fuzzing}{
+    Idea: use a specification of the input format (a grammar or similar) to automatically generate semi-valid inputs.
+
+    Usually combined with various fuzzing heuristics that are known to trigger certain vulnerability types:
+    \begin{itemize}
+        \item Very long strings, empty strings
+        \item Strings with format specifiers, "extreme" format strings
+        \item Very large or small values
+        \item Negative values where positives are expected
+    \end{itemize}
+
+    \begin{itemize}
+        \item[+] Input is much closer to the expected, much better coverage
+        \item[+] can includ emodels of protocol state machines to send messages in the sequence expected by SUT
+        \item[-] Requires input format to be known
+        \item[-] May take considerable time to write the input format grammar/specification.   
+    \end{itemize}
+}
+
+\nDefinition{Fuzzing: Dispatcher}{
+    Repsponsible for running the SUT, on each input generated by fuzzer
+    \begin{itemize}
+        \item Must provide suitable environment for SUT 
+        \item SUT may modify environment (might require a VM)
+    \end{itemize}
+}
+
+\nDefinition{Fuzzing: The Assessor}{
+    Must automatically assess observed SUT behaviour to determine if a fault was triggered:
+    \begin{itemize}
+        \item For C/C++ programs: monitor for memory access violations, e.g. out of bounds reads or writes
+        \item Simplest method: check if crashed 
+        \item Problem: SUT may catch signals/exception to gracefully handle e.g. seg faults which makes it difficult to tell if a fault has occured 
+        \item solution is to attach a programmable debugger to SUT 
+        \item This can catch signals/exceptions prior to being delivered to application 
+        \item Can help manual diagnosis of detected faults by recording stack traces, value of registers etc. 
+        \item Not all result in failures though
+        \item An out-of-bound read/write or use-after-free may e.g. not result in a memory access violation. 
+        \item Solution: Use a dynamic-analysis tool that can monitor what goes on "under-the-hood" (this is very slow)
+    \end{itemize}
+}
+
+\nDefinition{Limitations of Fuzz testing}{
+    \begin{itemize}
+        \item Many programs have an infinite input space, and state space - combinatorial explosion!
+        \item Conceptually simple idea, but many practical challenges 
+        \item Difficult to create a trully generic fuzzing framework that can cater for all possible input formats - might often require a custom fuzzer for each SUT 
+        \item Semi-randomly generated inputs are very unlikely to trigger certain faults
+        \item mutation based fuzzing can typically onl find "low hanging fruit" - shallow bugs which are easy to find 
+        \item Generation-based fuzzers are much better but also require much more effort
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.7]{ST-36}
+    \end{center}
+}
+
+
+\nDefinition{Concolic testing}{
+    idea: combine concrete and symbolic execution 
+
+    \begin{itemize}
+        \item Execute program for real on some input, record path taken 
+        \item Encode path as query to SMT solver and negate one branch condition on the path 
+        \item ask the solver to find new satisfying input that will give a different path 
+    \end{itemize}
+
+    Reported bugs are always accompanied by an input that triggers the bug - reported bugs are always real bugs
+}
+
+\nDefinition{Challenges of concolic testing}{
+    Number of paths increases exponentially with number of branches:
+    \begin{itemize}
+        \item Most real-world programs have an infinite state space 
+        \item Number of loop iterations may depend on size of input 
+        \item Not possible to explore all paths - need strategy to explore interesting parts of the program
+        \item DFS will easilly get stuck in one part of the program (a loop)
+        \item BFS will take a very long time to reach deep states 
+        \item Need to try smarter ways of exploring program state space  
+    \end{itemize}
+}
+
+\nDefinition{Generational search ("whitebox fuzzing")}{
+    \begin{itemize}
+        \item Run program on concrete seed input and record path constraint 
+        \item For each branch condition:
+            \begin{itemize}
+                \item Negate condition and keep the earlier conditions unchanged.
+                \item Have SMT solver generate new satisfying input and run program with that input 
+                \item Assign input a score based on how much it improves coverage
+                \item Store input in a global worklist sorted on score 
+            \end{itemize}
+        \item Pick input at head of worklist and repeat
+    \end{itemize}
+
+    Coverage based heuristics avoid getting "stuck" like DFS. 
+    If one test case executes the exact same code as in a previous test case, its score will be 0, so it will probably never be used again.
+    Gives sparse but more diverse search of the paths of the program.
+
+    \begin{itemize}
+        \item Implements a form of greedy search heuristic 
+        \item For example, loops may only be executed only once
+        \item Only generates input "close" to the seed input 
+        \item Will try to explore weird corner cases in code exercised by seed input 
+        \item Choice of seed input important for good coverage
+    \end{itemize}
+
+    \begin{itemize}
+        \item[+] Proven to work well in practice
+        \item[+] Source code not needed, since can be done at machine code level,
+        \item[-] Sacrifices some coverage due to additional approximations needed when working on machine code
+        \item[-] Solving SAT/SMT problems is NP-complete 
+        \item[-] may take unacceptably long time to solve certain constraints 
+        \item[-] Solving SMT queries with non-linear arithmetic (multiplication, division, modulo etc) is undecidable in general - but decidable in fixed-precision data types which are typically used   
+        \item[-] any usage of cryptographical functions usually ends in failure of symbolic execution
+    \end{itemize}
+
+    \begin{center}
+        \nImg[0.7]{ST-37}
+    \end{center}
+    }
+
+\nDefinition{Greybox fuzzing}{
+    Probability of hitting a "deep" level of the code decreases exponentially with depth of code for mutation based fuzzing 
+
+    Similarly, the time required for solving an SMT query is high, and increases exponentially with depth of path constraint 
+
+    Black-box fuzzing is too "dumb" and whitebox fuzzing may be "too smart"
+
+    idea: find spot in-between.
+
+    Instead of recording full path constraint, record light-weight coverage information to guide fuzzing.
+    Use evolutionary algorithms to learn input format 
+    \begin{itemize}
+        \item AFL is considered the current state-of-the-art in fuzzing 
+        \item Performs regular mutation based-fuzzing (with several strategies) and measures code coverage 
+        \item Every generated input that resulted in any new coverage is saved and later re-fuzzed
+        \item This extremely simple algorithm allows AFL to learn how to reach deeper parts of the program 
+        \item Also highly optimized for speed - can reach several thousand test cases per second 
+        \item Often beats smarter and slower methods like whitebox fuzzing 
+        \item Found hundreds of serious vulnerabilities in open-source programs
+    \end{itemize}
+}
+
 \nSection{Integration and Component Based Testing}
+
+\nDefinition{Integration testing}{
+    Integration testing serves as a process check:
+    \begin{itemize}
+        \item If module faults are revealed in integration testing, they signal inadequate unit testing 
+        \item If integration faults occur in interfaces between correctly implemented modules, the errors can be traced to module breakdown and interface specifications
+    \end{itemize}
+    \begin{center}
+        \nImg[0.9]{ST-38}
+    \end{center}
+}
+
+\nDefinition{Integration Faults}{
+    \begin{itemize}
+        \item Inconsistent interpretation of parameters of values (mixed units)
+        \item Violation of value domains, capacity, or size limits (buffer overflows)
+        \item Side effects on parameters or resources (conflicts on temp files)
+        \item Omitted or misunderstood functionality (inconsistent interpretation of web hits)
+        \item Nonfunctional properties (Unanticipated performance issues)
+        \item Dynamic mismatches
+    \end{itemize}
+}
+
+\nDefinition{Big bang integration test}{
+    Test only after integrating all modules:
+    \begin{itemize}
+        \item[+] Does not require scaffolding 
+        \item[-] Minimum observability, diagnosability, efficacy, feedback 
+        \item[-] High cost of repair   
+    \end{itemize}
+}
+
+\nDefinition{Structural and functional strategies}{
+    \textbf{Structural orientation}: modules constructed, integrated and tested based on a hierarchical project structure (top-down, bottom-up, sandwich etc)
+    
+    \begin{center}
+        \nImgs{ST-39}{ST-40}
+        \nImgs{ST-41}{ST-41}
+    \end{center}
+
+    \textbf{Functional orientation}: modules integrated according to application characteristics or features (threads, critical module)
+
+    \begin{center}
+        \nImgs{ST-42}{ST-43}
+    \end{center}
+    }
+
+\nDefinition{Critical Modules}{
+    Strategy: start with riskiest modules:
+    \begin{itemize}
+        \item Risk assesment necessary first step
+        \item May include technical risks (is X feasible), process risks (is schedule for X realistic) or other risks 
+        \item May resemble thread or sandwich process in tactics for flexible build order 
+        \item Key point is risk-oriented process (integration as risk-reduction activity, deliver bad news early)
+    \end{itemize}
+}
+
+\nDefinition{Choosing a strategy}{
+    \begin{itemize}
+        \item Functional strategies require more planning 
+        \item but also provide better process visibility, especiall in complex systems 
+        \item Possible to combine: top-down, bottom-up or sandwich are reasonable for relatively small components and subsystems 
+        \item Combination of threads and critical modules integration testing are often preferred for larger subsystems
+    \end{itemize}
+}
+
+\nDefinition{Component}{
+    Reusable unit of deployment and composition;
+    \begin{itemize}
+        \item Deployed and integrated multiple times 
+        \item Integrated by different teams (usually)
+        \item Characterised by an interface or contract 
+        \item Often larger grain than objects or packages (a database system, or geometry module)
+    \end{itemize}
+}
+
+\nDefinition{Component interface contracts}{
+    \begin{itemize}
+        \item API is distinct from implementation
+        \item DOM interface for XML is distinct from possible implementations 
+        \item Interface includes everything that must be known to use the component 
+        \item More than just method signatures, exceptions etc.
+        \item May include non-functional characteristics like performance, capacity and security
+        \item May include dependence on other components
+    \end{itemize}
+}
+
+\nDefinition{Challenges in testing components}{
+    \begin{itemize}
+        \item The component builder's challenge - impossible to know all the ways a component may be used 
+        \item Difficult to recognize and specify all potentially important properties and dependencies 
+        \item The component user's challenge - no visibility "inside" the component, often difficult to judge suitability for a particular use and context
+    \end{itemize}
+}
+
+\nDefinition{Testing a Component: Producer view}{
+    \begin{itemize}
+        \item First: thorough unit and subsystem testing
+        \item Includes thorough functional testing based on API
+        \item Reusable component requires at least twice the effort in design, implementation and testing as a subsystem constructed for a single use 
+        \item Second: thorough acceptance testing
+        \item Based on scenarios of expected use
+        \item Includes stress and capacity testing
+    \end{itemize}
+}
+\nDefinition{Testing a component: User view}{
+    \begin{itemize}
+        \item Not primarily to find faults in the component
+        \item Major question: is the component suitable for this application ?
+        \item Primary risk is not fitting the applciation context
+        \item Unanticipated dependence or interactions with environment
+        \item Performance or capcaity limits
+        \item Missing functionality, misunderstood API
+        \item Risk high when using component for first time
+        \item Reducing risk: trial integration early 
+        \item Often worthwile to build driver ot test model scenarios, long before actual integration
+    \end{itemize}
+}
 \nSection{System and Acceptance Testing}
+
+\nDefinition{System and acceptance testing}{
+    \begin{center}
+        \nImg[0.9]{ST-44}
+    \end{center}
+
+    \begin{itemize}
+        \item Comprehensive
+        \item Based on specification of observable behaviour
+        \item Independent of design and implementation
+        \item Avoid repeating software design errors in system test design
+        \item should be performed by a different organisation 
+    \end{itemize}
+}
+
+\nDefinition{Incremental system testing}{
+    \begin{itemize}
+        \item System test are often used to measure progress
+        \item System test suite covers all features and scenarios of use
+        \item As project progresses, the system passes more and more system tests 
+        \item Assumes a "threaded" incremental build plan: features exposed at top level as they are developed
+    \end{itemize}
+}
+
+\nDefinition{Global properties}{
+    \begin{itemize}
+        \item Performance, latency reliability etc.
+        \item Early and incremental testing is still necessary but provide only estimates
+        \item A major focus of system testing
+        \item The only opportunity to verify global properties against actual system specifications
+        \item Especially to find unanticipated effects, e.g. an unexpected performance bottleneck
+    \end{itemize}
+}
+
+\nDefinition{Context-dependent properties}{
+    \begin{itemize}
+        \item Beyond system-global: some properties depend on the system context and use 
+        \item Example: performance properties depend on environment and configuration 
+        \item Example: privacy depends both on system and how it is used 
+        \item Example: security depends on threat profiles (and threats change)
+        \item Testing is just one part of the approach
+    \end{itemize}
+}
+
+\nDefinition{Stress testing}{
+    \begin{itemize}
+        \item Often requires extensive simulation of the execution environment
+        \item What happens when parameters are pushed ? (10,100 times more ?)
+        \item Often requires more resources (human and machine), than typical test cases 
+    \end{itemize}
+}
+
+\nDefinition{Capacity testing}{
+    \begin{center}
+        \nImg[1]{ST-45}
+    \end{center}
+}
+\nDefinition{Security testing}{
+    \begin{center}
+        \nImg[1]{ST-46}
+    \end{center}
+}
+\nDefinition{Performance testing}{
+    \begin{center}
+        \nImg[1]{ST-48}
+    \end{center}
+}
+
+\nDefinition{Compliance testing}{
+    \begin{center}
+        \nImg[1]{ST-49}
+    \end{center}
+}
+
+\nDefinition{Documentation testing}{
+    \begin{center}
+        \nImg[1]{ST-50}
+    \end{center}
+}
+
+\nDefinition{Estimating dependability}{
+    Measuring quality, not searching for faults.
+
+    \begin{itemize}
+        \item \textbf{reliability} - survival Probability
+        \item \textbf{Availability} - fraction of time a system meets specs 
+        \item \textbf{Failsafe} - system fails to a known safe state 
+        \item \textbf{Dependability} - system does the right thing at right time
+    \end{itemize}
+}
+
+\nDefinition{Statistical sampling}{
+    \begin{itemize}
+        \item Need valid operational profile (model)
+        \item sometimes from older version of system 
+        \item sometimes from operational environment 
+        \item sensitivity testing reveals parameters which are most important 
+        \item Clear definition of what is being measured 
+        \item Many random samples
+    \end{itemize}
+}
+
+\nDefinition{System reliability}{
+    \begin{center}
+        \nImg[1]{ST-51}
+        \nImg[1]{ST-52}
+    \end{center}   
+}
+
+\nDefinition{Mean time to failure (MTTF)}{
+    \begin{center}
+        \nImg[1]{ST-53}
+    \end{center}
+}
+
+\nDefinition{Serial system reliability}{
+    \begin{center}
+        \nImg[1]{ST-54}
+    \end{center}
+}
+
+\nDefinition{Parallel system reliability}{
+    \begin{center}
+        \nImg[1]{ST-55}
+    \end{center}
+}
+\nDefinition{Process-based measures}{
+    \begin{itemize}
+        \item Less rigorous than statistical 
+        \item Alpha - real users, controlled enviormnent 
+        \item Beta -real users (real environment)
+    \end{itemize}    
+
+}
+
+\nDefinition{Usability testing}{
+    \begin{center}
+        \nImg[1]{ST-56}
+    \end{center}
+}
+
+\nDefinition{Reliability testing}{
+    \begin{center}
+        \nImg[1]{ST-57}
+    \end{center}
+}
+
+\nDefinition{Availability/reparability testing}{
+    \begin{center}
+        \nImg[1]{ST-58}
+    \end{center}
+}
 \nSection{Concurrency Testing}
 
 \end{document}
