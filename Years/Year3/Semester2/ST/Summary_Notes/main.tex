@@ -1483,4 +1483,37 @@
 }
 \nSection{Concurrency Testing}
 
+\nDefinition{Cocnurrency bug types}{
+    \begin{itemize}
+        \item Data race - occurs when two conflicting accesses to one shared variable are executed without proper synchronisation
+        \item Deadlock - occurs when two or more operations circularly wait for each other to release an acquired resource
+        \item Atomicity violation bugs - bugs which are caused by concurrent execution unexpectedly violating the atomicity of a certain code region
+        \item Order violation bugs - bugs that don't follow the programmer's intended order
+    \end{itemize}
+}
+
+\nDefinition{Preventing data races}{
+    \begin{center}
+        \nImg[1]{ST-60}
+        \nImg[1]{ST-61}
+    \end{center}
+}
+
+\nDefinition{Deadlock example}{
+    \begin{center}
+        \nImg[1]{ST-62}
+    \end{center}
+}
+
+\nDefinition{Deadlock prevention}{
+    \begin{center}
+        \nImg[1]{ST-63}
+    \end{center}
+}
+
+\nDefinition{Atomicity violation example}{
+    \begin{center}
+        \nImg[1]{ST-64}
+    \end{center}
+}
 \end{document}
